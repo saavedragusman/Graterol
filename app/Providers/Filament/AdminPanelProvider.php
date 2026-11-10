@@ -29,8 +29,13 @@ class AdminPanelProvider extends PanelProvider
             ->path('admin')
             ->login()
             ->colors([
-                'primary' => Color::Amber,
+                'primary' => Color::hex('#B5121B'),
+                'secondary' => Color::hex('#fbbb13'),
             ])
+            ->brandName('Distribuidora Graterol')
+            ->brandLogo(asset('images/graterol-logo.webp'))
+            ->brandLogoHeight('4rem')
+            ->favicon(asset('images/favicon.png'))
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\Filament\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\Filament\Pages')
             ->pages([
