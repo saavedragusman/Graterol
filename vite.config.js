@@ -26,6 +26,8 @@ export default defineConfig(({ mode }) => {
             watch: {
                 ignored: ['**/storage/framework/views/**'],
             },
+	    host: '0.0.0.0',
+       	    hmr: { host: process.env.VITE_HMR_HOST },
         },
     };
 });
