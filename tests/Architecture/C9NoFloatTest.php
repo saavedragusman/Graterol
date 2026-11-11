@@ -27,11 +27,13 @@ function filesWithForbiddenFloatTokens(string $directory): array
 }
 
 it('has no float or double tokens in migrations [C9]', function () {
-    expect(filesWithForbiddenFloatTokens(database_path('migrations')))->toBe([]);
+    $migrationsPath = dirname(__DIR__, 2).'/database/migrations';
+
+    expect(filesWithForbiddenFloatTokens($migrationsPath))->toBe([]);
 });
 
 it('has no float or double tokens in app/Domain [C9]', function () {
-    $domainPath = app_path('Domain');
+    $domainPath = dirname(__DIR__, 2).'/app/Domain';
 
     if (! is_dir($domainPath)) {
         expect(true)->toBeTrue();

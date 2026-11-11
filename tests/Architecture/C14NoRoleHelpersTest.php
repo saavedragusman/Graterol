@@ -30,5 +30,7 @@ function filesWithForbiddenAuthTokens(string $directory): array
 }
 
 it('has no hasRole(), Gate::before or abort(403) in app/ [C14]', function () {
-    expect(filesWithForbiddenAuthTokens(app_path()))->toBe([]);
+    $appPath = dirname(__DIR__, 2).'/app';
+
+    expect(filesWithForbiddenAuthTokens($appPath))->toBe([]);
 });
