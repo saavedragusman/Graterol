@@ -181,13 +181,13 @@ Ambos se escriben como pruebas Pest planas (lectura de archivos + aserciones), n
 - [x] **T11 — Test de arquitectura C14 (sin `hasRole()`, `Gate::before`, `abort(403)`).** Depende de T2, T6.
   - Cierre: test en verde. **Criterio de cierre del roadmap para M0.**
 
-- [ ] **T12 — Commit por tramo revisable y GGA.** Depende de T1–T11.
+- [x] **T12 — Commit por tramo revisable y GGA.** Depende de T1–T11.
   - Rama `feat/m0-foundation`; un commit por tramo con pruebas en verde (AGENTS §4.4); el último tramo pasa GGA.
-  - Cierre: GGA aprobado. **Criterio de cierre del roadmap para M0.**
+  - Cierre: GGA aprobado. **Criterio de cierre del roadmap para M0.** Commits `626b36e` (tramo T1-T11) y `04a15b7` (limpieza de `tests/Pest.php`), ambos con GGA PASSED.
 
-- [ ] **T13 — Verificador independiente (C18).** Depende de T9, T12.
+- [x] **T13 — Verificador independiente (C18).** Depende de T9, T12.
   - El roadmap marca M0 como "feature + verificador" por el riesgo de tocar migraciones y un trigger de base de datos (C18, riesgo alto: migraciones con datos). El verificador revisa en particular T8/T9.
-  - Cierre: verificador independiente confirma antes de cerrar el hito.
+  - Cierre: verificador independiente confirma antes de cerrar el hito. Primera corrida: **rechazada** por B1 (los tests de arquitectura dependían de `app_path()`/`database_path()`, que requieren la app levantada; fallaban al correr solos o filtrados, y solo pasaban por arrastre de un test Feature previo). Corregido en el commit `e383d1c` (rutas calculadas desde `__DIR__`). Segunda corrida (manual, tras el fix): `sail pest tests/Architecture` y `sail pest --filter=C14` en verde por separado, y la suite completa también. **Veredicto final: aprobado con observaciones** (A1-A4, no bloqueantes, ver abajo).
 
 ## 6. Evidencia
 
@@ -201,6 +201,21 @@ Comandos de §2 de AGENTS.md ejecutados: `sail pest` (5/5 verde, dos corridas pa
 
 Nota técnica: la migración del trigger usa `CREATE OR REPLACE FUNCTION` y `DROP TRIGGER IF EXISTS` antes de crear, porque `migrate:fresh` (usado por `RefreshDatabase` en los tests) no elimina funciones de PostgreSQL entre corridas; sin eso, la segunda corrida de tests fallaba con "Duplicate function".
 
-Pendiente: T12 (commit del tramo + GGA) y T13 (verificador independiente, C18).
+### Observaciones del verificador independiente (no bloqueantes)
 
-Siguiente paso: commit del tramo T1-T11 y, dado el riesgo alto de tocar migraciones y un trigger de base de datos (C18), proponer el verificador independiente (T13) antes de cerrar el hito.
+- **A1.** `C14NoRoleHelpersTest` busca texto literal; se esquiva con variantes como `abort(403, 'motivo')`, `abort_if(..., 403)` o espacios extra (`hasRole (`). Suficiente para M0 (vigila el caso directo que C14 nombra); si se vuelve a esquivar en la práctica, se endurece el test.
+- **A2.** `C9NoFloatTest` solo escanea `app/Domain` y `database/migrations`, tal como pide la constitution (C9 habla de "columnas, casts y cálculos de peso o dinero", que viven ahí). Un `float` en `app/Http` no se detecta, pero tampoco es donde C9 pone la regla.
+- **A3.** El trigger es `BEFORE UPDATE OR DELETE`; no cubre `TRUNCATE`. C10 solo exige rechazar UPDATE/DELETE, así que no es un incumplimiento, pero queda anotado por si en M4 (inventario) hace falta un trigger `BEFORE TRUNCATE` o revocar el privilegio.
+- **A4.** No hay casos de prueba para `ON DELETE` de `batches`/`users`; las FK no son `cascade`, así que no hay vía de escape, pero no hay test explícito. Se deja para cuando esas tablas tengan su diseño completo (M1/M2).
+
+Ninguna de estas observaciones está en el alcance del roadmap para M0 (C9, C10, C14, C18 ya están cubiertas); quedan anotadas para los hitos que amplían estas tablas.
+
+## 7. Cierre
+
+Todas las tareas T1-T13 están hechas. Los tres criterios de cierre del roadmap para M0 se cumplen:
+
+1. El trigger del kardex rechaza UPDATE/DELETE (test en verde, y confirmado por SQL directo por el verificador independiente).
+2. Los tests de arquitectura de C9 y C14 pasan, de forma aislada y en conjunto.
+3. Los commits (`626b36e`, `04a15b7`, `e383d1c`) pasaron GGA.
+
+Siguiente paso: confirmación del humano para cerrar M0 y arrancar M1 (Configuración y catálogo).
