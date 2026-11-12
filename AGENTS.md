@@ -105,4 +105,4 @@ Solo se activa cuando el humano lo indica, y para los hitos o tareas que nombre.
 - **Documentos:** no se editan constitution, business-rules, roadmap, AGENTS, `docs/design.md` ni `docs/design/screens/`. Sí el documento ODD.
 - **Pruebas:** no se borran, saltan ni debilitan. Si un error persiste tras 3 intentos, se documenta y se pasa a otra tarea.
 - **Efectos externos:** `MAIL_MAILER=log`; no se llama a la API del BCV ni a la del SENIAT o imprenta, ni se imprime.
-- **Al terminar:** `.reports/REPORTE-SESION-<n>.md` con commits, decisiones técnicas, bloqueos, dependencias faltantes, `[DEC-PENDIENTE]` y candidatos a review `high`.
+- **Al terminar:** `report/REPORTE-SESION-<n>.md` con commits, decisiones técnicas, bloqueos, dependencias faltantes, `[DEC-PENDIENTE]` y candidatos a review `high`.
