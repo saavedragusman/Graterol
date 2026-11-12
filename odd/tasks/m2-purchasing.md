@@ -1,7 +1,7 @@
 # M2 — Compras y recepción con pesaje
 
 > Documento ODD del hito M2. Rama: `feat/m2-purchasing`. Copia en Engram: `odd/m2-purchasing/tasks`.
-> Estado: **aprobado** (puerta 1, AGENTS §4.3) — 2026-11-12. Las 6 decisiones de §3 están resueltas.
+> Estado: **BR-06/BR-07 en verde (criterio de cierre del roadmap cumplido); 4.2 (PWA) bloqueada esperando instalación de Inertia/Vue/TypeScript.** Puerta 1 (AGENTS §4.3) aprobada 2026-11-12.
 
 ## 1. Fuente
 
@@ -209,29 +209,37 @@ No hay pantalla de referencia para M2 en `docs/design/screens/` (design.md §5).
 
 ## 6. Evidencia
 
-### Tests por BR (nombre con el ID, C16)
-| Test | Verifica |
-|---|---|
-| `BR-06 registra la diferencia entre peso recibido y facturado` | 100,000 kg facturados, 98,250 recibidos → diferencia −1,750 guardada en la línea |
-| `BR-06 no confirma una recepción con líneas sin pesar` | `ReceivePurchase` lanza error y no crea lotes |
-| `BR-07 el costo del lote suma compra, flete y otros costos` | Monto + flete asignado + otros asignados = `total_cost`; costo por kg = total ÷ kg recibidos |
-| `BR-07 el reparto del flete cuadra al centavo` | Σ asignado = flete exacto con residuo en la línea de mayor monto |
-| `BR-07 el lote nace en la recepción` | Antes de confirmar no hay lote; al confirmar hay un lote por línea y un movimiento `purchase_receipt` por lote |
-| `BR-07 una recepción fallida no deja nada a medias` | Si falla un lote, no queda ni la compra recibida ni movimientos (C11) |
-| `BR-03 solo con purchasing.void se anula una compra` | Carnicero → denegado; administrador → movimientos inversos y auditoría |
-| `C12 no se anula una compra cuyo lote ya se movió` | Lote con salida → rechazo |
+### Tests por BR (nombre con el ID, C16) — estado real, no el planeado en §3
+| Test | Archivo | Verifica |
+|---|---|---|
+| `[BR-03]` permisos y Policies (8 tests) | `tests/Feature/Settings/RolePermissionSeederTest.php`, `tests/Feature/Purchasing/PurchasePolicyTest.php` | administrador todos; cajero ninguno de Compras; carnicero view+receive; solo administrador anula/gestiona proveedores |
+| `[BR-07][DEC-02]` reparto de costos (5 tests) | `tests/Feature/Purchasing/AllocateCostsActionTest.php` | proporcional a kg recibidos; residuo a la línea de mayor peso; suma exacta al total; sin líneas; peso cero rechazado |
+| `[BR-02][BR-07][DEC-05][C11]` crear/corregir compra (9+2 tests) | `CreatePurchaseActionTest.php`, `UpdateDraftPurchaseActionTest.php` | tasa BCV guardada; sin tasa rechaza; producto derivado rechaza (crear y editar); transacción atómica; edición solo en `draft`; whitelist de encabezado (nunca status/exchange_rate/supplier_id) |
+| `[BR-07][C10]` nace el lote (4 tests) | `tests/Feature/Inventory/CreateLotFromPurchaseLineActionTest.php` | costo por kg = total ÷ kg recibidos; movimiento `purchase_in` enlazado; piezas guardadas; doble recepción de la misma línea rechazada |
+| `[BR-06][BR-07][DEC-02][C12]` recibir compra (5 tests) | `tests/Feature/Purchasing/ReceivePurchaseActionTest.php` | diferencia de peso guardada; costo del lote = facturado + flete asignado; reparto proporcional en 2 líneas con 2 lotes distintos; línea sin pesar rechaza; segunda recepción rechaza |
+| `[BR-03][C10][C12][C15]` anular compra (4 tests) | `tests/Feature/Purchasing/VoidPurchaseActionTest.php` | movimientos netean a cero; `AuditLog` completo (quién/qué/cuándo/motivo/antes/después); lote con movimiento previo rechaza; compra no recibida rechaza |
+| `[BR-02][BR-03][BR-06][BR-07][DEC-01][DEC-05]` Filament (12 tests) | `tests/Feature/Filament/PurchasingResourcesTest.php` | crear/editar delega en las Actions; selector sin derivados; diferencia y costo de lote de solo lectura; anular solo `received` + permiso, motivo obligatorio |
 
-### Comandos
+Total: **76 tests en verde** (incluye los 33 heredados de M0/M1, sin romper ninguno).
+
+**Desviaciones del diseño original (§3/§4) encontradas al implementar:**
+- El tipo de movimiento quedó como `purchase_in` (no `purchase_receipt` como proponía §4.1): ya era la convención usada en el test de M0 (`InventoryMovementsImmutableTest`); se prefirió consistencia con lo existente sobre el nombre propuesto en el documento.
+- `PurchasePolicy` no tiene `update`: `PurchaseResource::canEdit()` exige `draft` + `purchasing.create` en su lugar (no había una regla que pidiera un permiso de edición separado del de crear).
+- Se creó `audit_logs` (C15) desde cero: no existía ningún mecanismo de auditoría en el proyecto hasta ahora (ni M0 ni M1 lo necesitaron). Queda disponible para futuros cambios de precio/tasa/permisos que C15 también exige.
+- `User` no implementaba `FilamentUser`: sin eso, el panel queda inaccesible en producción. Se agregó `canAccessPanel(): true` (las Policies ya restringen por dentro) — gap de M0, corregido acá porque fue la primera vez que hubo recursos reales para probarlo.
+- La tarea 4.2 (PWA) está **bloqueada**: el proyecto nunca instaló Inertia/Vue/TypeScript (solo Filament, Tailwind y Vite). Es una dependencia nueva (C1) que requiere aprobación explícita; el humano pidió los comandos para instalarla él mismo. Pendiente de retomar cuando estén instalados.
+
+### Comandos (branch `feat/m2-purchasing`, último estado verificado)
 | Comando | Resultado |
 |---|---|
-| `sail artisan test` | — |
-| `sail pint --test` | — |
-| `sail composer types:check` | — |
-| `sail pnpm build` | — |
-| GGA | — |
+| `sail artisan test` | 76 passed, 215 assertions |
+| `sail pint --test` | passed |
+| `sail composer types:check` | 0 errors |
+| `sail pnpm build` | pendiente (bloqueado junto con 4.2, ver nota arriba) |
+| GGA | aprobado en cada uno de los 10 commits del tramo |
 
 ### Commits
-—
+`5f0bcaf` doc aprobado · `09b4c6b` migraciones · `7d4049f` modelos · `8548026` permisos/Policies · `fd24806` AllocateCosts · `e67d3b5` CreatePurchase/UpdateDraftPurchase · `ca2bfc5` CreateLotFromPurchaseLine · `cf97c1b` ReceivePurchase (cierra BR-06/BR-07) · `6043cbe` VoidPurchase/auditoría · `1157c16` Filament.
 
 ### Siguiente paso
-M3 — Despiece y costeo (`odd/tasks/m3-butchery.md`).
+Instalar Inertia + Vue 3 + TypeScript (comandos ya entregados al humano) para retomar la tarea 4.2. Cuando eso cierre: `pnpm build`, evidencia final y confirmación de cierre del hito (AGENTS §4.3 puerta 2). Después, M3 — Despiece y costeo (`odd/tasks/m3-butchery.md`).
