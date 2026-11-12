@@ -42,6 +42,24 @@ function aDraftPurchaseForReceipt(): Purchase
     );
 }
 
+function aDraftPurchaseWithTwoLinesForReceipt(): Purchase
+{
+    (new RegisterExchangeRateAction)->execute('85.5000', 'manual');
+    $supplier = Supplier::factory()->create();
+    $chicken = (new CreateProductAction)->execute('Pollo entero', ProductType::RawMaterial, Unit::Kilogram, ProductCategory::NaturalMeat);
+    $pork = (new CreateProductAction)->execute('Media res de cochino', ProductType::RawMaterial, Unit::Piece, ProductCategory::NaturalMeat);
+
+    return (new CreatePurchaseAction)->execute(
+        supplierId: $supplier->id,
+        invoiceNumber: 'F-501',
+        invoiceDate: now(),
+        lines: [
+            ['product_id' => $chicken->id, 'invoiced_weight_kg' => '100.000', 'line_amount' => '110.0000'],
+            ['product_id' => $pork->id, 'invoiced_weight_kg' => '45.000', 'line_amount' => '150.0000'],
+        ],
+    );
+}
+
 it('lists draft purchases pending reception [BR-06]', function () {
     $user = carniceroUser();
     $purchase = aDraftPurchaseForReceipt();
@@ -110,6 +128,22 @@ it('rejects weighing without every line having a weight [BR-06]', function () {
             'lines' => [],
         ])
         ->assertInvalid(['lines']);
+});
+
+it('rejects confirming a purchase when a line is missing, not just when all are missing [BR-06]', function () {
+    $user = carniceroUser();
+    $purchase = aDraftPurchaseWithTwoLinesForReceipt();
+    $firstLine = $purchase->lines->first();
+
+    $this->actingAs($user)
+        ->post("/purchasing/receipts/{$purchase->id}/confirm", [
+            'lines' => [
+                ['id' => $firstLine->id, 'received_weight_kg' => '98.000'],
+            ],
+        ])
+        ->assertInvalid(['lines']);
+
+    expect($purchase->fresh()->status)->toBe('draft');
 });
 
 it('rejects viewing the receipt page for a purchase that is no longer draft [C12]', function () {
