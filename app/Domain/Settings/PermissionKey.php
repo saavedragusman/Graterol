@@ -12,7 +12,11 @@ enum PermissionKey: string
 {
     case PosSell = 'pos.sell';
     case PosCloseOwn = 'pos.close-own';
+    case PurchasingView = 'purchasing.view';
+    case PurchasingCreate = 'purchasing.create';
     case PurchasingReceive = 'purchasing.receive';
+    case PurchasingVoid = 'purchasing.void';
+    case PurchasingManageSuppliers = 'purchasing.manage-suppliers';
     case ButcheryProcess = 'butchery.process';
     case SalesVoid = 'sales.void';
     case SalesReturn = 'sales.return';
