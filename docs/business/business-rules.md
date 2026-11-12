@@ -31,7 +31,7 @@ Cada regla se verifica con un test Pest que lleva su ID (C16). `[abierto]` = pen
 
 ## Ventas y POS
 - **BR-18** Venta por kg (peso digitado o etiqueta EAN-13 de balanza con prefijo configurable) o por pieza.
-- **BR-19** Pagos mixtos en Bs y divisas: Σ pagos ≥ total. El vuelto puede darse en otra moneda, a la tasa de la venta.
+- **BR-19** Pagos mixtos en Bs y divisas: Σ pagos ≥ total, salvo en una venta a crédito (BR-29). El vuelto puede darse en otra moneda, a la tasa de la venta.
 - **BR-20** IGTF: `[abierto]`, desactivado por defecto.
 - **BR-21** El cierre de caja compara lo esperado con lo contado por método de pago y registra la diferencia.
 - **BR-22** El ticket del POS no es comprobante fiscal y nunca dice «factura».
@@ -39,9 +39,20 @@ Cada regla se verifica con un test Pest que lleva su ID (C16). `[abierto]` = pen
 
 ## Facturación
 - **BR-24** Cada venta facturada guarda los totales por alícuota (base, exento con «(E)», IVA). Si se pactó en divisa, guarda también el total en Bs, el total en divisa y la tasa.
-- **BR-25** MVP: se registra el n.º de factura y de control del talonario. Se valida el consecutivo por talonario y se alertan saltos y repetidos.
-- **BR-26** Por cada caja se controlan los talonarios: rango, usados, anulados y disponibles. Se usan hasta el **18-abr-2027**; después solo valen los formatos de contingencia.
+- **BR-25** MVP: en cada venta se registra el n.º de factura y de control del talonario manual. Se alerta si el número ya fue usado. No se lleva inventario de talonarios. El facturero manual se usa hasta el **18-abr-2027**; después solo valen los formatos de contingencia.
 - **BR-27** Fase 2: estados `borrador → pendiente → aceptado | rechazado → anulado`. El envío es idempotente (referencia única) y la evidencia se guarda 10 años. Una nota de crédito o débito usa el mismo medio que su factura.
+
+## Venta sin conexión
+- **BR-26** El POS vende sin internet con su copia local de catálogo, precios y tasa del día, que se actualiza cada vez que hay conexión. Cada venta hecha sin conexión lleva un identificador único generado en el dispositivo y queda en cola. Al volver la conexión se sincroniza: el servidor recalcula (C5), registra cualquier diferencia de precio o tasa, y nunca duplica una venta. No se puede cerrar caja mientras haya ventas pendientes de sincronizar.
+
+## Cuentas por cobrar
+- **BR-29** Solo se vende a crédito a clientes registrados y autorizados, cada uno con límite de crédito en USD y días de plazo. La venta puede ser a crédito total o con un pago inicial. Vender a crédito requiere un permiso propio. La venta a crédito necesita conexión: sin internet solo se vende de contado.
+- **BR-30** La deuda se registra en USD. Un abono en Bs se convierte a la tasa BCV del día del abono, y esa tasa queda guardada en el abono.
+- **BR-31** Los abonos pueden ser parciales, con cualquier método de pago y en cualquier moneda, hasta saldar la deuda. Se aplican primero a la venta a crédito más antigua, salvo que se elija una venta específica. Un abono no puede superar el saldo pendiente del cliente.
+- **BR-32** Si una venta a crédito haría superar el límite del cliente, se bloquea; solo un usuario con el permiso de autorización puede aprobarla, y la aprobación queda auditada. Al vencer el plazo se genera una alerta, sin bloquear al cliente.
+- **BR-33** No hay intereses ni recargos por mora.
+- **BR-34** Los abonos se pueden registrar sin conexión y se sincronizan como las ventas (BR-26). Los abonos cobrados entran en el cierre de caja de su método de pago (BR-21).
+- **BR-35** Cada cliente tiene estado de cuenta (ventas a crédito, abonos y saldo). El reporte de cuentas por cobrar agrupa los saldos por antigüedad: al día, 1–15, 16–30 y más de 30 días vencidos.
 
 ## Reportes
 - **BR-28** Margen por corte = precio de venta − costo asignado (BR-12). El rendimiento real se compara con la plantilla por orden, por materia prima y por carnicero.
