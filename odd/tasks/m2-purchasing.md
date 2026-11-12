@@ -1,7 +1,7 @@
 # M2 — Compras y recepción con pesaje
 
 > Documento ODD del hito M2. Rama: `feat/m2-purchasing`. Copia en Engram: `odd/m2-purchasing/tasks`.
-> Estado: **BR-06/BR-07 en verde (criterio de cierre del roadmap cumplido); 4.2 (PWA) bloqueada esperando instalación de Inertia/Vue/TypeScript.** Puerta 1 (AGENTS §4.3) aprobada 2026-11-12.
+> Estado: **completo.** Las 12 tareas de §5 están cerradas; BR-06/BR-07 (criterio del roadmap) y BR-02/BR-03 en verde. Pendiente solo la confirmación de cierre del humano (AGENTS §4.3 puerta 2).
 
 ## 1. Fuente
 
@@ -220,26 +220,29 @@ No hay pantalla de referencia para M2 en `docs/design/screens/` (design.md §5).
 | `[BR-03][C10][C12][C15]` anular compra (4 tests) | `tests/Feature/Purchasing/VoidPurchaseActionTest.php` | movimientos netean a cero; `AuditLog` completo (quién/qué/cuándo/motivo/antes/después); lote con movimiento previo rechaza; compra no recibida rechaza |
 | `[BR-02][BR-03][BR-06][BR-07][DEC-01][DEC-05]` Filament (12 tests) | `tests/Feature/Filament/PurchasingResourcesTest.php` | crear/editar delega en las Actions; selector sin derivados; diferencia y costo de lote de solo lectura; anular solo `received` + permiso, motivo obligatorio |
 
-Total: **76 tests en verde** (incluye los 33 heredados de M0/M1, sin romper ninguno).
+Total final: **83 tests en verde** (incluye los 33 heredados de M0/M1, sin romper ninguno). Suma: BR-03 (8) + AllocateCosts (5) + CreatePurchase/UpdateDraftPurchase (11) + CreateLotFromPurchaseLine (4) + ReceivePurchase (5) + VoidPurchase (4) + Filament (12) + PWA/HTTP (7, incluye el fix de recepción parcial) = 56 tests nuevos de M2.
 
 **Desviaciones del diseño original (§3/§4) encontradas al implementar:**
 - El tipo de movimiento quedó como `purchase_in` (no `purchase_receipt` como proponía §4.1): ya era la convención usada en el test de M0 (`InventoryMovementsImmutableTest`); se prefirió consistencia con lo existente sobre el nombre propuesto en el documento.
 - `PurchasePolicy` no tiene `update`: `PurchaseResource::canEdit()` exige `draft` + `purchasing.create` en su lugar (no había una regla que pidiera un permiso de edición separado del de crear).
 - Se creó `audit_logs` (C15) desde cero: no existía ningún mecanismo de auditoría en el proyecto hasta ahora (ni M0 ni M1 lo necesitaron). Queda disponible para futuros cambios de precio/tasa/permisos que C15 también exige.
 - `User` no implementaba `FilamentUser`: sin eso, el panel queda inaccesible en producción. Se agregó `canAccessPanel(): true` (las Policies ya restringen por dentro) — gap de M0, corregido acá porque fue la primera vez que hubo recursos reales para probarlo.
-- La tarea 4.2 (PWA) está **bloqueada**: el proyecto nunca instaló Inertia/Vue/TypeScript (solo Filament, Tailwind y Vite). Es una dependencia nueva (C1) que requiere aprobación explícita; el humano pidió los comandos para instalarla él mismo. Pendiente de retomar cuando estén instalados.
+- La tarea 4.2 (PWA) requirió instalar Inertia/Vue/TypeScript (C1): el proyecto nunca los había instalado (solo Filament, Tailwind y Vite desde M0). El humano instaló los paquetes él mismo tras pedirle los comandos; el agente cableó middleware, vista raíz, `vite.config.js` y `tsconfig.json`.
+- Los tokens de color de `docs/design.md` §2.1 tampoco existían en `app.css`: se agregaron ahí (C9 variables CSS) porque eran condición para no usar la paleta cruda de Tailwind en las pantallas nuevas (AGENTS §6). No se agregaron las fuentes Baloo 2/Figtree: ya estaban marcadas `[DEC-PENDIENTE]` en el propio `design.md` §2.2 (dependencia nueva de archivos de fuente), no se resuelve en este hito.
+- `vue-tsc` falla por incompatibilidad de versiones (`vue-tsc@3.3.14` vs `typescript@7.0.2`, TS7 es muy reciente). No bloquea: el DoD de AGENTS §8 pide `pnpm build` (en verde), no `vue-tsc`.
+- GGA encontró en revisión una recepción parcial (algunas líneas pesadas, no todas) que daba un 500 en vez de un 422: corregido con una validación cruzada en `ConfirmReceiptRequest` antes de llegar a `ReceivePurchaseAction`.
 
-### Comandos (branch `feat/m2-purchasing`, último estado verificado)
+### Comandos (branch `feat/m2-purchasing`, estado final verificado)
 | Comando | Resultado |
 |---|---|
-| `sail artisan test` | 76 passed, 215 assertions |
+| `sail artisan test` | 83 passed, 250 assertions |
 | `sail pint --test` | passed |
 | `sail composer types:check` | 0 errors |
-| `sail pnpm build` | pendiente (bloqueado junto con 4.2, ver nota arriba) |
-| GGA | aprobado en cada uno de los 10 commits del tramo |
+| `pnpm build` | en verde (580 módulos, ~235ms) |
+| GGA | aprobado en 12 de 13 commits; 1 fallo corregido en el acto (ver desviaciones) |
 
 ### Commits
-`5f0bcaf` doc aprobado · `09b4c6b` migraciones · `7d4049f` modelos · `8548026` permisos/Policies · `fd24806` AllocateCosts · `e67d3b5` CreatePurchase/UpdateDraftPurchase · `ca2bfc5` CreateLotFromPurchaseLine · `cf97c1b` ReceivePurchase (cierra BR-06/BR-07) · `6043cbe` VoidPurchase/auditoría · `1157c16` Filament.
+`5f0bcaf` doc aprobado · `09b4c6b` migraciones · `7d4049f` modelos · `8548026` permisos/Policies · `fd24806` AllocateCosts · `e67d3b5` CreatePurchase/UpdateDraftPurchase · `ca2bfc5` CreateLotFromPurchaseLine · `cf97c1b` ReceivePurchase (cierra BR-06/BR-07) · `6043cbe` VoidPurchase/auditoría · `1157c16` Filament · `3f2aa4a` evidencia parcial · `b5e18d8` PWA Inertia/Vue · `6a97d06` fix recepción parcial.
 
 ### Siguiente paso
-Instalar Inertia + Vue 3 + TypeScript (comandos ya entregados al humano) para retomar la tarea 4.2. Cuando eso cierre: `pnpm build`, evidencia final y confirmación de cierre del hito (AGENTS §4.3 puerta 2). Después, M3 — Despiece y costeo (`odd/tasks/m3-butchery.md`).
+Confirmación de cierre del hito por el humano (AGENTS §4.3 puerta 2). Después: decidir push/PR (el agente no lo hace sin que se le pida, C22), y M3 — Despiece y costeo (`odd/tasks/m3-butchery.md`).
