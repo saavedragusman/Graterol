@@ -43,3 +43,15 @@ it('has no float or double tokens in app/Domain [C9]', function () {
 
     expect(filesWithForbiddenFloatTokens($domainPath))->toBe([]);
 });
+
+it('has no float or double tokens in app/Support [C9]', function () {
+    $supportPath = dirname(__DIR__, 2).'/app/Support';
+
+    if (! is_dir($supportPath)) {
+        expect(true)->toBeTrue();
+
+        return;
+    }
+
+    expect(filesWithForbiddenFloatTokens($supportPath))->toBe([]);
+});
