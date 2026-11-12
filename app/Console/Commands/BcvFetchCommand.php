@@ -4,21 +4,24 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
+use App\Jobs\FetchBcvRateJob;
 use Illuminate\Console\Command;
 
 /**
- * BR-02: carga automática de la tasa BCV. Pendiente de implementar contra
- * la fuente real; por ahora es un stub que no llama a ninguna API.
+ * BR-02/C7: encola la carga automática de la tasa BCV. El fetch real
+ * corre en el worker de la cola, nunca de forma síncrona en este comando.
  */
 class BcvFetchCommand extends Command
 {
     protected $signature = 'bcv:fetch';
 
-    protected $description = 'Carga la tasa BCV del día (stub: aún no conectado a la fuente real).';
+    protected $description = 'Encola la carga automática de la tasa BCV del día.';
 
     public function handle(): int
     {
-        $this->info('bcv:fetch es un stub: todavía no está conectado a la fuente real del BCV. Registre la tasa manualmente mientras tanto.');
+        FetchBcvRateJob::dispatch();
+
+        $this->info('Tasa BCV encolada para actualizarse automáticamente.');
 
         return self::SUCCESS;
     }

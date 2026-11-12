@@ -35,4 +35,9 @@ return [
         ],
     ],
 
+    // BR-02: fuente automática de la tasa BCV.
+    'bcv' => [
+        'rate_url' => env('BCV_RATE_URL', 'https://ve.dolarapi.com/v1/dolares/oficial'),
+    ],
+
 ];

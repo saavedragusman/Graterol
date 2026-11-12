@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 use App\Domain\Settings\Actions\RegisterExchangeRateAction;
 use App\Domain\Settings\Models\ExchangeRate;
+use App\Jobs\FetchBcvRateJob;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Queue;
 
 uses(RefreshDatabase::class);
 
@@ -32,6 +34,10 @@ it('never updates or deletes a previous rate when a new one is registered [BR-02
     expect(ExchangeRate::count())->toBe(2);
 });
 
-it('runs bcv:fetch as a stub without calling any API [BR-02]', function () {
+it('queues the automatic BCV fetch job instead of calling the API inline [BR-02]', function () {
+    Queue::fake();
+
     $this->artisan('bcv:fetch')->assertExitCode(0);
+
+    Queue::assertPushed(FetchBcvRateJob::class);
 });
