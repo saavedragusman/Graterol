@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Vender por peso — móvil</title>
+<!-- Referencia visual estática (no es código de producción). Reglas y tokens: docs/design.md. Datos de ejemplo. -->
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&amp;family=Figtree:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#A51016}a:hover{color:#6E0A0F}
+</style>
+</head>
+<body>
+<div style="width: 390px; height: 844px; position: relative; overflow: hidden; background: #F7F3EE; font-family: Figtree, system-ui, sans-serif; color: #1F1A17">
+
+  <header style="background: #FFFFFF; padding: 14px 16px 12px; display: flex; flex-direction: column; gap: 12px; border-bottom: 1px solid #E6DFD7">
+    <div style="display: flex; align-items: center; gap: 10px">
+      <a href="m-inicio.html" aria-label="Volver" style="width: 44px; height: 44px; border-radius: 14px; background: #F7F3EE; color: #1F1A17; display: flex; align-items: center; justify-content: center">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M11 18l-6-6 6-6"/></svg>
+      </a>
+      <div style="flex: 1; display: flex; flex-direction: column">
+        <span style="font-family: 'Baloo 2', sans-serif; font-weight: 700; font-size: 22px; line-height: 1.1">Nueva venta</span>
+        <span style="font-size: 13px; color: #6B625C">Caja 1 · Consumidor final</span>
+      </div>
+      <a href="m-cobro.html" style="height: 44px; padding: 0 12px; border-radius: 14px; background: #A51016; color: #FFFFFF; display: flex; align-items: center; gap: 8px; text-decoration: none; font-weight: 700; font-size: 15px; font-variant-numeric: tabular-nums">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="20" r="1.5"/><circle cx="18" cy="20" r="1.5"/><path d="M2 3h3l2.6 12.4a1 1 0 0 0 1 .8h9.7a1 1 0 0 0 1-.8L21 7H6"/></svg>
+        2 · $ 11,30
+      </a>
+    </div>
+    <div style="display: flex; gap: 8px">
+      <label for="v-buscar" style="flex: 1; height: 48px; border-radius: 14px; background: #F7F3EE; display: flex; align-items: center; gap: 10px; padding: 0 14px; color: #6B625C">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+        <input id="v-buscar" placeholder="Buscar producto o código" style="border: 0; background: transparent; font: 400 16px Figtree, sans-serif; color: #1F1A17; flex: 1; min-width: 0; outline: none">
+      </label>
+      <button type="button" aria-label="Escanear etiqueta de balanza" style="width: 48px; height: 48px; border-radius: 14px; border: 1.5px solid #A51016; background: #FFFFFF; color: #A51016; display: flex; align-items: center; justify-content: center">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 7V4h3M21 7V4h-3M3 17v3h3M21 17v3h-3M7 8v8M10 8v8M13 8v8M17 8v8"/></svg>
+      </button>
+    </div>
+    <div style="display: flex; gap: 8px; overflow: hidden">
+      <span style="padding: 8px 14px; border-radius: 999px; background: #F7F3EE; font-size: 14px; font-weight: 600; white-space: nowrap">Todo</span>
+      <span style="padding: 8px 14px; border-radius: 999px; background: #A51016; color: #FFFFFF; font-size: 14px; font-weight: 600; white-space: nowrap">Pollo</span>
+      <span style="padding: 8px 14px; border-radius: 999px; background: #F7F3EE; font-size: 14px; font-weight: 600; white-space: nowrap">Res</span>
+      <span style="padding: 8px 14px; border-radius: 999px; background: #F7F3EE; font-size: 14px; font-weight: 600; white-space: nowrap">Cerdo</span>
+      <span style="padding: 8px 14px; border-radius: 999px; background: #F7F3EE; font-size: 14px; font-weight: 600; white-space: nowrap">Charcutería</span>
+    </div>
+  </header>
+
+  <div style="padding: 14px 16px; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px">
+    <div style="background: #FFFFFF; border-radius: 18px; padding: 14px; display: flex; flex-direction: column; gap: 6px">
+      <span style="font-weight: 700; font-size: 15px">Pollo entero</span>
+      <span style="font-family: 'Baloo 2', sans-serif; font-weight: 700; font-size: 20px; color: #6E0A0F">$ 3,20<span style="font-size: 13px; color: #6B625C; font-family: Figtree, sans-serif; font-weight: 500"> /kg</span></span>
+      <span style="font-size: 12px; color: #6B625C">42,6 kg · (E)</span>
+    </div>
+    <div style="background: #FFFFFF; border-radius: 18px; padding: 14px; display: flex; flex-direction: column; gap: 6px; box-shadow: inset 0 0 0 2px #A51016">
+      <span style="font-weight: 700; font-size: 15px">Pechuga</span>
+      <span style="font-family: 'Baloo 2', sans-serif; font-weight: 700; font-size: 20px; color: #6E0A0F">$ 5,50<span style="font-size: 13px; color: #6B625C; font-family: Figtree, sans-serif; font-weight: 500"> /kg</span></span>
+      <span style="font-size: 12px; color: #6B625C">18,2 kg · (E)</span>
+    </div>
+    <div style="background: #FFFFFF; border-radius: 18px; padding: 14px; display: flex; flex-direction: column; gap: 6px">
+      <span style="font-weight: 700; font-size: 15px">Muslo</span>
+      <span style="font-family: 'Baloo 2', sans-serif; font-weight: 700; font-size: 20px; color: #6E0A0F">$ 3,90<span style="font-size: 13px; color: #6B625C; font-family: Figtree, sans-serif; font-weight: 500"> /kg</span></span>
+      <span style="font-size: 12px; color: #6B625C">11,0 kg · (E)</span>
+    </div>
+    <div style="background: #FFFFFF; border-radius: 18px; padding: 14px; display: flex; flex-direction: column; gap: 6px">
+      <span style="font-weight: 700; font-size: 15px">Alas</span>
+      <span style="font-family: 'Baloo 2', sans-serif; font-weight: 700; font-size: 20px; color: #6E0A0F">$ 3,40<span style="font-size: 13px; color: #6B625C; font-family: Figtree, sans-serif; font-weight: 500"> /kg</span></span>
+      <span style="font-size: 12px; color: #6B625C">6,4 kg · (E)</span>
+    </div>
+  </div>
+
+  <div aria-hidden="true" style="position: absolute; left: 0; right: 0; top: 0; bottom: 0; background: rgba(31,26,23,0.45)"></div>
+
+  <section aria-label="Agregar pechuga al ticket" style="position: absolute; left: 0; right: 0; bottom: 0; background: #FFFFFF; border-radius: 28px 28px 0 0; padding: 10px 16px 18px; display: flex; flex-direction: column; gap: 12px">
+    <div style="width: 40px; height: 5px; border-radius: 999px; background: #E6DFD7; align-self: center"></div>
+    <div style="display: flex; align-items: center; gap: 10px">
+      <div style="flex: 1; display: flex; flex-direction: column; gap: 2px">
+        <span style="font-family: 'Baloo 2', sans-serif; font-weight: 700; font-size: 22px; line-height: 1.1">Pechuga de pollo</span>
+        <span style="font-size: 14px; color: #6B625C">$ 5,50 por kg · <span style="color: #1E7A46; font-weight: 700">(E) exento</span></span>
+      </div>
+      <button type="button" aria-label="Cerrar" style="width: 44px; height: 44px; border-radius: 14px; border: 0; background: #F7F3EE; color: #1F1A17; display: flex; align-items: center; justify-content: center">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>
+      </button>
+    </div>
+    <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 4px; padding: 4px; border-radius: 14px; background: #F7F3EE">
+      <button type="button" style="height: 40px; border: 0; border-radius: 10px; background: #FFFFFF; font: 700 14px Figtree, sans-serif; color: #1F1A17; box-shadow: 0 1px 3px rgba(0,0,0,0.08)">Digitar peso</button>
+      <button type="button" style="height: 40px; border: 0; border-radius: 10px; background: transparent; font: 600 14px Figtree, sans-serif; color: #6B625C">Leer etiqueta</button>
+    </div>
+    <div style="display: flex; align-items: flex-end; justify-content: space-between; padding: 8px 4px; border-bottom: 2px solid #A51016">
+      <span style="font-family: 'Baloo 2', sans-serif; font-weight: 800; font-size: 48px; line-height: 1; font-variant-numeric: tabular-nums">1,250<span style="font-size: 22px; color: #6B625C; font-weight: 600"> kg</span></span>
+      <span style="display: flex; flex-direction: column; align-items: flex-end; font-variant-numeric: tabular-nums">
+        <strong style="font-size: 20px; color: #6E0A0F">$ 6,88</strong>
+        <span style="font-size: 13px; color: #6B625C">Bs 1.606,89</span>
+      </span>
+    </div>
+    <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px">
+      <button type="button" style="height: 50px; border: 0; border-radius: 14px; background: #F7F3EE; font: 600 22px Figtree, sans-serif; color: #1F1A17">1</button>
+      <button type="button" style="height: 50px; border: 0; border-radius: 14px; background: #F7F3EE; font: 600 22px Figtree, sans-serif; color: #1F1A17">2</button>
+      <button type="button" style="height: 50px; border: 0; border-radius: 14px; background: #F7F3EE; font: 600 22px Figtree, sans-serif; color: #1F1A17">3</button>
+      <button type="button" style="height: 50px; border: 0; border-radius: 14px; background: #F7F3EE; font: 600 22px Figtree, sans-serif; color: #1F1A17">4</button>
+      <button type="button" style="height: 50px; border: 0; border-radius: 14px; background: #F7F3EE; font: 600 22px Figtree, sans-serif; color: #1F1A17">5</button>
+      <button type="button" style="height: 50px; border: 0; border-radius: 14px; background: #F7F3EE; font: 600 22px Figtree, sans-serif; color: #1F1A17">6</button>
+      <button type="button" style="height: 50px; border: 0; border-radius: 14px; background: #F7F3EE; font: 600 22px Figtree, sans-serif; color: #1F1A17">7</button>
+      <button type="button" style="height: 50px; border: 0; border-radius: 14px; background: #F7F3EE; font: 600 22px Figtree, sans-serif; color: #1F1A17">8</button>
+      <button type="button" style="height: 50px; border: 0; border-radius: 14px; background: #F7F3EE; font: 600 22px Figtree, sans-serif; color: #1F1A17">9</button>
+      <button type="button" style="height: 50px; border: 0; border-radius: 14px; background: #F7F3EE; font: 600 22px Figtree, sans-serif; color: #1F1A17">,</button>
+      <button type="button" style="height: 50px; border: 0; border-radius: 14px; background: #F7F3EE; font: 600 22px Figtree, sans-serif; color: #1F1A17">0</button>
+      <button type="button" aria-label="Borrar" style="height: 50px; border: 0; border-radius: 14px; background: #F7F3EE; color: #1F1A17; display: flex; align-items: center; justify-content: center">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 5H8l-6 7 6 7h13z"/><path d="m12 9 6 6M18 9l-6 6"/></svg>
+      </button>
+    </div>
+    <button type="button" style="height: 56px; border: 0; border-radius: 16px; background: #A51016; color: #FFFFFF; font: 700 17px Figtree, sans-serif; display: flex; align-items: center; justify-content: center; gap: 10px; font-variant-numeric: tabular-nums">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+      Agregar al ticket · $ 6,88
+    </button>
+  </section>
+</div>
+</body>
+</html>
