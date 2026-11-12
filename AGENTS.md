@@ -37,6 +37,8 @@ La carga de la tasa BCV (`bcv:fetch`) llama a la API real; solo se ejecuta si el
 
 Un nivel inferior nunca contradice a uno superior; si lo hace, se detiene y se reporta. Si Engram y el repo difieren, manda el repo.
 
+**Referencia de interfaz:** `docs/design.md` (tokens, componentes y patrones) y `docs/design/screens/*.html` (pantallas estáticas con datos de ejemplo). Mandan solo sobre estilos, layout y componentes, nunca sobre los niveles 1–4. Lo que aparece dibujado sin BR ni hito no se implementa: se registra como `[DEC-PENDIENTE]`.
+
 ## 4. Flujo ODD
 ### 4.1 Clasificación
 | Cambio | Ruta |
@@ -49,7 +51,7 @@ Un nivel inferior nunca contradice a uno superior; si lo hace, se detiene y se r
 1. **Fuente**: hito del roadmap y pedido literal del humano.
 2. **Alcance**: IDs BR-xx cubiertos. Nada fuera de ellos.
 3. **Decisiones**: `[DEC-PENDIENTE]` y su resolución debajo («Resuelta: A, 2026-11-20»), o «Sin decisiones pendientes».
-4. **Diseño técnico**: tablas, migraciones, Actions, Policies, permisos, rutas y pantallas.
+4. **Diseño técnico**: tablas, migraciones, Actions, Policies, permisos, rutas y pantallas. Cada pantalla cita su referencia en `docs/design/screens/` y los componentes de `docs/design.md` §3 que usa.
 5. **Tareas**: checklist; cada tarea cita sus BR y sus dependencias (`depende de 3.1`).
 6. **Evidencia**: test por cada BR, resultado de los comandos de §2, hashes de los commits y siguiente paso.
 
@@ -78,6 +80,7 @@ La pregunta va en Decisiones del documento ODD y se avisa al humano; mientras ta
 - Controlador o recurso Filament: valida (FormRequest), autoriza (Policy) y delega en `app/Domain/<Module>/Actions`, donde viven la regla y la transacción.
 - Permisos `module.action` declarados en un solo enum o seeder.
 - Vue: páginas en `resources/js/pages/<module>/`, componentes en `resources/js/components/`.
+- Interfaz: antes de crear o cambiar una pantalla se lee `docs/design.md`. Colores, fuentes y radios solo por los tokens de `docs/design.md` §2; no se copian estilos en línea ni hex de las pantallas de referencia.
 - Las migraciones aplicadas en un entorno compartido no se editan: se crea una nueva.
 - Seeds con datos ficticios; nunca precios, costos ni clientes reales.
 
@@ -88,6 +91,7 @@ La pregunta va en Decisiones del documento ODD y se avisa al humano; mientras ta
 ## 8. Definition of Done
 - [ ] Las BR del alcance tienen test en verde.
 - [ ] Respeta la constitution: Policies, transacciones, auditoría donde aplica (C15), sin float.
+- [ ] Las pantallas nuevas usan los tokens y componentes de `docs/design.md`.
 - [ ] Pasan `artisan test`, `pint --test`, `composer types:check`, `pnpm build` y GGA.
 - [ ] El documento ODD está completo, con su Evidencia.
 - [ ] El humano confirmó el cierre.
@@ -98,7 +102,7 @@ Solo se activa cuando el humano lo indica, y para los hitos o tareas que nombre.
 - **Git:** commits sí. Prohibido push, PR, merge, rebase, cherry-pick, amend, `reset`, `clean -fd`, `branch -D`, `stash drop` y cualquier `--force`.
 - **Base de datos:** las pruebas corren solo contra `testing`; si `phpunit.xml` no apunta a ella, se detiene. No se ejecutan `migrate*`, `db:seed` ni `db:wipe` sobre la base de desarrollo. Prohibido DROP, TRUNCATE y DELETE o UPDATE sin WHERE.
 - **Dependencias e infraestructura:** prohibido `composer require/update/remove`, `pnpm add/update/remove` y editar lockfiles, `.env`, `compose.yaml` o Dockerfiles. Prohibido `down -v` y `docker volume rm`. Si falta una dependencia, se anota.
-- **Documentos:** no se editan constitution, business-rules, roadmap ni AGENTS. Sí el documento ODD.
+- **Documentos:** no se editan constitution, business-rules, roadmap, AGENTS, `docs/design.md` ni `docs/design/screens/`. Sí el documento ODD.
 - **Pruebas:** no se borran, saltan ni debilitan. Si un error persiste tras 3 intentos, se documenta y se pasa a otra tarea.
 - **Efectos externos:** `MAIL_MAILER=log`; no se llama a la API del BCV ni a la del SENIAT o imprenta, ni se imprime.
 - **Al terminar:** `.reports/REPORTE-SESION-<n>.md` con commits, decisiones técnicas, bloqueos, dependencias faltantes, `[DEC-PENDIENTE]` y candidatos a review `high`.
