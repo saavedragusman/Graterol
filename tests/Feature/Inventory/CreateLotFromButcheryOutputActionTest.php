@@ -55,6 +55,23 @@ it('registers the butchery_out movement linked to the order line [BR-12][C10]', 
         ->and($movement->reference_id)->toBe(7);
 });
 
+it('rejects creating an output batch with zero or negative weight [BR-12]', function () {
+    $user = User::factory()->create();
+    $filete = createCut('Filete');
+
+    $create = fn () => (new CreateLotFromButcheryOutputAction)->execute(
+        sourceId: 4,
+        productId: $filete->id,
+        weightKg: '0.000',
+        totalCost: '0.0000',
+        currency: 'VES',
+        exchangeRate: '85.5000',
+        userId: $user->id,
+    );
+
+    expect($create)->toThrow(InvalidArgumentException::class);
+});
+
 it('rejects creating two output batches from the same order line [C10]', function () {
     $user = User::factory()->create();
     $filete = createCut('Filete');

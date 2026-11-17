@@ -58,7 +58,7 @@ it('saves the actual weight of a cut, including zero [BR-09]', function () {
     expect($updatedZero->actual_weight_kg)->toBe('0.000');
 });
 
-it('rejects registering weight on a line of a closed or voided order [C12]', function () {
+it('rejects registering weight on a line of a closed order [C12]', function () {
     $user = User::factory()->create();
     $chicken = createRawMaterial();
     $filete = createCut('Filete');
@@ -90,6 +90,45 @@ it('rejects registering weight on a line of a closed or voided order [C12]', fun
     );
 
     $order->update(['status' => 'closed']);
+    $line = $order->lines->first();
+
+    $register = fn () => (new RegisterButcheryOutputWeightAction)->execute($line->id, '5.000');
+
+    expect($register)->toThrow(RuntimeException::class);
+});
+
+it('rejects registering weight on a line of a voided order [C12]', function () {
+    $user = User::factory()->create();
+    $chicken = createRawMaterial();
+    $filete = createCut('Filete');
+
+    (new CreateButcheryTemplateAction)->execute(
+        rawMaterialProductId: $chicken->id,
+        name: 'Pollo entero',
+        expectedShrinkagePercent: '0.00',
+        lines: [['cut_product_id' => $filete->id, 'expected_yield_percent' => '100.00']],
+        createdByUserId: $user->id,
+    );
+
+    $batch = (new CreateLotFromPurchaseLineAction)->execute(
+        sourceType: 'purchase_line',
+        sourceId: 1,
+        productId: $chicken->id,
+        pieces: null,
+        receivedWeightKg: '10.000',
+        totalCost: '20.0000',
+        currency: 'VES',
+        exchangeRate: '85.5000',
+        userId: $user->id,
+    );
+
+    $order = (new OpenButcheryOrderAction)->execute(
+        batchId: $batch->id,
+        inputWeightKg: '10.000',
+        butcherId: $user->id,
+    );
+
+    $order->update(['status' => 'voided']);
     $line = $order->lines->first();
 
     $register = fn () => (new RegisterButcheryOutputWeightAction)->execute($line->id, '5.000');

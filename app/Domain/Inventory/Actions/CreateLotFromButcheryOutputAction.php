@@ -8,6 +8,7 @@ use App\Domain\Inventory\Models\Batch;
 use App\Domain\Inventory\Models\InventoryMovement;
 use BcMath\Number;
 use Illuminate\Support\Facades\DB;
+use InvalidArgumentException;
 
 /**
  * BR-12/C10: cada corte con peso real > 0 nace como su propio lote, con el
@@ -27,6 +28,10 @@ class CreateLotFromButcheryOutputAction
         string $exchangeRate,
         int $userId,
     ): Batch {
+        if ((new Number($weightKg))->compare(new Number('0')) <= 0) {
+            throw new InvalidArgumentException('Solo se crea un lote de salida para un corte con peso real mayor a cero (BR-12).');
+        }
+
         $unitCost = (string) (new Number($totalCost))->div(new Number($weightKg), 4);
 
         return DB::transaction(function () use ($sourceId, $productId, $weightKg, $totalCost, $currency, $exchangeRate, $userId, $unitCost) {

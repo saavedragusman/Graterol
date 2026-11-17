@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Butchery\Actions;
 
+use App\Domain\Butchery\Models\ButcheryOrder;
 use App\Domain\Butchery\Models\ButcheryOrderLine;
 use BcMath\Number;
 use Illuminate\Support\Facades\DB;
@@ -23,9 +24,10 @@ class RegisterButcheryOutputWeightAction
         }
 
         return DB::transaction(function () use ($orderLineId, $actualWeightKg) {
-            $line = ButcheryOrderLine::with('order')->findOrFail($orderLineId);
+            $line = ButcheryOrderLine::findOrFail($orderLineId);
+            $order = ButcheryOrder::whereKey($line->order_id)->lockForUpdate()->first();
 
-            if ($line->order->status !== 'open') {
+            if ($order === null || $order->status !== 'open') {
                 throw new RuntimeException('Solo se puede registrar peso en una orden abierta (C12).');
             }
 
