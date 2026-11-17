@@ -286,7 +286,14 @@ Policies: `ButcheryTemplatePolicy`, `ButcheryOrderPolicy`. Sin `hasRole()` ni `a
 
 ## 6. Evidencia
 
-Pendiente — se completa durante la implementación, igual que en M0/M2.
+### Tramos (commits)
+| Tramo | Contenido | Commit | Pruebas |
+|---|---|---|---|
+| 1 | Documento aprobado; migraciones `settings`/`butchery_*`; modelos y Policies; permisos `butchery.manage-templates`/`butchery.void`; `AllocateButcheryCostsAction` con el caso dorado BR-13 exacto | `f578dab` | 89 passed (6 nuevos de `AllocateButcheryCostsActionTest`, incluido el caso dorado) |
+
+Nota de tamaño: el tramo 1 quedó en ~1000 líneas (el documento ODD en sí son ~400); GGA lo aprobó pero avisó que superó el objetivo de ~400 líneas por tramo. Los tramos siguientes se mantienen más chicos.
+
+Pendiente el resto — se completa durante la implementación, igual que en M0/M2.
 
 ## 7. Siguiente paso
 

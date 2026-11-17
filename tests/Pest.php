@@ -1,5 +1,6 @@
 <?php
 
+use App\Domain\Catalog\Models\Product;
 use Tests\TestCase;
 
 /*
@@ -18,3 +19,35 @@ pest()->extend(TestCase::class)
 
 pest()->extend(PHPUnit\Framework\TestCase::class)
     ->in('Architecture');
+
+/*
+|--------------------------------------------------------------------------
+| Helpers de dominio (Butchery)
+|--------------------------------------------------------------------------
+*/
+
+function createRawMaterial(string $name = 'Pollo entero'): Product
+{
+    return Product::create([
+        'name' => $name,
+        'product_type' => 'raw_material',
+        'unit' => 'kg',
+        'product_category' => 'natural_meat',
+        'tax_rate' => 0,
+        'is_tax_exempt' => true,
+        'active' => true,
+    ]);
+}
+
+function createCut(string $name): Product
+{
+    return Product::create([
+        'name' => $name,
+        'product_type' => 'derived',
+        'unit' => 'kg',
+        'product_category' => 'natural_meat',
+        'tax_rate' => 0,
+        'is_tax_exempt' => true,
+        'active' => true,
+    ]);
+}
