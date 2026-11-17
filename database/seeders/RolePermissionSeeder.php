@@ -39,6 +39,7 @@ class RolePermissionSeeder extends Seeder
 
             $carnicero = Role::firstOrCreate(['name' => 'carnicero']);
             $carnicero->permissions()->sync([
+                $permissions[PermissionKey::PurchasingView->value]->id,
                 $permissions[PermissionKey::PurchasingReceive->value]->id,
                 $permissions[PermissionKey::ButcheryProcess->value]->id,
             ]);

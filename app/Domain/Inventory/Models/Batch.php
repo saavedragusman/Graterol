@@ -12,7 +12,11 @@ class Batch extends Model
         'source_type',
         'source_id',
         'unit',
+        'pieces',
         'unit_cost',
+        'total_cost',
+        'currency',
+        'exchange_rate',
         'received_at',
         'expires_at',
     ];
@@ -21,6 +25,8 @@ class Batch extends Model
     {
         return [
             'unit_cost' => 'decimal:4',
+            'total_cost' => 'decimal:4',
+            'exchange_rate' => 'decimal:4',
             'received_at' => 'datetime',
             'expires_at' => 'datetime',
         ];

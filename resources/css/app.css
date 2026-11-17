@@ -6,4 +6,28 @@
 @theme {
     --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
         'Segoe UI Symbol', 'Noto Color Emoji';
+
+    /* docs/design.md §2.1 — tokens de color, valores por defecto del piloto. */
+    --color-brand: #a51016;
+    --color-brand-strong: #6e0a0f;
+    --color-brand-night: #2a1215;
+    --color-brand-soft: #fbe9ea;
+    --color-accent: #f6b01a;
+    --color-on-accent: #2b1d00;
+    --color-accent-soft: #fdf0cf;
+    --color-on-accent-soft: #6b4a00;
+    --color-canvas: #f7f3ee;
+    --color-surface: #ffffff;
+    --color-line: #e6dfd7;
+    --color-line-soft: #f0eae3;
+    --color-ink: #1f1a17;
+    --color-ink-muted: #6b625c;
+    --color-success: #1e7a46;
+    --color-success-soft: #e5f3ea;
+    --color-warning: #b45309;
+    --color-warning-soft: #fdf1e3;
+    --color-info: #1d4ed8;
+    --color-info-soft: #e8eefc;
+    --color-chart-neutral: #8c827b;
+    --color-chart-muted: #e7b7b9;
 }
