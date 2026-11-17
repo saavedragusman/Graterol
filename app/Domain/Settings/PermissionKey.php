@@ -18,6 +18,8 @@ enum PermissionKey: string
     case PurchasingVoid = 'purchasing.void';
     case PurchasingManageSuppliers = 'purchasing.manage-suppliers';
     case ButcheryProcess = 'butchery.process';
+    case ButcheryManageTemplates = 'butchery.manage-templates';
+    case ButcheryVoid = 'butchery.void';
     case SalesVoid = 'sales.void';
     case SalesReturn = 'sales.return';
 }
