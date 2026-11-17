@@ -3,9 +3,7 @@
 use App\Http\Controllers\Purchasing\ReceiptController;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', function () {
-    return view('welcome');
-});
+Route::redirect('/', '/admin');
 
 // M2/DEC-01: recepción con pesaje, PWA (Inertia). Comparte la sesión
 // autenticada del panel; la PWA sin conexión completa es de M5.
