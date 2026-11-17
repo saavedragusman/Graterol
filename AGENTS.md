@@ -21,6 +21,7 @@ Todo corre en Sail dentro de WSL. Los agentes usan `./vendor/bin/sail`, nunca `p
 ./vendor/bin/sail composer types:check         # Larastan nivel 6
 ./vendor/bin/sail pint
 ./vendor/bin/sail pnpm build
+./vendor/bin/sail pnpm test                    # Vitest: componentes Vue en tests/js/
 ./vendor/bin/sail artisan migrate:fresh --seed # SOLO en local
 ```
 Las pruebas usan la base `testing` de PostgreSQL, nunca SQLite: el trigger del kardex solo existe en PostgreSQL.
@@ -92,7 +93,7 @@ La pregunta va en Decisiones del documento ODD y se avisa al humano; mientras ta
 - [ ] Las BR del alcance tienen test en verde.
 - [ ] Respeta la constitution: Policies, transacciones, auditoría donde aplica (C15), sin float.
 - [ ] Las pantallas nuevas usan los tokens y componentes de `docs/design.md`.
-- [ ] Pasan `artisan test`, `pint --test`, `composer types:check`, `pnpm build` y GGA.
+- [ ] Pasan `artisan test`, `pint --test`, `composer types:check`, `pnpm build`, `pnpm test` y GGA.
 - [ ] El documento ODD está completo, con su Evidencia.
 - [ ] El humano confirmó el cierre.
 
