@@ -232,6 +232,12 @@ Total final: **83 tests en verde** (incluye los 33 heredados de M0/M1, sin rompe
 - `vue-tsc` falla por incompatibilidad de versiones (`vue-tsc@3.3.14` vs `typescript@7.0.2`, TS7 es muy reciente). No bloquea: el DoD de AGENTS §8 pide `pnpm build` (en verde), no `vue-tsc`.
 - GGA encontró en revisión una recepción parcial (algunas líneas pesadas, no todas) que daba un 500 en vez de un 422: corregido con una validación cruzada en `ConfirmReceiptRequest` antes de llegar a `ReceivePurchaseAction`.
 
+**Hallazgos del QA manual (`report/`, prueba B PWA 2 y panel):**
+- Al escribir el peso en `purchasing/receipts/{id}` la pantalla quedaba en blanco [BR-06]. Causa: `v-model` sobre `type="number"` entrega un `number` y `allWeighed` llamaba `.trim()` sobre él, lo que lanzaba un error en el render. El input pasó a `type="text"` con `inputmode="decimal"`, que conserva el teclado numérico. No hay test automatizado: el proyecto no tiene runner de frontend (Vitest/Dusk), así que queda como riesgo hasta que se agregue uno.
+- Crear un proveedor ahora vuelve al listado en lugar de quedarse en el formulario de edición.
+- La raíz `/` redirige a `/admin` y se eliminó la vista `welcome` del esqueleto de Laravel.
+- Después de los arreglos: `artisan test` 83 passed, 250 assertions; `pint --test`, `types:check` y `pnpm build` en verde; GGA aprobó los 3 commits.
+
 ### Comandos (branch `feat/m2-purchasing`, estado final verificado)
 | Comando | Resultado |
 |---|---|
@@ -242,7 +248,7 @@ Total final: **83 tests en verde** (incluye los 33 heredados de M0/M1, sin rompe
 | GGA | aprobado en 12 de 13 commits; 1 fallo corregido en el acto (ver desviaciones) |
 
 ### Commits
-`5f0bcaf` doc aprobado · `09b4c6b` migraciones · `7d4049f` modelos · `8548026` permisos/Policies · `fd24806` AllocateCosts · `e67d3b5` CreatePurchase/UpdateDraftPurchase · `ca2bfc5` CreateLotFromPurchaseLine · `cf97c1b` ReceivePurchase (cierra BR-06/BR-07) · `6043cbe` VoidPurchase/auditoría · `1157c16` Filament · `3f2aa4a` evidencia parcial · `b5e18d8` PWA Inertia/Vue · `6a97d06` fix recepción parcial.
+`5f0bcaf` doc aprobado · `09b4c6b` migraciones · `7d4049f` modelos · `8548026` permisos/Policies · `fd24806` AllocateCosts · `e67d3b5` CreatePurchase/UpdateDraftPurchase · `ca2bfc5` CreateLotFromPurchaseLine · `cf97c1b` ReceivePurchase (cierra BR-06/BR-07) · `6043cbe` VoidPurchase/auditoría · `1157c16` Filament · `3f2aa4a` evidencia parcial · `b5e18d8` PWA Inertia/Vue · `6a97d06` fix recepción parcial · `da93717` cierre de evidencia · `67f1932` fix pesaje PWA (QA) · `0ee2df4` crear proveedor vuelve al listado (QA) · `5ba6304` raíz redirige al panel (QA).
 
 ### Siguiente paso
 Confirmación de cierre del hito por el humano (AGENTS §4.3 puerta 2). Después: decidir push/PR (el agente no lo hace sin que se le pida, C22), y M3 — Despiece y costeo (`odd/tasks/m3-butchery.md`).
