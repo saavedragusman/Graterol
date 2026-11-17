@@ -93,9 +93,7 @@ function confirm(): void {
                         Kg recibidos
                         <input
                             v-model="weighed[line.id].received_weight_kg"
-                            type="number"
-                            step="0.001"
-                            min="0.001"
+                            type="text"
                             inputmode="decimal"
                             class="mt-1 block w-full rounded-md border border-line px-3 py-2 text-[16px] text-ink focus:border-2 focus:border-brand focus:outline-none"
                             placeholder="0.000"
