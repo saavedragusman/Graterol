@@ -2,13 +2,16 @@
 
 namespace App\Domain\Inventory\Models;
 
+use App\Domain\Catalog\Models\Product;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Batch extends Model
 {
     protected $fillable = [
         'code',
+        'product_id',
         'source_type',
         'source_id',
         'unit',
@@ -38,5 +41,13 @@ class Batch extends Model
     public function movements(): HasMany
     {
         return $this->hasMany(InventoryMovement::class);
+    }
+
+    /**
+     * @return BelongsTo<Product, $this>
+     */
+    public function product(): BelongsTo
+    {
+        return $this->belongsTo(Product::class);
     }
 }

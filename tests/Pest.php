@@ -1,6 +1,7 @@
 <?php
 
 use App\Domain\Catalog\Models\Product;
+use App\Domain\Catalog\ProductType;
 use Tests\TestCase;
 
 /*
@@ -30,7 +31,7 @@ function createRawMaterial(string $name = 'Pollo entero'): Product
 {
     return Product::create([
         'name' => $name,
-        'product_type' => 'raw_material',
+        'product_type' => ProductType::RawMaterial->value,
         'unit' => 'kg',
         'product_category' => 'natural_meat',
         'tax_rate' => 0,
@@ -43,7 +44,7 @@ function createCut(string $name): Product
 {
     return Product::create([
         'name' => $name,
-        'product_type' => 'derived',
+        'product_type' => ProductType::Derived->value,
         'unit' => 'kg',
         'product_category' => 'natural_meat',
         'tax_rate' => 0,

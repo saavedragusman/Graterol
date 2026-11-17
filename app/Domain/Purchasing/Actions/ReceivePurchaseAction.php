@@ -58,6 +58,7 @@ class ReceivePurchaseAction
                 $batch = (new CreateLotFromPurchaseLineAction)->execute(
                     sourceType: 'purchase_line',
                     sourceId: $line->id,
+                    productId: $line->product_id,
                     pieces: $receivedPieces,
                     receivedWeightKg: $receivedWeight,
                     totalCost: $totalCost->toInternalString(),
