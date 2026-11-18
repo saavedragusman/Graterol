@@ -2,7 +2,7 @@
 
 > Documento ODD del hito M3. Rama: `feat/m3-butchery` (se crea al aprobar este documento).
 > Copia en Engram: `odd/m3-butchery/tasks`.
-> **Estado: decisiones de §3 cerradas (2026-11-17) — pendiente de la aprobación final del humano para empezar la tarea 1.1** (AGENTS §4.3 puerta 1).
+> **Estado: implementación completa (2026-11-17). Verificador independiente aprobó con observaciones no bloqueantes. Pendiente solo la confirmación de cierre del humano** (AGENTS §4.3 puerta 2).
 
 ## 1. Fuente
 
@@ -287,14 +287,60 @@ Policies: `ButcheryTemplatePolicy`, `ButcheryOrderPolicy`. Sin `hasRole()` ni `a
 ## 6. Evidencia
 
 ### Tramos (commits)
-| Tramo | Contenido | Commit | Pruebas |
-|---|---|---|---|
-| 1 | Documento aprobado; migraciones `settings`/`butchery_*`; modelos y Policies; permisos `butchery.manage-templates`/`butchery.void`; `AllocateButcheryCostsAction` con el caso dorado BR-13 exacto | `f578dab` | 89 passed (6 nuevos de `AllocateButcheryCostsActionTest`, incluido el caso dorado) |
+| Tramo | Contenido | Commit |
+|---|---|---|
+| 1 | Documento aprobado; migraciones `settings`/`butchery_*`; modelos y Policies; permisos nuevos; `AllocateButcheryCostsAction` con el caso dorado exacto | `f578dab` |
+| 2 | `CreateButcheryTemplateAction`/`UpdateButcheryTemplateAction` | `ce22707` |
+| 3 | `batches.product_id` (M2, riesgo item 3: código compartido) | `3227bba` |
+| 4 | `OpenButcheryOrderAction` | `2e413da` |
+| 5 | `RegisterButcheryOutputWeightAction`, `CreateLotFromButcheryOutputAction` | `6255ce3` |
+| 6 | Observaciones de GGA sobre el tramo 5 | `bd8e822` |
+| 7 | `CloseButcheryOrderAction` (riesgo item 1: costeo, C18) | `6029678` |
+| 8 | `VoidButcheryOrderAction` | `26bdeb1` |
+| 9 | Filament: `ButcheryTemplateResource`, `ButcheryOrderResource` | `6e4ad84` |
+| 10 | Umbral de desviación desde `settings` (hallazgo de GGA) | `5030482` |
+| 11 | PWA: `OrdersIndex.vue`, `OrderShow.vue` | `38c6ef8` |
+| 12 | Observaciones del verificador independiente (O1, O3) | `31138c1` |
 
-Nota de tamaño: el tramo 1 quedó en ~1000 líneas (el documento ODD en sí son ~400); GGA lo aprobó pero avisó que superó el objetivo de ~400 líneas por tramo. Los tramos siguientes se mantienen más chicos.
+Nota de tamaño: el tramo 1 quedó en ~1000 líneas (incluye el documento ODD, ~400); GGA lo aprobó avisando que superó el objetivo de ~400 por tramo. Los tramos siguientes se mantuvieron más chicos, cada uno con su propia corrida de GGA.
 
-Pendiente el resto — se completa durante la implementación, igual que en M0/M2.
+### Pruebas y calidad (estado final, rama `feat/m3-butchery`)
+| Comando | Resultado |
+|---|---|
+| `sail artisan test` | **142 passed**, 432 assertions (0 fallas; incluye los 95 heredados de M0-M2, ninguno roto) |
+| `sail composer types:check` | 0 errores (Larastan nivel 6) |
+| `sail pint --test` | passed |
+| `sail pnpm build` | en verde (588 módulos) |
+| `sail pnpm test` (Vitest) | 3 passed |
+| GGA | aprobado en los 12 commits (2 corregidos en el acto: tramo 6 y tramo 10) |
 
-## 7. Siguiente paso
+### Criterio de cierre del roadmap
+BR-08 a BR-13 en verde, **incluido el caso dorado**: `CloseButcheryOrderActionTest::reproduces_the_golden_case_exactly` y `::displays_the_golden_case_costs_exactly_as_br_13_states_them` reproducen los 6 valores de BR-13 (24,57 / 19,16 / 5,51 / 4,16 / 2,36 / 0,24) exactos, con Σ = US$ 56,00, usando `AllocateButcheryCostsAction` y `CloseButcheryOrderAction` reales (sin atajos, confirmado por el verificador independiente).
 
-Las 6 decisiones de §3 (DEC-00 a DEC-07) quedaron resueltas el 2026-11-17, todas con la opción recomendada. Falta solo la confirmación final del humano para crear la rama `feat/m3-butchery` y empezar la tarea 1.1 (AGENTS §4.3 puerta 1).
+### Verificador independiente y revisión 4R (roadmap: M3 = "feature + verificador + 4R", C18)
+`gentle_review` assess clasificó el rango de commits del hito como riesgo `medium` nativo; se escaló a `high` citando explícitamente el costeo (C18 nombra "costeo" como riesgo alto). Verificación independiente delegada a un subagente de solo lectura, que re-derivó a mano el caso dorado y repasó BR-08 a BR-13, DEC-04 (concurrencia), C10/C12/C14/C15, y dio veredicto por las 4 lentes (riesgo, resiliencia, legibilidad, confiabilidad):
+
+**Veredicto: aprobado con observaciones** (ninguna invalida BR-12/BR-13 ni deja un hueco en C10/C12/C14/C15).
+
+Observaciones atendidas en el tramo 12:
+- **O1** — faltaba un test que fijara los 6 valores de BR-13 a 2 decimales (pantalla), no solo a 4 (interno). Agregado.
+- **O3** (parcial) — `OpenButcheryOrderAction` validaba kg de entrada > 0 solo en el FormRequest, no en la Action (C5: el servidor manda). Agregada la validación en la Action y un test de que editar la plantilla no afecta una orden ya abierta (DEC-03).
+
+Observaciones que quedan como limitación conocida, documentadas, sin bloquear el cierre:
+- **O2** — `OpenButcheryOrderAction` no es idempotente ante un reenvío de la PWA (crea una segunda orden); acotado por la validación de saldo, mismo patrón ya aceptado en M2.
+- **O4** — crear/editar dos plantillas de la misma materia prima a la vez da un `QueryException` (500) en vez de un mensaje de dominio; el índice único parcial sí protege la integridad. `UpdateButcheryTemplateAction` no deja `AuditLog` de la calibración.
+- **O5** — `ViewButcheryOrder.php` usa `abort_unless(..., 403)`, igual que `ViewPurchase.php` desde M2 (ya aceptado en la obs. A1 del verificador de M0: el test de arquitectura C14 vigila el caso directo, no todas las variantes).
+- **O6** — `CloseButcheryOrderAction` no valida que la moneda del precio detal de cada corte coincida entre sí; no verificado contra la configuración real (en la práctica, un solo catalogo en USD).
+
+No verificado por el subagente (fuera de alcance de una revisión de solo lectura): concurrencia real con dos conexiones simultáneas, y las pantallas Vue/Filament contra `docs/design.md` a ojo (sí se verificó que solo usan tokens declarados, sin hex ni estilos en línea — ver hallazgo de GGA en el tramo 11, corregido antes de ese commit).
+
+## 7. Cierre
+
+Todas las tareas de §5 están hechas. Los criterios de cierre del roadmap para M3 se cumplen:
+
+1. BR-08 a BR-13 en verde, incluido el caso dorado exacto (§6).
+2. Verificador independiente: aprobado con observaciones no bloqueantes (§6).
+3. Revisión 4R: hecha dentro de la misma verificación (§6).
+4. 142 tests, Larastan y Pint en verde; `pnpm build`/`pnpm test` en verde.
+
+Siguiente paso: confirmación del humano para cerrar M3 (AGENTS §4.3 puerta 2). Después: decidir push/PR (el agente no lo hace sin que se le pida, C22), y M4 — Inventario (`odd/tasks/m4-inventory.md`).
