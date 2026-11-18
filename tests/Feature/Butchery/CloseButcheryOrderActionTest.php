@@ -14,6 +14,7 @@ use App\Domain\Inventory\Actions\CreateLotFromPurchaseLineAction;
 use App\Domain\Inventory\Models\Batch;
 use App\Domain\Inventory\Models\InventoryMovement;
 use App\Models\User;
+use App\Support\ValueObjects\Money;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 uses(RefreshDatabase::class);
@@ -133,6 +134,54 @@ it('reproduces the golden case exactly: 20 kg of chicken at US$ 56,00 [BR-13]', 
         '0.0000',
     );
     expect($sum)->toBe('56.0000');
+});
+
+it('displays the golden case costs exactly as BR-13 states them, in two decimals [BR-13]', function () {
+    $ctx = openPricedChickenOrder(
+        inputWeightKg: '20.000',
+        cutYields: [
+            'Filete de pechuga' => '24.00',
+            'Muslo' => '32.00',
+            'Alas' => '10.00',
+            'Carapacho' => '22.00',
+            'Hígado y molleja' => '6.00',
+            'Piel y grasa' => '3.00',
+        ],
+        detailPrices: [
+            'Filete de pechuga' => '6.50',
+            'Muslo' => '3.80',
+            'Alas' => '3.50',
+            'Carapacho' => '1.20',
+            'Hígado y molleja' => '2.50',
+            'Piel y grasa' => '0.50',
+        ],
+        totalCost: '56.0000',
+    );
+
+    $actualByName = [
+        'Filete de pechuga' => '4.800',
+        'Muslo' => '6.400',
+        'Alas' => '2.000',
+        'Carapacho' => '4.400',
+        'Hígado y molleja' => '1.200',
+        'Piel y grasa' => '0.600',
+    ];
+
+    foreach ($actualByName as $name => $weight) {
+        $line = $ctx['order']->lines->firstWhere('cut_product_id', $ctx['cuts'][$name]->id);
+        (new RegisterButcheryOutputWeightAction)->execute($line->id, $weight);
+    }
+
+    $closed = (new CloseButcheryOrderAction)->execute($ctx['order']->id, $ctx['user']->id);
+    $byName = fn (string $name) => $closed->lines->firstWhere('cut_product_id', $ctx['cuts'][$name]->id);
+    $display = fn (string $name) => Money::fromString((string) $byName($name)->allocated_cost)->toDisplayString();
+
+    expect($display('Filete de pechuga'))->toBe('24,57')
+        ->and($display('Muslo'))->toBe('19,16')
+        ->and($display('Alas'))->toBe('5,51')
+        ->and($display('Carapacho'))->toBe('4,16')
+        ->and($display('Hígado y molleja'))->toBe('2,36')
+        ->and($display('Piel y grasa'))->toBe('0,24');
 });
 
 it('rejects closing when a line has no weight registered yet [BR-10]', function () {

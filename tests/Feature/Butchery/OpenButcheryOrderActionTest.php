@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Domain\Butchery\Actions\CreateButcheryTemplateAction;
 use App\Domain\Butchery\Actions\OpenButcheryOrderAction;
+use App\Domain\Butchery\Actions\UpdateButcheryTemplateAction;
 use App\Domain\Inventory\Actions\CreateLotFromPurchaseLineAction;
 use App\Domain\Inventory\Models\InventoryMovement;
 use App\Models\User;
@@ -141,6 +142,42 @@ it('rejects opening a batch whose product has no active template [BR-08]', funct
     );
 
     expect($open)->toThrow(RuntimeException::class);
+});
+
+it('keeps an already open order intact when the template is edited afterwards [DEC-03]', function () {
+    $ctx = openChickenBatch();
+    $order = (new OpenButcheryOrderAction)->execute(
+        batchId: $ctx['batch']->id,
+        inputWeightKg: '20.000',
+        butcherId: $ctx['user']->id,
+    );
+    $originalFileteLine = $order->lines->firstWhere('cut_product_id', $ctx['filete']->id);
+
+    (new UpdateButcheryTemplateAction)->execute(
+        templateId: $ctx['template']->id,
+        name: 'Pollo recalibrado',
+        expectedShrinkagePercent: '10.00',
+        lines: [
+            ['cut_product_id' => $ctx['filete']->id, 'expected_yield_percent' => '50.00'],
+            ['cut_product_id' => $ctx['muslo']->id, 'expected_yield_percent' => '40.00'],
+        ],
+    );
+
+    expect($order->refresh()->lines->firstWhere('cut_product_id', $ctx['filete']->id)->expected_yield_percent)
+        ->toBe($originalFileteLine->expected_yield_percent)
+        ->and($originalFileteLine->expected_yield_percent)->toBe('60.00');
+});
+
+it('rejects opening with zero or negative input weight [BR-09]', function () {
+    $ctx = openChickenBatch();
+
+    $open = fn () => (new OpenButcheryOrderAction)->execute(
+        batchId: $ctx['batch']->id,
+        inputWeightKg: '0.000',
+        butcherId: $ctx['user']->id,
+    );
+
+    expect($open)->toThrow(InvalidArgumentException::class);
 });
 
 it('rejects opening a batch whose product is not raw material [BR-04][BR-08]', function () {

@@ -27,6 +27,10 @@ class OpenButcheryOrderAction
 {
     public function execute(int $batchId, string $inputWeightKg, int $butcherId): ButcheryOrder
     {
+        if ((new Number($inputWeightKg))->compare(new Number('0')) <= 0) {
+            throw new InvalidArgumentException('Los kg de entrada deben ser mayores a cero (BR-09).');
+        }
+
         return DB::transaction(function () use ($batchId, $inputWeightKg, $butcherId) {
             $batch = Batch::whereKey($batchId)->lockForUpdate()->first();
 
