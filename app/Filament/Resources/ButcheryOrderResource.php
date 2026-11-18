@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Filament\Resources;
 
 use App\Domain\Butchery\Models\ButcheryOrder;
+use App\Domain\Settings\Models\Setting;
 use App\Filament\Resources\ButcheryOrderResource\Pages\ListButcheryOrders;
 use App\Filament\Resources\ButcheryOrderResource\Pages\ViewButcheryOrder;
 use BackedEnum;
@@ -69,7 +70,7 @@ class ButcheryOrderResource extends Resource
                     TextEntry::make('actual_weight_kg')->label('Kg reales')->placeholder('Pendiente'),
                     TextEntry::make('deviation_percent')->label('Desviación (pts)')
                         ->placeholder('—')
-                        ->color(fn (?string $state): string => $state !== null && bccomp(ltrim($state, '-'), '2.00', 2) > 0 ? 'warning' : 'success'),
+                        ->color(fn (?string $state): string => $state !== null && bccomp(ltrim($state, '-'), self::deviationThreshold(), 2) > 0 ? 'warning' : 'success'),
                     TextEntry::make('allocated_cost')->label('Costo asignado')->placeholder('—'),
                 ]),
             ]),
@@ -103,5 +104,13 @@ class ButcheryOrderResource extends Resource
             'index' => ListButcheryOrders::route('/'),
             'view' => ViewButcheryOrder::route('/{record}'),
         ];
+    }
+
+    /**
+     * DEC-05/DEC-06: umbral global configurable, nunca fijo en el código.
+     */
+    private static function deviationThreshold(): string
+    {
+        return Setting::valueFor('butchery.deviation_threshold_percent', '2.00');
     }
 }
