@@ -20,6 +20,7 @@ enum PermissionKey: string
     case ButcheryProcess = 'butchery.process';
     case ButcheryManageTemplates = 'butchery.manage-templates';
     case ButcheryVoid = 'butchery.void';
+    case CatalogManage = 'catalog.manage';
     case SalesVoid = 'sales.void';
     case SalesReturn = 'sales.return';
 }
