@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Domain\Catalog\Actions\CreateProductAction;
+use App\Domain\Catalog\Actions\SetProductPriceAction;
 use App\Domain\Catalog\Models\Product;
 use App\Domain\Catalog\PriceList;
 use App\Domain\Catalog\ProductCategory;
@@ -130,4 +131,15 @@ it('lists products only for users with catalog.manage [C14]', function () {
     prUser('cajero');
 
     Livewire::test(ListProducts::class)->assertForbidden();
+});
+
+it('shows the detail price with its currency, or "Sin precio" when missing [BR-04]', function () {
+    prUser('administrador');
+    $priced = (new CreateProductAction)->execute('Lomito', ProductType::Derived, Unit::Kilogram, ProductCategory::NaturalMeat);
+    (new SetProductPriceAction)->execute($priced, PriceList::Detail, '9.5000', 'USD');
+    (new CreateProductAction)->execute('Costilla', ProductType::Derived, Unit::Kilogram, ProductCategory::NaturalMeat);
+
+    Livewire::test(ListProducts::class)
+        ->assertSee('$ 9,50')
+        ->assertSee('Sin precio');
 });

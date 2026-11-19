@@ -114,11 +114,9 @@ class ProductResource extends Resource
                     ->formatStateUsing(fn (Unit $state): string => self::UNIT_LABELS[$state->value]),
                 IconColumn::make('is_tax_exempt')->label('Exento')->boolean(),
                 TextColumn::make('detail_price')->label('Precio detal')
-                    ->state(function (Product $record): string {
-                        $price = $record->priceFor(PriceList::Detail->value);
-
-                        return $price === null ? 'Sin precio' : Money::display($price->amount, $price->currency);
-                    }),
+                    ->state(fn (Product $record): ?string => $record->priceFor(PriceList::Detail->value)?->getRawOriginal('amount'))
+                    ->placeholder('Sin precio')
+                    ->formatStateUsing(fn (?string $state, Product $record): string => Money::display($state, (string) $record->priceFor(PriceList::Detail->value)?->currency)),
                 IconColumn::make('active')->label('Activo')->boolean(),
             ])
             ->filters([
