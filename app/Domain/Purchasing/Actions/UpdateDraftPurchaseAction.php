@@ -23,6 +23,7 @@ class UpdateDraftPurchaseAction
     private const EDITABLE_HEADER_FIELDS = [
         'supplier_invoice_number',
         'supplier_invoice_date',
+        'currency',
         'freight_amount',
         'other_costs_amount',
         'other_costs_note',

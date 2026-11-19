@@ -75,4 +75,23 @@ final class Money
 
         return EsVeNumberFormatter::format((string) $rounded, self::DISPLAY_SCALE);
     }
+
+    /**
+     * Monto listo para pantalla: 2 decimales es-VE y siempre con su moneda
+     * («Bs 1.234,50» / «$ 1.234,50»). Acepta el valor tal como viene de la base.
+     */
+    public static function display(?string $amount, string $currency): string
+    {
+        if ($amount === null || $amount === '') {
+            return '—';
+        }
+
+        $label = match (strtoupper($currency)) {
+            'VES', 'BS' => 'Bs',
+            'USD' => '$',
+            default => strtoupper($currency),
+        };
+
+        return $label.' '.self::fromString($amount)->toDisplayString();
+    }
 }

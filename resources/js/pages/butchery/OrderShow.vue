@@ -36,7 +36,7 @@ interface Order {
     lines: OrderLine[];
 }
 
-const props = defineProps<{ order: Order; deviationThresholdPercent: string }>();
+const props = defineProps<{ order: Order; batchTotalCostDisplay: string; deviationThresholdPercent: string }>();
 
 // BR-09: el carnicero pesa cada corte; puede ser 0.
 const weightInput = reactive<Record<number, string>>(
@@ -110,7 +110,7 @@ function deviationColor(deviationPercent: string | null): string {
                 </div>
                 <div class="rounded-md bg-canvas p-3">
                     <span class="block text-[12px] text-ink-muted">Costo lote</span>
-                    <strong class="text-[17px] text-ink">$ {{ order.batch.total_cost }}</strong>
+                    <strong class="text-[17px] text-ink">{{ batchTotalCostDisplay }}</strong>
                 </div>
                 <div class="rounded-md bg-canvas p-3">
                     <span class="block text-[12px] text-ink-muted">Carnicero</span>

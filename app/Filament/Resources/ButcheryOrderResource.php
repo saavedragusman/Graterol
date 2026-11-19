@@ -5,9 +5,11 @@ declare(strict_types=1);
 namespace App\Filament\Resources;
 
 use App\Domain\Butchery\Models\ButcheryOrder;
+use App\Domain\Butchery\Models\ButcheryOrderLine;
 use App\Domain\Settings\Models\Setting;
 use App\Filament\Resources\ButcheryOrderResource\Pages\ListButcheryOrders;
 use App\Filament\Resources\ButcheryOrderResource\Pages\ViewButcheryOrder;
+use App\Support\ValueObjects\Money;
 use BackedEnum;
 use Filament\Actions\ViewAction;
 use Filament\Infolists\Components\RepeatableEntry;
@@ -71,7 +73,8 @@ class ButcheryOrderResource extends Resource
                     TextEntry::make('deviation_percent')->label('Desviación (pts)')
                         ->placeholder('—')
                         ->color(fn (?string $state): string => $state !== null && bccomp(ltrim($state, '-'), self::deviationThreshold(), 2) > 0 ? 'warning' : 'success'),
-                    TextEntry::make('allocated_cost')->label('Costo asignado')->placeholder('—'),
+                    TextEntry::make('allocated_cost')->label('Costo asignado')->placeholder('—')
+                        ->formatStateUsing(fn (?string $state, ButcheryOrderLine $record): string => Money::display($state, (string) $record->order->batch->currency)),
                 ]),
             ]),
         ]);

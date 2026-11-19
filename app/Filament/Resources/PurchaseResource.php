@@ -7,11 +7,13 @@ namespace App\Filament\Resources;
 use App\Domain\Catalog\Models\Product;
 use App\Domain\Catalog\ProductType;
 use App\Domain\Purchasing\Models\Purchase;
+use App\Domain\Purchasing\Models\PurchaseLine;
 use App\Domain\Purchasing\Models\Supplier;
 use App\Filament\Resources\PurchaseResource\Pages\CreatePurchase;
 use App\Filament\Resources\PurchaseResource\Pages\EditPurchase;
 use App\Filament\Resources\PurchaseResource\Pages\ListPurchases;
 use App\Filament\Resources\PurchaseResource\Pages\ViewPurchase;
+use App\Support\ValueObjects\Money;
 use BackedEnum;
 use Filament\Actions\EditAction;
 use Filament\Actions\ViewAction;
@@ -80,6 +82,13 @@ class PurchaseResource extends Resource
                     ->dehydrated(fn (string $operation): bool => $operation !== 'edit'),
                 TextInput::make('supplier_invoice_number')->label('N.º de factura')->required()->maxLength(100),
                 DatePicker::make('supplier_invoice_date')->label('Fecha de la factura')->required(),
+                // C13: la compra guarda su moneda y la tasa BCV vigente al crearla.
+                Select::make('currency')
+                    ->label('Moneda de la factura')
+                    ->options(['USD' => 'Dólares ($)', 'VES' => 'Bolívares (Bs)'])
+                    ->default('USD')
+                    ->required()
+                    ->helperText('Si es en Bs, se guarda con la tasa BCV del día.'),
             ]),
             Section::make('Líneas')->schema([
                 Repeater::make('lines')
@@ -122,8 +131,10 @@ class PurchaseResource extends Resource
                     ->formatStateUsing(fn (string $state): string => self::STATUS_LABELS[$state] ?? $state),
                 TextEntry::make('currency')->label('Moneda'),
                 TextEntry::make('exchange_rate')->label('Tasa BCV'),
-                TextEntry::make('freight_amount')->label('Flete'),
-                TextEntry::make('other_costs_amount')->label('Otros costos'),
+                TextEntry::make('freight_amount')->label('Flete')
+                    ->formatStateUsing(fn (?string $state, Purchase $record): string => Money::display($state, $record->currency)),
+                TextEntry::make('other_costs_amount')->label('Otros costos')
+                    ->formatStateUsing(fn (?string $state, Purchase $record): string => Money::display($state, $record->currency)),
                 TextEntry::make('other_costs_note')->label('Nota de otros costos')->placeholder('—'),
                 TextEntry::make('void_reason')->label('Motivo de anulación')
                     ->visible(fn (Purchase $record): bool => $record->status === 'voided'),
@@ -140,11 +151,15 @@ class PurchaseResource extends Resource
                             ? "(diferencia: {$state})"
                             : (string) $state)
                         ->color(fn (?string $state): ?string => $state !== null && bccomp($state, '0', 3) !== 0 ? 'warning' : null),
-                    TextEntry::make('line_amount')->label('Monto de la línea'),
+                    TextEntry::make('line_amount')->label('Monto de la línea')
+                        ->formatStateUsing(fn (?string $state, PurchaseLine $record): string => Money::display($state, $record->purchase->currency)),
                     // BR-07: asignaciones y costo del lote, calculados en el servidor.
-                    TextEntry::make('allocated_freight')->label('Flete asignado')->placeholder('—'),
-                    TextEntry::make('allocated_other_costs')->label('Otros costos asignados')->placeholder('—'),
-                    TextEntry::make('batch.unit_cost')->label('Costo por kg del lote')->placeholder('—'),
+                    TextEntry::make('allocated_freight')->label('Flete asignado')->placeholder('—')
+                        ->formatStateUsing(fn (?string $state, PurchaseLine $record): string => Money::display($state, $record->purchase->currency)),
+                    TextEntry::make('allocated_other_costs')->label('Otros costos asignados')->placeholder('—')
+                        ->formatStateUsing(fn (?string $state, PurchaseLine $record): string => Money::display($state, $record->purchase->currency)),
+                    TextEntry::make('batch.unit_cost')->label('Costo por kg del lote')->placeholder('—')
+                        ->formatStateUsing(fn (?string $state, PurchaseLine $record): string => Money::display($state, (string) $record->batch?->currency)),
                 ]),
             ]),
         ]);

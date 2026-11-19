@@ -15,6 +15,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Butchery\CloseButcheryOrderRequest;
 use App\Http\Requests\Butchery\OpenButcheryOrderRequest;
 use App\Http\Requests\Butchery\RegisterButcheryOutputWeightRequest;
+use App\Support\ValueObjects\Money;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
@@ -74,6 +75,7 @@ class OrderController extends Controller
 
         return Inertia::render('butchery/OrderShow', [
             'order' => $order,
+            'batchTotalCostDisplay' => Money::display((string) $order->batch->total_cost, (string) $order->batch->currency),
             'deviationThresholdPercent' => Setting::valueFor('butchery.deviation_threshold_percent', '2.00'),
         ]);
     }
