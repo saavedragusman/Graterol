@@ -6,6 +6,8 @@ use App\Domain\Catalog\Actions\CreateProductAction;
 use App\Domain\Catalog\ProductCategory;
 use App\Domain\Catalog\ProductType;
 use App\Domain\Catalog\Unit;
+use App\Domain\Settings\Actions\UpdateSettingsAction;
+use App\Domain\Settings\CompanySettings;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 uses(RefreshDatabase::class);
@@ -29,7 +31,15 @@ it('defaults charcuteria to the configured VAT rate and is not exempt [BR-05]', 
     $product = (new CreateProductAction)->execute('Jamón', ProductType::Resale, Unit::Kilogram, ProductCategory::Charcuteria);
 
     expect($product->is_tax_exempt)->toBeFalse()
-        ->and($product->tax_rate)->toBe(config('graterol.charcuteria_vat_rate'));
+        ->and($product->tax_rate)->toBe(CompanySettings::DEFAULT_CHARCUTERIA_VAT_RATE);
+});
+
+it('defaults charcuteria to the VAT rate configured in settings [BR-05][C6]', function () {
+    app(UpdateSettingsAction::class)->execute([CompanySettings::CHARCUTERIA_VAT_RATE => '8'], null);
+
+    $product = (new CreateProductAction)->execute('Jamón', ProductType::Resale, Unit::Kilogram, ProductCategory::Charcuteria);
+
+    expect($product->tax_rate)->toBe('8.00');
 });
 
 it('respects an explicit VAT rate override for charcuteria [BR-05]', function () {
