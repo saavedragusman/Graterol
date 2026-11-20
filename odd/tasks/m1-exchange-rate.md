@@ -18,7 +18,7 @@ Rama `feat/m1-exchange-rate`, sale de `feat/m1-office-theme` (8301ee0).
 |---|---|---|---|
 | T1 | S3 | worker — programación en `routes/console.php` con test | 430d931 |
 | T2 | S4, S5, S6 | worker — `PermissionKey::RatesManage`, Policy, página/recurso Filament, auditoría | a7bf419 |
-| T3 | S7 | inline — redondeo en `RegisterExchangeRateAction` (`SCALE = 2`), manual, pantalla y BR-02 | (este commit) |
+| T3 | S7 | inline — redondeo en `RegisterExchangeRateAction` (`SCALE = 2`), manual, pantalla y BR-02 | 5d14522 |
 
 ## Log
 
