@@ -34,7 +34,7 @@ Estado: T4 hecho. Diseño de T1–T3 aprobado completo (2026-11-20, L6). En impl
 | T1 | S1, S6 | `PermissionKey` label/module + permisos nuevos + seeder no destructivo | d4f9fea |
 | T2 | S3, S5, S7 | Actions y Policy de roles + pantalla Roles | 3027037 |
 | T4 | S8, S6 | worker — `AuditLogResource` de solo lectura + `audit.view` + `AuditLogPolicy`; «Ver» autoriza por registro | dacf9de |
-| T3 | S2, S4, S5, S7 | migración `is_active`, Actions y Policy de usuarios + pantalla Usuarios + bloqueo de inactivos | |
+| T3 | S2, S4, S5, S7 | migración `is_active`, Actions y Policy de usuarios + pantalla Usuarios + bloqueo de inactivos | a58fefc |
 
 ## Log
 
@@ -45,3 +45,4 @@ Estado: T4 hecho. Diseño de T1–T3 aprobado completo (2026-11-20, L6). En impl
 - **L5** T4 en dacf9de: 215/215, pint, types:check 0, build ok. RED observado (7/7). Se agregó `->authorize('view')` al popup «Ver», para que el detalle también pase por la Policy.
 - **L6** Confirmación del humano: migración `users.is_active` + `roles.is_system`: «Sí, aprobada»; seeder no destructivo (crea los roles iniciales solo si no existen y agrega al administrador los permisos nuevos): «Sí, así».
 - **L7** El worker de T1/T2 se cortó por cuota. Dejó el código casi completo y 3 tests de `RoleResourceTest` en rojo: 2 esperaban los permisos en orden alfabético cuando la pantalla usa el del enum, y 1 escenario de la guarda le quitaba el rol al propio usuario del test y no vaciaba el grupo Configuración. Se corrigieron los escenarios; el código no cambió. Revisión del padre: guarda `EnsureRoleManagerRemains` (condición «activo» aislada para T3), migración `is_system` con marcado de administrador, seeder con `syncWithoutDetaching` y creación solo si el rol no existe. Suite: 244/244, pint, types:check 0, build ok. Observación: si el humano borra cajero o carnicero, el próximo `db:seed` los vuelve a crear con sus permisos iniciales.
+- **L8** T3 en a58fefc: 275/275, pint, types:check 0, build ok, Vitest 24/24. RED observado. Decisiones del worker: un usuario inactivo recibe 403 en /admin (`canAccessPanel`) y en la PWA se le cierra la sesión (`EnsureUserIsActive` en el grupo web); las rutas de Filament no pasan por ese grupo. El historial para borrar se define en `UserHistory::FOREIGN_KEYS`, con un test contra `information_schema` que falla si aparece otra clave foránea a users. `butchery_orders.closed_by` y `batches.user_id` no existen.
