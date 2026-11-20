@@ -33,7 +33,7 @@ Estado: T4 (auditoría) en curso. T1–T3 esperan que el humano confirme la migr
 |---|---|---|---|
 | T1 | S1, S6 | `PermissionKey` label/module + permisos nuevos + seeder no destructivo | |
 | T2 | S3, S5, S7 | Actions y Policy de roles + pantalla Roles | |
-| T4 | S8, S6 | worker — `AuditLogResource` de solo lectura + `audit.view` + `AuditLogPolicy` | |
+| T4 | S8, S6 | worker — `AuditLogResource` de solo lectura + `audit.view` + `AuditLogPolicy`; «Ver» autoriza por registro | dacf9de |
 | T3 | S2, S4, S5, S7 | migración `is_active`, Actions y Policy de usuarios + pantalla Usuarios + bloqueo de inactivos | |
 
 ## Log
@@ -42,3 +42,4 @@ Estado: T4 (auditoría) en curso. T1–T3 esperan que el humano confirme la migr
 - **L2** Decisiones: «Roles y usuarios»; «Editables, menos administrador»; «Solo desactivar, pero se puede borrar si no tiene historial»; «Rama propia: feat/m1-roles».
 - **L3** Hallazgos (explorador): no hay pantalla de usuarios ni de roles; los usuarios solo se crean por seeder; `RolePermissionSeeder` hace `sync()` en cada corrida; no hay ninguna guarda contra el bloqueo; varios tests usan los nombres fijos de los roles.
 - **L4** (pedido literal): «ok quiero añadir otra cosa que tambien estoy seguro que ya habia porque lo vi varias veces y hasta lo probe fue la vista de auditoria, habia una opcion en el menu, para ver las audiorias y sus movimientos se abrian en un popup que paso que ahora no se ve?». Búsqueda: no existe en ninguna rama, en el historial de `app/Filament`, en los objetos sueltos ni en los paquetes; solo `audit_logs` y su modelo (M2). Decisiones: «No, construila de cero»; «Solo administrador»; «En feat/m1-roles».
+- **L5** T4 en dacf9de: 215/215, pint, types:check 0, build ok. RED observado (7/7). Se agregó `->authorize('view')` al popup «Ver», para que el detalle también pase por la Policy.
