@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Domain\Settings\Models\AuditLog;
+use App\Domain\Settings\Models\Permission;
 use App\Domain\Settings\Models\Role;
 use App\Filament\Resources\UserResource;
 use App\Filament\Resources\UserResource\Pages\CreateUser;
@@ -181,4 +182,26 @@ it('deletes only users without history [S4]', function () {
     expect(User::find($clean->id))->toBeNull()
         ->and(User::find($used->id))->not->toBeNull()
         ->and(AuditLog::where('action', 'user.deleted')->count())->toBe(1);
+});
+
+it('hides the roles field and keeps roles when the actor lacks roles.manage [R1]', function () {
+    (new RolePermissionSeeder)->run();
+    $role = Role::create(['name' => 'gestor de usuarios']);
+    $role->permissions()->sync(Permission::where('name', 'users.manage')->pluck('id'));
+    $manager = User::factory()->create();
+    $manager->roles()->attach($role);
+    Filament::setCurrentPanel('admin');
+    test()->actingAs($manager->fresh());
+
+    $target = User::factory()->create(['name' => 'Ana']);
+    $target->roles()->attach(Role::where('name', 'cajero')->first());
+
+    Livewire::test(EditUser::class, ['record' => $target->getKey()])
+        ->assertFormFieldHidden('role_ids')
+        ->fillForm(['name' => 'Ana María'])
+        ->call('save')
+        ->assertHasNoFormErrors();
+
+    expect($target->refresh()->name)->toBe('Ana María')
+        ->and($target->roles()->pluck('name')->all())->toBe(['cajero']);
 });

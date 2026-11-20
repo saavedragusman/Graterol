@@ -9,6 +9,7 @@ use App\Domain\Settings\Actions\ReactivateUserAction;
 use App\Domain\Settings\Actions\ResetUserPasswordAction;
 use App\Domain\Settings\Actions\UpdateUserAction;
 use App\Domain\Settings\Models\AuditLog;
+use App\Domain\Settings\Models\Permission;
 use App\Domain\Settings\Models\Role;
 use App\Models\User;
 use Database\Seeders\RolePermissionSeeder;
@@ -132,10 +133,10 @@ it('rejects a duplicate email on update without touching anything [S2]', functio
 
 it('rejects removing the administrador role from the last role manager [S7]', function () {
     $admin = admin();
-    $other = User::factory()->create();
     $before = userSnapshot();
 
-    expect(fn () => app(UpdateUserAction::class)->execute($admin, $admin->name, $admin->email, [], $other->id))
+    // El actor es el propio administrador (tiene roles.manage): lo rechaza la guarda S7, no R1.
+    expect(fn () => app(UpdateUserAction::class)->execute($admin, $admin->name, $admin->email, [], $admin->id))
         ->toThrow(RuntimeException::class, 'Debe quedar al menos un usuario activo con permiso para gestionar roles.');
 
     expect(userSnapshot())->toBe($before);
@@ -251,4 +252,67 @@ it('rejects deleting oneself or the last role manager [S4, S7]', function () {
         ->toThrow(RuntimeException::class, 'Debe quedar al menos un usuario activo con permiso para gestionar roles.');
 
     expect(userSnapshot())->toBe($before);
+});
+
+/** Usuario con users.manage pero SIN roles.manage (R1 del verificador). */
+function usersOnlyManager(): User
+{
+    (new RolePermissionSeeder)->run();
+    $role = Role::create(['name' => 'gestor de usuarios']);
+    $role->permissions()->sync(Permission::where('name', 'users.manage')->pluck('id'));
+    $manager = User::factory()->create();
+    $manager->roles()->attach($role);
+
+    return $manager;
+}
+
+it('refuses assigning roles on creation without roles.manage [R1]', function () {
+    $manager = usersOnlyManager();
+    $before = userSnapshot();
+
+    expect(fn () => app(CreateUserAction::class)->execute('Eva', 'eva@example.test', 'secreto123', [roleId('administrador')], $manager->id))
+        ->toThrow(RuntimeException::class);
+
+    expect(userSnapshot())->toBe($before);
+});
+
+it('creates a user without roles when the actor lacks roles.manage [R1]', function () {
+    $manager = usersOnlyManager();
+
+    $user = app(CreateUserAction::class)->execute('Eva', 'eva@example.test', 'secreto123', [], $manager->id);
+
+    expect($user->roles()->count())->toBe(0);
+});
+
+it('refuses escalating oneself to administrador without roles.manage [R1]', function () {
+    $manager = usersOnlyManager();
+    $before = userSnapshot();
+
+    expect(fn () => app(UpdateUserAction::class)->execute(
+        $manager, $manager->name, $manager->email, [roleId('administrador')], $manager->id
+    ))->toThrow(RuntimeException::class);
+
+    expect(userSnapshot())->toBe($before);
+});
+
+it('lets a users-only manager edit name and email while keeping the same roles [R1]', function () {
+    $manager = usersOnlyManager();
+    $target = User::factory()->create(['name' => 'Ana']);
+    $target->roles()->attach(roleId('cajero'));
+
+    app(UpdateUserAction::class)->execute($target, 'Ana María', $target->email, [roleId('cajero')], $manager->id);
+
+    expect($target->refresh()->name)->toBe('Ana María')
+        ->and($target->roles()->pluck('name')->all())->toBe(['cajero']);
+});
+
+it('does not count an inactive user holding roles.manage as a manager [S7]', function () {
+    $admin = admin();
+    $inactive = User::factory()->inactive()->create();
+    $inactive->roles()->attach(roleId('administrador'));
+
+    expect(fn () => app(DeactivateUserAction::class)->execute($admin, User::factory()->create()->id))
+        ->toThrow(RuntimeException::class);
+
+    expect($admin->refresh()->is_active)->toBeTrue();
 });

@@ -28,6 +28,7 @@ class CreateUserAction
             $email = UserRules::normalizeEmail($email);
             UserRules::assertPassword($password);
             $ids = UserRules::roleIds($roleIds);
+            UserRules::assertMayAssignRoles($actorId, [], $ids);
 
             $user = new User(['name' => $name, 'email' => $email, 'password' => $password]);
             $user->is_active = true;

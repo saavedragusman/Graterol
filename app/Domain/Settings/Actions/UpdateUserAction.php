@@ -30,6 +30,11 @@ class UpdateUserAction
             $name = UserRules::normalizeName($name);
             $email = UserRules::normalizeEmail($email, $user);
             $ids = UserRules::roleIds($roleIds);
+            UserRules::assertMayAssignRoles(
+                $actorId,
+                $user->roles()->pluck('roles.id')->map(fn ($id): int => (int) $id)->all(),
+                $ids,
+            );
 
             $before = UserRules::snapshot($user);
 

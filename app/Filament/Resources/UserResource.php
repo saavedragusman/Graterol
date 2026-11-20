@@ -11,6 +11,7 @@ use App\Domain\Settings\Actions\ResetUserPasswordAction;
 use App\Domain\Settings\Guards\UserHistory;
 use App\Domain\Settings\Guards\UserRules;
 use App\Domain\Settings\Models\Role;
+use App\Domain\Settings\PermissionKey;
 use App\Filament\Resources\UserResource\Pages\CreateUser;
 use App\Filament\Resources\UserResource\Pages\EditUser;
 use App\Filament\Resources\UserResource\Pages\ListUsers;
@@ -65,7 +66,9 @@ class UserResource extends Resource
             TextInput::make('password_confirmation')->label('Confirmar contraseña')->password()->revealable()
                 ->required()->dehydrated(false)
                 ->visibleOn('create'),
+            // R1: solo quien gestiona roles ve y cambia los roles de un usuario.
             CheckboxList::make('role_ids')->label('Roles')
+                ->visible(fn (): bool => (bool) auth()->user()?->hasPermission(PermissionKey::RolesManage->value))
                 ->options(fn (): array => Role::query()->orderBy('name')->pluck('name', 'id')->all())
                 ->columns(2),
         ]);

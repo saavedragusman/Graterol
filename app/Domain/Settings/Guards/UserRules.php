@@ -5,8 +5,10 @@ declare(strict_types=1);
 namespace App\Domain\Settings\Guards;
 
 use App\Domain\Settings\Models\Role;
+use App\Domain\Settings\PermissionKey;
 use App\Models\User;
 use InvalidArgumentException;
+use RuntimeException;
 
 /**
  * Validaciones y forma de auditoría compartidas por las Actions de usuarios.
@@ -69,6 +71,30 @@ class UserRules
         }
 
         return $ids;
+    }
+
+    /**
+     * R1: asignar o quitar roles exige `roles.manage`. Sin esto, quien solo tiene
+     * `users.manage` podría darse a sí mismo el rol administrador. Si el conjunto de
+     * roles no cambia, no hace falta el permiso. Sin actor (proceso del sistema) se permite.
+     *
+     * @param  list<int>  $currentIds
+     * @param  list<int>  $newIds
+     */
+    public static function assertMayAssignRoles(?int $actorId, array $currentIds, array $newIds): void
+    {
+        sort($currentIds);
+        sort($newIds);
+
+        if ($actorId === null || $currentIds === $newIds) {
+            return;
+        }
+
+        $actor = User::query()->find($actorId);
+
+        if ($actor === null || ! $actor->hasPermission(PermissionKey::RolesManage->value)) {
+            throw new RuntimeException('Asignar roles requiere el permiso para gestionar roles.');
+        }
     }
 
     /**

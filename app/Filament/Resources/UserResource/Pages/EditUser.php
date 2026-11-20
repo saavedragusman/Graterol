@@ -44,7 +44,10 @@ class EditUser extends EditRecord
                 user: $record,
                 name: (string) ($data['name'] ?? ''),
                 email: (string) ($data['email'] ?? ''),
-                roleIds: array_map('intval', (array) ($data['role_ids'] ?? [])),
+                // R1: sin roles.manage el campo no se muestra; se conservan los roles actuales.
+                roleIds: array_key_exists('role_ids', $data)
+                    ? array_map('intval', (array) $data['role_ids'])
+                    : $record->roles()->pluck('roles.id')->map(fn ($id): int => (int) $id)->all(),
                 actorId: auth()->id(),
             );
         } catch (InvalidArgumentException|RuntimeException $e) {
