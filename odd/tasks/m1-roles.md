@@ -1,7 +1,7 @@
 # M1 — Gestión de roles, permisos y usuarios desde la oficina
 
 Hito M1 (BR-03, roles). Rama `feat/m1-roles`, que sale de `fix/m1-company-settings` al cerrarla.
-Estado: **diseño aprobado en sus decisiones (2026-11-20); sin código todavía.**
+Estado: T4 (auditoría) en curso. T1–T3 esperan que el humano confirme la migración `is_active`/`is_system` y el seeder no destructivo.
 
 ## Specs
 
@@ -12,6 +12,7 @@ Estado: **diseño aprobado en sus decisiones (2026-11-20); sin código todavía.
 - **S5** — C15: «cambios de permisos» se auditan, igual que la asignación de roles y la desactivación de usuarios: quién, qué, cuándo, antes y después.
 - **S6** — C14: solo Policies y permisos; prohibidos `hasRole()`, `Gate::before` y `abort(403)`.
 - **S7** — Nunca quedarse afuera: ningún cambio (de roles, permisos, asignaciones o desactivación) puede dejar el sistema sin al menos un usuario activo con permiso para gestionar roles.
+- **S8** — Vista de auditoría: «había una opción en el menú, para ver las auditorías y sus movimientos se abrían en un popup». Va en «Configuración › Auditoría», es de solo lectura (C15: inmutable) y muestra fecha y hora en Caracas, usuario, qué se tocó, acción y motivo. Filtros por tipo, usuario y rango de fechas, con lo más nuevo primero. El botón «Ver» abre un popup con el detalle: el valor anterior y el nuevo, campo por campo. Quién la ve: «Solo administrador», con el permiso `audit.view`.
 
 ## Diseño técnico (propuesto)
 
@@ -32,6 +33,7 @@ Estado: **diseño aprobado en sus decisiones (2026-11-20); sin código todavía.
 |---|---|---|---|
 | T1 | S1, S6 | `PermissionKey` label/module + permisos nuevos + seeder no destructivo | |
 | T2 | S3, S5, S7 | Actions y Policy de roles + pantalla Roles | |
+| T4 | S8, S6 | worker — `AuditLogResource` de solo lectura + `audit.view` + `AuditLogPolicy` | |
 | T3 | S2, S4, S5, S7 | migración `is_active`, Actions y Policy de usuarios + pantalla Usuarios + bloqueo de inactivos | |
 
 ## Log
@@ -39,3 +41,4 @@ Estado: **diseño aprobado en sus decisiones (2026-11-20); sin código todavía.
 - **L1** (2026-11-20) Pregunta: «¿Querés una pantalla para gestionar roles y permisos desde la oficina?» → «Sí, la planifico».
 - **L2** Decisiones: «Roles y usuarios»; «Editables, menos administrador»; «Solo desactivar, pero se puede borrar si no tiene historial»; «Rama propia: feat/m1-roles».
 - **L3** Hallazgos (explorador): no hay pantalla de usuarios ni de roles; los usuarios solo se crean por seeder; `RolePermissionSeeder` hace `sync()` en cada corrida; no hay ninguna guarda contra el bloqueo; varios tests usan los nombres fijos de los roles.
+- **L4** (pedido literal): «ok quiero añadir otra cosa que tambien estoy seguro que ya habia porque lo vi varias veces y hasta lo probe fue la vista de auditoria, habia una opcion en el menu, para ver las audiorias y sus movimientos se abrian en un popup que paso que ahora no se ve?». Búsqueda: no existe en ninguna rama, en el historial de `app/Filament`, en los objetos sueltos ni en los paquetes; solo `audit_logs` y su modelo (M2). Decisiones: «No, construila de cero»; «Solo administrador»; «En feat/m1-roles».
