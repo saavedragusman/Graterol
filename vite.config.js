@@ -36,7 +36,8 @@ export default defineConfig(({ mode }) => {
                 ignored: ['**/storage/framework/views/**'],
             },
 	    host: '0.0.0.0',
-       	    hmr: { host: process.env.VITE_HMR_HOST },
+            // Sin VITE_HMR_HOST, public/hot apuntaba a 0.0.0.0 y el navegador bloquea esa dirección.
+            hmr: { host: process.env.VITE_HMR_HOST || 'localhost' },
         },
     };
 });
