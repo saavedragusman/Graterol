@@ -12,8 +12,9 @@ use Illuminate\Support\Facades\DB;
 
 /**
  * BR-03: roles iniciales como conjuntos de permisos module.action.
- * Administrador tiene todos los permisos; cajero, POS y su propio cierre;
- * carnicero, recepción y despiece. Anular y devolver solo los tiene administrador.
+ * Administrador (is_system) tiene todos los permisos y recibe los nuevos; cajero, POS y su propio cierre;
+ * carnicero, recepción y despiece.
+ * No destructivo: nunca pisa lo editado desde la pantalla de roles. Anular y devolver solo los tiene administrador.
  */
 class RolePermissionSeeder extends Seeder
 {
@@ -26,23 +27,42 @@ class RolePermissionSeeder extends Seeder
                 $permissions[$key->value] = Permission::firstOrCreate(['name' => $key->value]);
             }
 
-            $administrador = Role::firstOrCreate(['name' => 'administrador']);
-            $administrador->permissions()->sync(
-                collect($permissions)->pluck('id')->all()
+            // El administrador se reconoce por is_system, no por el nombre (puede renombrarse).
+            $administrador = Role::where('is_system', true)->first();
+
+            if ($administrador === null) {
+                $administrador = Role::firstOrCreate(['name' => 'administrador']);
+                $administrador->forceFill(['is_system' => true])->save();
+            }
+
+            // Nunca quita permisos: solo agrega los que le falten (S3).
+            $administrador->permissions()->syncWithoutDetaching(
+                Permission::query()->pluck('id')->all()
             );
 
-            $cajero = Role::firstOrCreate(['name' => 'cajero']);
-            $cajero->permissions()->sync([
+            // Los demás roles iniciales se crean solo si no existen: lo editado en pantalla se respeta.
+            $this->createInitialRole('cajero', [
                 $permissions[PermissionKey::PosSell->value]->id,
                 $permissions[PermissionKey::PosCloseOwn->value]->id,
             ]);
 
-            $carnicero = Role::firstOrCreate(['name' => 'carnicero']);
-            $carnicero->permissions()->sync([
+            $this->createInitialRole('carnicero', [
                 $permissions[PermissionKey::PurchasingView->value]->id,
                 $permissions[PermissionKey::PurchasingReceive->value]->id,
                 $permissions[PermissionKey::ButcheryProcess->value]->id,
             ]);
         });
+    }
+
+    /**
+     * @param  list<int>  $permissionIds
+     */
+    private function createInitialRole(string $name, array $permissionIds): void
+    {
+        $role = Role::firstOrCreate(['name' => $name]);
+
+        if ($role->wasRecentlyCreated) {
+            $role->permissions()->sync($permissionIds);
+        }
     }
 }
