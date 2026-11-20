@@ -9,6 +9,7 @@ use App\Domain\Catalog\PriceList;
 use App\Domain\Catalog\ProductCategory;
 use App\Domain\Catalog\ProductType;
 use App\Domain\Catalog\Unit;
+use App\Domain\Settings\CompanySettings;
 use App\Domain\Settings\Models\ExchangeRate;
 use App\Filament\Resources\ProductResource\Pages\CreateProduct;
 use App\Filament\Resources\ProductResource\Pages\EditProduct;
@@ -95,7 +96,7 @@ class ProductResource extends Resource
                 ->schema([
                     Select::make('price_currency')->label('Moneda')
                         ->options(['USD' => '$ (USD)', 'VES' => 'Bs (VES)'])
-                        ->default('USD'),
+                        ->default(fn (): string => app(CompanySettings::class)->defaultCurrency()),
                     TextInput::make('detail_price')->label('Precio detal')->numeric()->minValue(0)->step('0.0001'),
                     TextInput::make('wholesale_price')->label('Precio mayor')->numeric()->minValue(0)->step('0.0001'),
                 ]),

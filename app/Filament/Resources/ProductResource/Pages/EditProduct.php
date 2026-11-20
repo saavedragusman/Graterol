@@ -7,6 +7,7 @@ namespace App\Filament\Resources\ProductResource\Pages;
 use App\Domain\Catalog\Actions\UpdateProductAction;
 use App\Domain\Catalog\Models\Product;
 use App\Domain\Catalog\PriceList;
+use App\Domain\Settings\CompanySettings;
 use App\Filament\Resources\ProductResource;
 use Filament\Resources\Pages\EditRecord;
 use Illuminate\Database\Eloquent\Model;
@@ -28,7 +29,7 @@ class EditProduct extends EditRecord
 
         $data['detail_price'] = $detail?->amount;
         $data['wholesale_price'] = $wholesale?->amount;
-        $data['price_currency'] = $detail->currency ?? $wholesale->currency ?? 'USD';
+        $data['price_currency'] = $detail->currency ?? $wholesale->currency ?? app(CompanySettings::class)->defaultCurrency();
 
         return $data;
     }
@@ -47,7 +48,7 @@ class EditProduct extends EditRecord
             (bool) ($data['active'] ?? $record->active),
             $data['detail_price'] ?? null,
             $data['wholesale_price'] ?? null,
-            (string) ($data['price_currency'] ?? 'USD'),
+            filled($data['price_currency'] ?? null) ? (string) $data['price_currency'] : null,
         );
     }
 }

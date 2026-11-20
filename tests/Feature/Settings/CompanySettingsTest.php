@@ -116,3 +116,23 @@ it('rejects a deviation threshold outside 0 to 100 [BR-11]', function () {
 
     expect(Setting::count())->toBe(0);
 });
+
+// M1 / S10: moneda por defecto configurable (USD o VES).
+it('defaults the currency to USD without configuration [S8][S10]', function () {
+    expect(app(CompanySettings::class)->defaultCurrency())->toBe('USD');
+});
+
+it('stores the default currency and audits the change [S7][S10]', function () {
+    (new UpdateSettingsAction)->execute([CompanySettings::DEFAULT_CURRENCY => 'VES'], null);
+
+    expect(app(CompanySettings::class)->defaultCurrency())->toBe('VES')
+        ->and(AuditLog::where('auditable_type', 'setting')->count())->toBe(1);
+});
+
+it('rejects a currency other than USD or VES and changes nothing [S7][S10]', function (string $currency) {
+    expect(fn () => (new UpdateSettingsAction)->execute([CompanySettings::DEFAULT_CURRENCY => $currency], null))
+        ->toThrow(InvalidArgumentException::class);
+
+    expect(Setting::count())->toBe(0)
+        ->and(AuditLog::count())->toBe(0);
+})->with(['EUR', 'usd', '', 'VES ']);

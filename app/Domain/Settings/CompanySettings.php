@@ -31,6 +31,12 @@ class CompanySettings
     // BR-11 (DEC-05/DEC-06): umbral global de desviación del despiece, en puntos.
     public const DEVIATION_THRESHOLD_PERCENT = 'butchery.deviation_threshold_percent';
 
+    // S10: moneda que los formularios y Actions de compras y precios usan como valor inicial.
+    public const DEFAULT_CURRENCY = 'catalog.default_currency';
+
+    /** @var list<string> */
+    public const CURRENCIES = ['USD', 'VES'];
+
     public const DEFAULT_NAME = 'ERP';
 
     public const DEFAULT_BRAND_COLOR = '#A51016';
@@ -40,6 +46,8 @@ class CompanySettings
     public const DEFAULT_CHARCUTERIA_VAT_RATE = '16.00';
 
     public const DEFAULT_DEVIATION_THRESHOLD_PERCENT = '2.00';
+
+    public const DEFAULT_CURRENCY_VALUE = 'USD';
 
     public const LOGO_DIRECTORY = 'branding';
 
@@ -55,6 +63,7 @@ class CompanySettings
         self::ACCENT_COLOR,
         self::CHARCUTERIA_VAT_RATE,
         self::DEVIATION_THRESHOLD_PERCENT,
+        self::DEFAULT_CURRENCY,
     ];
 
     /** @var array<string, string>|null */
@@ -106,6 +115,16 @@ class CompanySettings
     }
 
     /**
+     * Si la fila se escribió fuera de UpdateSettingsAction con otro valor, se usa USD.
+     */
+    public function defaultCurrency(): string
+    {
+        $value = $this->get(self::DEFAULT_CURRENCY);
+
+        return in_array($value, self::CURRENCIES, true) ? $value : self::DEFAULT_CURRENCY_VALUE;
+    }
+
+    /**
      * Valores para la pantalla de configuración.
      *
      * @return array<string, string|null>
@@ -120,6 +139,7 @@ class CompanySettings
             self::ACCENT_COLOR => $this->accentColor(),
             self::CHARCUTERIA_VAT_RATE => $this->charcuteriaVatRate(),
             self::DEVIATION_THRESHOLD_PERCENT => $this->deviationThresholdPercent(),
+            self::DEFAULT_CURRENCY => $this->defaultCurrency(),
         ];
     }
 

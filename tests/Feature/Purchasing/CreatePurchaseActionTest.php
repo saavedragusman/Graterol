@@ -9,6 +9,8 @@ use App\Domain\Catalog\Unit;
 use App\Domain\Purchasing\Actions\CreatePurchaseAction;
 use App\Domain\Purchasing\Models\Supplier;
 use App\Domain\Settings\Actions\RegisterExchangeRateAction;
+use App\Domain\Settings\Actions\UpdateSettingsAction;
+use App\Domain\Settings\CompanySettings;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 
@@ -96,4 +98,23 @@ it('creates nothing when a line fails inside the transaction [C11]', function ()
 
     expect(DB::table('purchases')->count())->toBe(0)
         ->and(DB::table('purchase_lines')->count())->toBe(0);
+});
+
+// M1 / S10: la moneda por defecto de la compra sale de Settings.
+it('defaults the purchase currency to the configured default currency [S10]', function () {
+    (new RegisterExchangeRateAction)->execute('85.5000', 'manual');
+    $supplier = Supplier::factory()->create();
+    $product = rawMaterialProduct();
+    $lines = [['product_id' => $product->id, 'invoiced_weight_kg' => '10.000', 'line_amount' => '100.0000']];
+
+    $first = (new CreatePurchaseAction)->execute(supplierId: $supplier->id, invoiceNumber: 'F-1', invoiceDate: now(), lines: $lines);
+
+    (new UpdateSettingsAction)->execute([CompanySettings::DEFAULT_CURRENCY => 'VES'], null);
+
+    $second = (new CreatePurchaseAction)->execute(supplierId: $supplier->id, invoiceNumber: 'F-2', invoiceDate: now(), lines: $lines);
+    $explicit = (new CreatePurchaseAction)->execute(supplierId: $supplier->id, invoiceNumber: 'F-3', invoiceDate: now(), lines: $lines, currency: 'USD');
+
+    expect($first->currency)->toBe('USD')
+        ->and($second->currency)->toBe('VES')
+        ->and($explicit->currency)->toBe('USD');
 });

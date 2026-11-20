@@ -39,6 +39,7 @@ function validCompanyForm(array $overrides = []): array
         'accent_color' => '#ABCDEF',
         'charcuteria_vat_rate' => '8,5',
         'deviation_threshold_percent' => '3',
+        'default_currency' => 'VES',
         ...$overrides,
     ];
 }
@@ -57,7 +58,8 @@ it('lets the administrator save the company identity and audits it [C6][C15]', f
         ->and($company->accentColor())->toBe('#ABCDEF')
         ->and($company->charcuteriaVatRate())->toBe('8.50')
         ->and($company->deviationThresholdPercent())->toBe('3.00')
-        ->and(AuditLog::where('auditable_type', 'setting')->where('user_id', $user->id)->count())->toBe(5);
+        ->and($company->defaultCurrency())->toBe('VES')
+        ->and(AuditLog::where('auditable_type', 'setting')->where('user_id', $user->id)->count())->toBe(6);
 });
 
 it('shows the current values when opened [C6]', function () {
@@ -69,6 +71,7 @@ it('shows the current values when opened [C6]', function () {
             'name' => 'Carnes Demo',
             'brand_color' => CompanySettings::DEFAULT_BRAND_COLOR,
             'charcuteria_vat_rate' => '16.00',
+            'default_currency' => 'USD',
         ]);
 });
 
@@ -93,6 +96,7 @@ it('rejects invalid values and leaves stored data unchanged [C6]', function (arr
     'empty name' => [['name' => ''], 'name'],
     'vat over 100' => [['charcuteria_vat_rate' => '101'], 'charcuteria_vat_rate'],
     'threshold not numeric' => [['deviation_threshold_percent' => 'dos'], 'deviation_threshold_percent'],
+    'currency not allowed' => [['default_currency' => 'EUR'], 'default_currency'],
 ]);
 
 it('stores the uploaded logo on the public disk [C6]', function () {

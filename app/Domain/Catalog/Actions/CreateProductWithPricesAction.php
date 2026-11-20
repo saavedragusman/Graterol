@@ -22,7 +22,7 @@ class CreateProductWithPricesAction
         ProductCategory $category,
         mixed $detailPrice = null,
         mixed $wholesalePrice = null,
-        string $currency = 'USD',
+        ?string $currency = null,
     ): Product {
         return DB::transaction(function () use ($name, $type, $unit, $category, $detailPrice, $wholesalePrice, $currency): Product {
             $product = (new CreateProductAction)->execute($name, $type, $unit, $category);

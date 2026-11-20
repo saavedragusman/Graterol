@@ -6,6 +6,7 @@ namespace App\Domain\Purchasing\Actions;
 
 use App\Domain\Purchasing\Actions\Concerns\ValidatesPurchasableProducts;
 use App\Domain\Purchasing\Models\Purchase;
+use App\Domain\Settings\CompanySettings;
 use App\Domain\Settings\Models\ExchangeRate;
 use Carbon\CarbonInterface;
 use Illuminate\Support\Facades\DB;
@@ -31,9 +32,12 @@ class CreatePurchaseAction
         string $freightAmount = '0.0000',
         string $otherCostsAmount = '0.0000',
         ?string $otherCostsNote = null,
-        string $currency = 'VES',
+        ?string $currency = null,
         ?int $createdBy = null,
     ): Purchase {
+        // S10: sin moneda explícita, la que se configuró en Settings.
+        $currency ??= app(CompanySettings::class)->defaultCurrency();
+
         $rate = ExchangeRate::current();
 
         if ($rate === null) {

@@ -13,6 +13,7 @@ use Closure;
 use Filament\Actions\Action;
 use Filament\Forms\Components\ColorPicker;
 use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
@@ -25,7 +26,7 @@ use InvalidArgumentException;
 use UnitEnum;
 
 /**
- * M1 / C6: identidad de la empresa, IVA de charcutería y umbral de despiece, editables desde la oficina.
+ * M1 / C6: identidad de la empresa, IVA de charcutería, moneda por defecto y umbral de despiece, editables desde la oficina.
  * La regla y la auditoría viven en UpdateSettingsAction; aquí solo se valida la forma.
  *
  * @property-read Schema $form
@@ -41,6 +42,7 @@ class ManageCompanySettings extends Page
         'accent_color' => CompanySettings::ACCENT_COLOR,
         'charcuteria_vat_rate' => CompanySettings::CHARCUTERIA_VAT_RATE,
         'deviation_threshold_percent' => CompanySettings::DEVIATION_THRESHOLD_PERCENT,
+        'default_currency' => CompanySettings::DEFAULT_CURRENCY,
     ];
 
     protected string $view = 'filament.pages.manage-company-settings';
@@ -120,6 +122,15 @@ class ManageCompanySettings extends Page
                                 ->helperText('Valor por defecto para productos nuevos de charcutería (BR-05).')
                                 ->required()
                                 ->rule(self::percentRule()),
+                        ]),
+                    Section::make('Monedas')
+                        ->schema([
+                            Select::make('default_currency')
+                                ->label('Moneda por defecto')
+                                ->helperText('Moneda que aparece preseleccionada en compras y precios; se puede cambiar en cada operación.')
+                                ->options(['USD' => 'Dólares (USD)', 'VES' => 'Bolívares (Bs)'])
+                                ->required()
+                                ->in(CompanySettings::CURRENCIES),
                         ]),
                     Section::make('Despiece')
                         ->schema([

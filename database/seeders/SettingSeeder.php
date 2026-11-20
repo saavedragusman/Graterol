@@ -19,6 +19,7 @@ class SettingSeeder extends Seeder
     {
         $defaults = [
             CompanySettings::DEVIATION_THRESHOLD_PERCENT => CompanySettings::DEFAULT_DEVIATION_THRESHOLD_PERCENT,
+            CompanySettings::DEFAULT_CURRENCY => CompanySettings::DEFAULT_CURRENCY_VALUE,
             CompanySettings::NAME => 'Distribuidora Demo',
             CompanySettings::BRAND_COLOR => CompanySettings::DEFAULT_BRAND_COLOR,
             CompanySettings::ACCENT_COLOR => CompanySettings::DEFAULT_ACCENT_COLOR,

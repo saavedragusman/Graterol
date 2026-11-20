@@ -14,7 +14,7 @@ use Illuminate\Support\Facades\DB;
  */
 class SetProductPricesAction
 {
-    public function execute(Product $product, mixed $detail, mixed $wholesale, string $currency = 'USD'): void
+    public function execute(Product $product, mixed $detail, mixed $wholesale, ?string $currency = null): void
     {
         DB::transaction(function () use ($product, $detail, $wholesale, $currency): void {
             $setPrice = new SetProductPriceAction;

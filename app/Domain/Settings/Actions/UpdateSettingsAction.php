@@ -62,6 +62,7 @@ class UpdateSettingsAction
             CompanySettings::BRAND_COLOR, CompanySettings::ACCENT_COLOR => $this->color($key, $value),
             CompanySettings::LOGO_PATH, CompanySettings::FAVICON_PATH => $this->path($value),
             CompanySettings::CHARCUTERIA_VAT_RATE, CompanySettings::DEVIATION_THRESHOLD_PERCENT => $this->percent($value),
+            CompanySettings::DEFAULT_CURRENCY => $this->currency($value),
             default => throw new InvalidArgumentException("Configuración desconocida: {$key}"),
         };
     }
@@ -94,6 +95,15 @@ class UpdateSettingsAction
 
         if (! str_starts_with($value, CompanySettings::LOGO_DIRECTORY.'/') || str_contains($value, '..')) {
             throw new InvalidArgumentException('Ruta de imagen inválida.');
+        }
+
+        return $value;
+    }
+
+    private function currency(?string $value): string
+    {
+        if ($value === null || ! in_array($value, CompanySettings::CURRENCIES, true)) {
+            throw new InvalidArgumentException('La moneda por defecto debe ser USD o VES.');
         }
 
         return $value;

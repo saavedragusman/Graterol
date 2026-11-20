@@ -9,6 +9,7 @@ use App\Domain\Catalog\ProductType;
 use App\Domain\Purchasing\Models\Purchase;
 use App\Domain\Purchasing\Models\PurchaseLine;
 use App\Domain\Purchasing\Models\Supplier;
+use App\Domain\Settings\CompanySettings;
 use App\Filament\Resources\PurchaseResource\Pages\CreatePurchase;
 use App\Filament\Resources\PurchaseResource\Pages\EditPurchase;
 use App\Filament\Resources\PurchaseResource\Pages\ListPurchases;
@@ -86,7 +87,7 @@ class PurchaseResource extends Resource
                 Select::make('currency')
                     ->label('Moneda de la factura')
                     ->options(['USD' => 'Dólares ($)', 'VES' => 'Bolívares (Bs)'])
-                    ->default('USD')
+                    ->default(fn (): string => app(CompanySettings::class)->defaultCurrency())
                     ->required()
                     ->helperText('Si es en Bs, se guarda con la tasa BCV del día.'),
             ]),
