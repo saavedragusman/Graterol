@@ -2,12 +2,14 @@
 
 declare(strict_types=1);
 
+use App\Domain\Settings\Actions\RegisterExchangeRateAction;
 use App\Domain\Settings\Actions\UpdateSettingsAction;
 use App\Domain\Settings\CompanySettings;
 use App\Domain\Settings\Models\Role;
 use App\Models\User;
 use Database\Seeders\RolePermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Carbon;
 
 uses(RefreshDatabase::class);
 
@@ -79,4 +81,44 @@ it('keeps hard-coded brand hex colors out of the theme [S5]', function () {
     $theme = (string) file_get_contents(resource_path('css/filament/admin/theme.css'));
 
     expect(preg_match('/#[0-9a-fA-F]{3,8}\b/', $theme))->toBe(0);
+});
+
+// Menú lateral (d-dashboard.html): tarjeta «Tasa BCV de hoy», BR-02. Las horas se muestran en Caracas (C13).
+
+it('shows today\'s BCV rate with its source and Caracas time in the sidebar [BR-02]', function () {
+    Carbon::setTestNow('2026-11-09 14:00:00'); // 10:00 a. m. en Caracas
+    (new RegisterExchangeRateAction)->execute(
+        '233.5600', 'automatic', null, Carbon::parse('2026-11-09 12:02:00') // 8:02 a. m. en Caracas
+    );
+
+    $this->actingAs(themeAdmin())
+        ->get('/admin')
+        ->assertOk()
+        ->assertSee('Tasa BCV de hoy')
+        ->assertSee('Bs 233,56')
+        ->assertSee('Carga automática · 8:02 a. m.');
+});
+
+it('labels the rate with its date when it is not from today [BR-02]', function () {
+    Carbon::setTestNow('2026-11-10 14:00:00');
+    (new RegisterExchangeRateAction)->execute(
+        '233.5600', 'manual', null, Carbon::parse('2026-11-09 20:30:00') // 4:30 p. m. del 9 en Caracas
+    );
+
+    $this->actingAs(themeAdmin())
+        ->get('/admin')
+        ->assertSee('Tasa BCV del 09/11')
+        ->assertSee('Carga manual · 4:30 p. m.')
+        ->assertDontSee('Tasa BCV de hoy');
+});
+
+it('tells when there is no rate registered yet [BR-02]', function () {
+    $this->actingAs(themeAdmin())
+        ->get('/admin')
+        ->assertSee('Sin tasa registrada');
+});
+
+it('uses brand-night #2A1215 as the sidebar background by default [S3]', function () {
+    expect(file_get_contents(resource_path('css/app.css')))
+        ->toMatch('/--brand-night:\s*#2a1215;/i');
 });

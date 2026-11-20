@@ -3,6 +3,7 @@
 namespace App\Providers\Filament;
 
 use App\Domain\Settings\CompanySettings;
+use App\Support\SidebarRate;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
@@ -33,6 +34,11 @@ class AdminPanelProvider extends PanelProvider
             ->login()
             // S2: tema de la oficina según docs/design.md §2.5 (compilado por Vite).
             ->viteTheme('resources/css/filament/admin/theme.css')
+            // BR-02: tasa BCV vigente al pie del menú lateral. Hora y fecha en Caracas (C13).
+            ->renderHook(
+                PanelsRenderHook::SIDEBAR_FOOTER,
+                fn () => view('filament.sidebar-rate', SidebarRate::forDisplay()),
+            )
             // C6/S5: la marca de settings sobrescribe --brand y --accent también en el panel, igual que en la PWA.
             ->renderHook(
                 PanelsRenderHook::HEAD_END,

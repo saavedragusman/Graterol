@@ -141,3 +141,24 @@ html:not(.dark) .fi-wi-stats-overview-stat-label {
     font-weight: 700;
     line-height: 1.1;
 }
+
+/* --- Tarjeta «Tasa BCV» al pie del menú (d-dashboard.html) --- */
+.erp-sidebar-rate {
+    margin: 12px;
+    padding: 14px;
+    border-radius: 16px;
+    background: rgb(255 255 255 / 0.06);
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    font-variant-numeric: tabular-nums;
+}
+.erp-sidebar-rate__label {
+    font-size: 12px;
+    color: color-mix(in oklab, white 80%, var(--brand-night));
+}
+.erp-sidebar-rate__value {
+    font-family: var(--font-display);
+    font-size: 22px;
+    color: var(--accent);
+}

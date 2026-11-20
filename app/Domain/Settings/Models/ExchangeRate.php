@@ -7,10 +7,15 @@ namespace App\Domain\Settings\Models;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Carbon;
 
 /**
  * BR-02: tasa BCV diaria, con carga automática y respaldo manual.
  * Tabla de solo inserción: no se actualiza ni se borra ningún registro.
+ *
+ * @property string $rate
+ * @property string $source
+ * @property Carbon $effective_at
  */
 class ExchangeRate extends Model
 {

@@ -23,7 +23,7 @@
     --brand: #a51016;
     --accent: #f6b01a;
     --brand-strong: color-mix(in oklab, var(--brand) 66%, black);
-    --brand-night: color-mix(in oklab, var(--brand) 22%, #1f1a17);
+    --brand-night: #2a1215; /* design.md §2.1: fijo, no se deriva de la marca */
     --brand-soft: color-mix(in oklab, var(--brand) 9%, white);
     --on-accent: #2b1d00;
     --accent-soft: color-mix(in oklab, var(--accent) 22%, white);
