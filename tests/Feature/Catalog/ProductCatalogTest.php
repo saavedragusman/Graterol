@@ -74,3 +74,12 @@ it('defaults the price currency to the configured default currency [S10]', funct
         ->and($updated->priceFor(PriceList::Detail->value)->currency)->toBe('VES')
         ->and($updated->priceFor(PriceList::Wholesale->value)->currency)->toBe('VES');
 });
+
+it('keeps an explicit currency over the configured default [C6]', function () {
+    app(UpdateSettingsAction::class)->execute([CompanySettings::DEFAULT_CURRENCY => 'VES'], null);
+    $product = (new CreateProductAction)->execute('Res en vara', ProductType::RawMaterial, Unit::Kilogram, ProductCategory::NaturalMeat);
+
+    (new SetProductPriceAction)->execute($product, PriceList::Detail, '1.0000', 'USD');
+
+    expect($product->priceFor(PriceList::Detail->value)?->currency)->toBe('USD');
+});

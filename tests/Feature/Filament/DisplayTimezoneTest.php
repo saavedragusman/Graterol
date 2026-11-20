@@ -30,3 +30,15 @@ it('muestra en hora de Caracas un instante guardado en UTC', function () {
 
     expect($entry->formatState($stored))->toBe('19/11/2026 23:30');
 });
+
+it('does not shift a date without time to the previous day [C13]', function () {
+    $date = CarbonImmutable::parse('2026-11-09', 'UTC');
+    $livewire = new class extends Component implements HasSchemas
+    {
+        use InteractsWithSchemas;
+    };
+    $entry = TextEntry::make('d')->state($date)->date('d/m/Y');
+    Schema::make($livewire)->components([$entry])->getComponents();
+
+    expect($entry->formatState($date))->toBe('09/11/2026');
+});
