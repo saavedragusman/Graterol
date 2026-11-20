@@ -20,7 +20,7 @@ class Dashboard extends BaseDashboard
 
     public function getHeading(): string|Htmlable
     {
-        return HomeGreeting::greeting();
+        return HomeGreeting::greeting(fullName: auth()->user()?->name);
     }
 
     public function getSubheading(): string|Htmlable|null

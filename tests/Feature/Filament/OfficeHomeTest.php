@@ -79,3 +79,20 @@ it('stores, trims and clears the subtitle with audit [C6][C15]', function () {
     expect(fn () => $action->execute([CompanySettings::SUBTITLE => str_repeat('a', 101)], null))
         ->toThrow(InvalidArgumentException::class);
 });
+
+it('adds only the first name of the logged user to the greeting', function (string $name, string $expected) {
+    expect(HomeGreeting::greeting(Carbon::parse('2026-11-09 12:00:00', 'UTC'), $name))->toBe($expected);
+})->with([
+    'full name' => ['María José Pérez', 'Buenos días, María'],
+    'extra spaces' => ['  Ana   Gómez ', 'Buenos días, Ana'],
+    'lowercase login' => ['gusman', 'Buenos días, Gusman'],
+    'blank name' => ['   ', 'Buenos días'],
+]);
+
+it('greets the logged user by first name on the Inicio page', function () {
+    Carbon::setTestNow('2026-11-09 12:00:00');
+    $user = homeAdmin();
+    $user->update(['name' => 'Luis Alberto Rojas']);
+
+    $this->actingAs($user->fresh())->get('/admin')->assertSee('Buenos días, Luis')->assertDontSee('Buenos días, Luis Alberto');
+});
