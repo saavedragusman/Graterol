@@ -30,15 +30,16 @@ class User extends Authenticatable implements FilamentUser
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'is_active' => 'boolean',
         ];
     }
 
     /**
-     * Cualquier usuario autenticado puede entrar al panel; las Policies de
+     * Todo usuario activo puede entrar al panel (S4); las Policies de
      * cada módulo (C14) ya restringen qué puede ver y hacer adentro.
      */
     public function canAccessPanel(Panel $panel): bool
     {
-        return true;
+        return (bool) $this->is_active;
     }
 }

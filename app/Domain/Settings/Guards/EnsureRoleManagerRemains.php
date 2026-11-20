@@ -51,14 +51,13 @@ class EnsureRoleManagerRemains
 
     /**
      * Única condición de "usuario activo".
-     * TODO(T3): al existir `users.is_active`, filtrar aquí `where('is_active', true)`;
-     * hoy todos los usuarios cuentan como activos.
+     * Un usuario desactivado (`users.is_active` en falso) no cuenta como gestor.
      *
      * @param  Builder<User>  $query
      * @return Builder<User>
      */
     private function onlyActive(Builder $query): Builder
     {
-        return $query;
+        return $query->where('is_active', true);
     }
 }
