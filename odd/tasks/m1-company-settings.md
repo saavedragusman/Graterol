@@ -13,6 +13,7 @@ Saca del código los datos del piloto (C6): nombre, logo, favicon, colores e IVA
 - **S6** — La alícuota de IVA de charcutería sale de `config/graterol.php` y pasa a Settings, editable en la misma pantalla. El valor por defecto es 16,00 (`[abierto]` en BR-05).
 - **S7** — Cada cambio de configuración se audita (C15): usuario, valor anterior y valor nuevo. Una entrada inválida (hex mal formado, archivo que no es imagen, IVA fuera de 0–100) no cambia nada.
 - **S8** — Sin configuración, el sistema usa los valores neutros del producto. Los seeds usan datos ficticios, nunca los del piloto (AGENTS §6).
+- **S9** — «umbral de desviacion que significa? porque no se edita? no quiero nada fork». El umbral de desviación del despiece (BR-11, global por DEC-05) se edita en la misma pantalla, que pasa a llamarse «Configuración general» (secciones Identidad, Impuestos y Despiece). Valor entre 0 y 100, con 2,00 por defecto.
 
 ## Tasks
 
@@ -22,6 +23,7 @@ Saca del código los datos del piloto (C6): nombre, logo, favicon, colores e IVA
 | T2 | S2, S3, S6, S7 | inline — página Filament `ManageCompanySettings` (nombre, logo, favicon, brand, accent, IVA charcutería) | 3e0a4be |
 | T3 | S4 | inline — `AdminPanelProvider` con closures desde Settings | 3e0a4be |
 | T4 | S5 | inline — Inertia comparte `company`; `app.blade.php` inyecta `:root`; `app.css` pasa a `:root` + `@theme inline` | 3e0a4be |
+| T6 | S9, S7 | inline — `CompanySettings::deviationThresholdPercent()`; `OrderController` y `ButcheryOrderResource` lo leen de ahí; campo en la pantalla | (este commit) |
 | T5 | S6 | inline — `CreateProductAction` lee el IVA de Settings; se elimina `config/graterol.php` | 9e79502 (borrado de config en 3e0a4be) |
 
 Risk: item 2 (permiso nuevo y subida de archivos) e item 3 (`CreateProductAction` es código compartido del catálogo).
@@ -39,3 +41,4 @@ Risk: item 2 (permiso nuevo y subida de archivos) e item 3 (`CreateProductAction
 - **L2** Decisiones del humano: datos = «Identidad visual» + «Solo identidad por ahora»; quién edita = «Solo administrador»; IVA de charcutería = «Sí, en este arreglo»; rama = «Desde feat/m1-products».
 - **L4** Decisión técnica: en `app.css`, los tonos de la familia brand/accent se derivan con `color-mix()` para que una marca distinta quede coherente; se registró en design.md §2.4. El layout inyecta `html:root` para ganarle al CSS que Vite inyecta en desarrollo. El SVG queda excluido de los formatos de logo (riesgo de XSS al servirlo desde el mismo origen).
 - **L3** Hallazgo: no existe ninguna página de Settings en el historial de git; `AdminPanelProvider.php:32-37` tenía fijos el nombre, el logo y los colores del piloto.
+- **L5** (pedido literal): «umbral de desviacion que significa? porque no se edita? no quiero nada fork» → T6. Suite: 193/193, pint ok, types:check 0.

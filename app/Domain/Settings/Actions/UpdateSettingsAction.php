@@ -61,7 +61,7 @@ class UpdateSettingsAction
             CompanySettings::NAME => $this->name($value),
             CompanySettings::BRAND_COLOR, CompanySettings::ACCENT_COLOR => $this->color($key, $value),
             CompanySettings::LOGO_PATH, CompanySettings::FAVICON_PATH => $this->path($value),
-            CompanySettings::CHARCUTERIA_VAT_RATE => $this->vatRate($value),
+            CompanySettings::CHARCUTERIA_VAT_RATE, CompanySettings::DEVIATION_THRESHOLD_PERCENT => $this->percent($value),
             default => throw new InvalidArgumentException("Configuración desconocida: {$key}"),
         };
     }
@@ -99,17 +99,17 @@ class UpdateSettingsAction
         return $value;
     }
 
-    private function vatRate(?string $value): string
+    private function percent(?string $value): string
     {
-        return self::normalizeVatRate($value)
-            ?? throw new InvalidArgumentException('La alícuota debe ser un número entre 0 y 100.');
+        return self::normalizePercent($value)
+            ?? throw new InvalidArgumentException('El porcentaje debe ser un número entre 0 y 100.');
     }
 
     /**
-     * C9: sin coma flotante; la alícuota se valida y normaliza como texto decimal ("8,5" → "8.50").
+     * C9: sin coma flotante; el porcentaje (alícuota, umbral) se valida y normaliza como texto decimal ("8,5" → "8.50").
      * Devuelve null si no es un número entre 0 y 100 con hasta dos decimales.
      */
-    public static function normalizeVatRate(?string $value): ?string
+    public static function normalizePercent(?string $value): ?string
     {
         if ($value === null || preg_match('/^(\d{1,3})(?:[.,](\d{1,2}))?$/', trim($value), $match) !== 1) {
             return null;

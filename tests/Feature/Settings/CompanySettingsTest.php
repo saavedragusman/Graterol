@@ -100,3 +100,19 @@ it('falls back to the default when a stored color is malformed [C6]', function (
     expect($company->brandColor())->toBe(CompanySettings::DEFAULT_BRAND_COLOR)
         ->and($company->accentColor())->toBe(CompanySettings::DEFAULT_ACCENT_COLOR);
 });
+
+it('reads the butchery deviation threshold from settings with 2 points by default [BR-11][C6]', function () {
+    expect(app(CompanySettings::class)->deviationThresholdPercent())->toBe('2.00');
+
+    app(UpdateSettingsAction::class)->execute([CompanySettings::DEVIATION_THRESHOLD_PERCENT => '3,5'], null);
+
+    expect(app(CompanySettings::class)->deviationThresholdPercent())->toBe('3.50');
+});
+
+it('rejects a deviation threshold outside 0 to 100 [BR-11]', function () {
+    expect(fn () => app(UpdateSettingsAction::class)->execute(
+        [CompanySettings::DEVIATION_THRESHOLD_PERCENT => '120'], null
+    ))->toThrow(InvalidArgumentException::class);
+
+    expect(Setting::count())->toBe(0);
+});

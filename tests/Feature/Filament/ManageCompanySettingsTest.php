@@ -38,6 +38,7 @@ function validCompanyForm(array $overrides = []): array
         'brand_color' => '#123456',
         'accent_color' => '#ABCDEF',
         'charcuteria_vat_rate' => '8,5',
+        'deviation_threshold_percent' => '3',
         ...$overrides,
     ];
 }
@@ -55,7 +56,8 @@ it('lets the administrator save the company identity and audits it [C6][C15]', f
         ->and($company->brandColor())->toBe('#123456')
         ->and($company->accentColor())->toBe('#ABCDEF')
         ->and($company->charcuteriaVatRate())->toBe('8.50')
-        ->and(AuditLog::where('auditable_type', 'setting')->where('user_id', $user->id)->count())->toBe(4);
+        ->and($company->deviationThresholdPercent())->toBe('3.00')
+        ->and(AuditLog::where('auditable_type', 'setting')->where('user_id', $user->id)->count())->toBe(5);
 });
 
 it('shows the current values when opened [C6]', function () {
@@ -90,6 +92,7 @@ it('rejects invalid values and leaves stored data unchanged [C6]', function (arr
     'malformed brand color' => [['brand_color' => 'rojo'], 'brand_color'],
     'empty name' => [['name' => ''], 'name'],
     'vat over 100' => [['charcuteria_vat_rate' => '101'], 'charcuteria_vat_rate'],
+    'threshold not numeric' => [['deviation_threshold_percent' => 'dos'], 'deviation_threshold_percent'],
 ]);
 
 it('stores the uploaded logo on the public disk [C6]', function () {

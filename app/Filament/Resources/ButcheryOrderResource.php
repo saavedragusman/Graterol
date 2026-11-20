@@ -6,7 +6,7 @@ namespace App\Filament\Resources;
 
 use App\Domain\Butchery\Models\ButcheryOrder;
 use App\Domain\Butchery\Models\ButcheryOrderLine;
-use App\Domain\Settings\Models\Setting;
+use App\Domain\Settings\CompanySettings;
 use App\Filament\Resources\ButcheryOrderResource\Pages\ListButcheryOrders;
 use App\Filament\Resources\ButcheryOrderResource\Pages\ViewButcheryOrder;
 use App\Support\ValueObjects\Money;
@@ -126,6 +126,6 @@ class ButcheryOrderResource extends Resource
      */
     private static function deviationThreshold(): string
     {
-        return Setting::valueFor('butchery.deviation_threshold_percent', '2.00');
+        return app(CompanySettings::class)->deviationThresholdPercent();
     }
 }

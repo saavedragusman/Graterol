@@ -28,6 +28,9 @@ class CompanySettings
     // BR-05: alícuota de charcutería, [abierto] con 16 % por defecto.
     public const CHARCUTERIA_VAT_RATE = 'catalog.charcuteria_vat_rate';
 
+    // BR-11 (DEC-05/DEC-06): umbral global de desviación del despiece, en puntos.
+    public const DEVIATION_THRESHOLD_PERCENT = 'butchery.deviation_threshold_percent';
+
     public const DEFAULT_NAME = 'ERP';
 
     public const DEFAULT_BRAND_COLOR = '#A51016';
@@ -35,6 +38,8 @@ class CompanySettings
     public const DEFAULT_ACCENT_COLOR = '#F6B01A';
 
     public const DEFAULT_CHARCUTERIA_VAT_RATE = '16.00';
+
+    public const DEFAULT_DEVIATION_THRESHOLD_PERCENT = '2.00';
 
     public const LOGO_DIRECTORY = 'branding';
 
@@ -49,6 +54,7 @@ class CompanySettings
         self::BRAND_COLOR,
         self::ACCENT_COLOR,
         self::CHARCUTERIA_VAT_RATE,
+        self::DEVIATION_THRESHOLD_PERCENT,
     ];
 
     /** @var array<string, string>|null */
@@ -94,6 +100,11 @@ class CompanySettings
         return $this->get(self::CHARCUTERIA_VAT_RATE) ?? self::DEFAULT_CHARCUTERIA_VAT_RATE;
     }
 
+    public function deviationThresholdPercent(): string
+    {
+        return $this->get(self::DEVIATION_THRESHOLD_PERCENT) ?? self::DEFAULT_DEVIATION_THRESHOLD_PERCENT;
+    }
+
     /**
      * Valores para la pantalla de configuración.
      *
@@ -108,6 +119,7 @@ class CompanySettings
             self::BRAND_COLOR => $this->brandColor(),
             self::ACCENT_COLOR => $this->accentColor(),
             self::CHARCUTERIA_VAT_RATE => $this->charcuteriaVatRate(),
+            self::DEVIATION_THRESHOLD_PERCENT => $this->deviationThresholdPercent(),
         ];
     }
 

@@ -25,7 +25,7 @@ use InvalidArgumentException;
 use UnitEnum;
 
 /**
- * M1 / C6: identidad de la empresa e IVA de charcutería, editables desde la oficina.
+ * M1 / C6: identidad de la empresa, IVA de charcutería y umbral de despiece, editables desde la oficina.
  * La regla y la auditoría viven en UpdateSettingsAction; aquí solo se valida la forma.
  *
  * @property-read Schema $form
@@ -40,6 +40,7 @@ class ManageCompanySettings extends Page
         'brand_color' => CompanySettings::BRAND_COLOR,
         'accent_color' => CompanySettings::ACCENT_COLOR,
         'charcuteria_vat_rate' => CompanySettings::CHARCUTERIA_VAT_RATE,
+        'deviation_threshold_percent' => CompanySettings::DEVIATION_THRESHOLD_PERCENT,
     ];
 
     protected string $view = 'filament.pages.manage-company-settings';
@@ -48,11 +49,11 @@ class ManageCompanySettings extends Page
 
     protected static string|UnitEnum|null $navigationGroup = 'Configuración';
 
-    protected static ?string $navigationLabel = 'Empresa';
+    protected static ?string $navigationLabel = 'General';
 
-    protected static ?string $title = 'Empresa';
+    protected static ?string $title = 'Configuración general';
 
-    protected static ?string $slug = 'configuracion/empresa';
+    protected static ?string $slug = 'configuracion/general';
 
     /** @var array<string, mixed>|null */
     public ?array $data = [];
@@ -118,11 +119,15 @@ class ManageCompanySettings extends Page
                                 ->label('Alícuota de IVA de charcutería (%)')
                                 ->helperText('Valor por defecto para productos nuevos de charcutería (BR-05).')
                                 ->required()
-                                ->rule(fn () => function (string $attribute, mixed $value, Closure $fail) {
-                                    if (UpdateSettingsAction::normalizeVatRate(is_string($value) ? $value : null) === null) {
-                                        $fail('La alícuota debe ser un número entre 0 y 100, con hasta dos decimales.');
-                                    }
-                                }),
+                                ->rule(self::percentRule()),
+                        ]),
+                    Section::make('Despiece')
+                        ->schema([
+                            TextInput::make('deviation_threshold_percent')
+                                ->label('Umbral de desviación (puntos)')
+                                ->helperText('Si un corte rinde más o menos que la plantilla por encima de este margen, se marca como alerta (BR-11).')
+                                ->required()
+                                ->rule(self::percentRule()),
                         ]),
                 ])
                     ->livewireSubmitHandler('save')
@@ -136,6 +141,15 @@ class ManageCompanySettings extends Page
                     ]),
             ])
             ->statePath('data');
+    }
+
+    private static function percentRule(): Closure
+    {
+        return fn () => function (string $attribute, mixed $value, Closure $fail) {
+            if (UpdateSettingsAction::normalizePercent(is_string($value) ? $value : null) === null) {
+                $fail('Debe ser un número entre 0 y 100, con hasta dos decimales.');
+            }
+        };
     }
 
     public function save(): void

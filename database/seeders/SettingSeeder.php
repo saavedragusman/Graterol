@@ -18,7 +18,7 @@ class SettingSeeder extends Seeder
     public function run(): void
     {
         $defaults = [
-            'butchery.deviation_threshold_percent' => '2.00',
+            CompanySettings::DEVIATION_THRESHOLD_PERCENT => CompanySettings::DEFAULT_DEVIATION_THRESHOLD_PERCENT,
             CompanySettings::NAME => 'Distribuidora Demo',
             CompanySettings::BRAND_COLOR => CompanySettings::DEFAULT_BRAND_COLOR,
             CompanySettings::ACCENT_COLOR => CompanySettings::DEFAULT_ACCENT_COLOR,
