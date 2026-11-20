@@ -39,11 +39,11 @@ it('creates a purchase in draft with the current exchange rate [BR-02]', functio
     );
 
     expect($purchase->status)->toBe('draft')
-        ->and($purchase->exchange_rate)->toBe('85.5000')
-        ->and($purchase->freight_amount)->toBe('15.0000')
+        ->and($purchase->exchange_rate)->toBe('85.50')
+        ->and($purchase->freight_amount)->toBe('15.00')
         ->and($purchase->lines)->toHaveCount(1)
         ->and($purchase->lines->first()->invoiced_weight_kg)->toBe('100.000')
-        ->and($purchase->lines->first()->line_amount)->toBe('110.0000')
+        ->and($purchase->lines->first()->line_amount)->toBe('110.00')
         ->and($purchase->lines->first()->batch_id)->toBeNull();
 });
 

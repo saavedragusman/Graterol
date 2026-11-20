@@ -12,9 +12,9 @@ it('splits the amount proportionally to the received weight [BR-07]', function (
         'pollo' => '101.200',
     ]);
 
-    $sum = bcadd($allocated['media_res'], $allocated['pollo'], 4);
+    $sum = bcadd($allocated['media_res'], $allocated['pollo'], 2);
 
-    expect($sum)->toBe('15.0000')
+    expect($sum)->toBe('15.00')
         ->and((float) $allocated['pollo'])->toBeGreaterThan((float) $allocated['media_res']);
 });
 
@@ -48,9 +48,9 @@ it('the allocated sum always equals the exact total, never more or less [BR-07]'
         'cochino' => '45.750',
     ]);
 
-    $sum = array_reduce($allocated, fn (string $carry, string $amount) => bcadd($carry, $amount, 4), '0.0000');
+    $sum = array_reduce($allocated, fn (string $carry, string $amount) => bcadd($carry, $amount, 2), '0.00');
 
-    expect($sum)->toBe('397.0000');
+    expect($sum)->toBe('397.00');
 });
 
 it('returns an empty allocation when there are no lines [BR-07]', function () {

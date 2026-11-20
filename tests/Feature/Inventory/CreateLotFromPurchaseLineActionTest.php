@@ -30,10 +30,10 @@ it('creates the batch with unit cost = total cost ÷ received weight [BR-07]', f
     );
 
     expect($batch->unit)->toBe('kg')
-        ->and($batch->total_cost)->toBe('110.0000')
+        ->and($batch->total_cost)->toBe('110.00')
         ->and($batch->unit_cost)->toBe('1.1224')
         ->and($batch->currency)->toBe('VES')
-        ->and($batch->exchange_rate)->toBe('85.5000')
+        ->and($batch->exchange_rate)->toBe('85.50')
         ->and($batch->code)->toBe('purchase_line-1')
         ->and($batch->product_id)->toBe($product->id);
 });

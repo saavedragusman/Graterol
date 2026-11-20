@@ -17,7 +17,7 @@ it('registers a manual rate [BR-02]', function () {
     $rate = (new RegisterExchangeRateAction)->execute('85.5000', 'manual');
 
     expect($rate->source)->toBe('manual')
-        ->and($rate->rate)->toBe('85.5000');
+        ->and($rate->rate)->toBe('85.50');
 });
 
 it('returns the most recently effective rate as current [BR-02]', function () {
@@ -45,10 +45,10 @@ it('queues the automatic BCV fetch job instead of calling the API inline [BR-02]
 it('stores the rate with 2 decimals, rounding half-up, for any source [BR-02]', function (string $input, string $expected) {
     expect((new RegisterExchangeRateAction)->execute($input, 'automatic')->rate)->toBe($expected);
 })->with([
-    ['918.7662', '918.7700'],
-    ['918.764', '918.7600'],
-    ['918.765', '918.7700'],
-    ['85', '85.0000'],
+    ['918.7662', '918.77'],
+    ['918.764', '918.76'],
+    ['918.765', '918.77'],
+    ['85', '85.00'],
 ]);
 
 it('rejects a rate that rounds to zero and stores nothing [BR-02]', function () {

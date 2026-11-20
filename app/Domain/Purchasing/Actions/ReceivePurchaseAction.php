@@ -51,8 +51,8 @@ class ReceivePurchaseAction
                 $receivedPieces = $receivedByLine[$line->id]['received_pieces'] ?? null;
                 $expiresOn = $receivedByLine[$line->id]['expires_on'] ?? null;
 
-                // Las columnas siguen en decimal(18,4) hasta la migración de S6: una fila
-                // vieja puede traer 4 decimales, por eso se lee con el redondeo explícito.
+                // Las columnas ya son decimal(18,2) (S6); el redondeo explícito es inocuo y
+                // tolera valores que aún vengan con 4 decimales desde un cast del modelo.
                 $totalCost = Money::rounded((string) $line->line_amount)
                     ->add(Money::fromString($allocatedFreight[$line->id]))
                     ->add(Money::fromString($allocatedOtherCosts[$line->id]));

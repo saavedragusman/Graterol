@@ -71,7 +71,7 @@ it('the lot cost equals the invoiced amount plus the allocated freight, divided 
 
     $batch = $received->lines->first()->batch;
 
-    expect($batch->total_cost)->toBe('125.0000')
+    expect($batch->total_cost)->toBe('125.00')
         ->and($batch->unit_cost)->toBe('1.2500');
 });
 
@@ -102,7 +102,7 @@ it('allocates freight proportionally to weight and creates one lot per line [BR-
 
     expect($batches)->toHaveCount(2)
         ->and($batches[0]->id)->not->toBe($batches[1]->id)
-        ->and(bcadd($received->lines[0]->allocated_freight, $received->lines[1]->allocated_freight, 4))->toBe('15.0000')
+        ->and(bcadd($received->lines[0]->allocated_freight, $received->lines[1]->allocated_freight, 2))->toBe('15.00')
         ->and($received->lines[1]->batch->pieces)->toBe(2);
 });
 
