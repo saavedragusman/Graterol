@@ -43,15 +43,17 @@ class ReceivePurchaseAction
                 $weightsByLine[$line->id] = $receivedByLine[$line->id]['received_weight_kg'];
             }
 
-            $allocatedFreight = (new AllocateCostsAction)->execute((string) $locked->freight_amount, $weightsByLine);
-            $allocatedOtherCosts = (new AllocateCostsAction)->execute((string) $locked->other_costs_amount, $weightsByLine);
+            $allocatedFreight = (new AllocateCostsAction)->execute(Money::rounded((string) $locked->freight_amount)->toInternalString(), $weightsByLine);
+            $allocatedOtherCosts = (new AllocateCostsAction)->execute(Money::rounded((string) $locked->other_costs_amount)->toInternalString(), $weightsByLine);
 
             foreach ($lines as $line) {
                 $receivedWeight = $receivedByLine[$line->id]['received_weight_kg'];
                 $receivedPieces = $receivedByLine[$line->id]['received_pieces'] ?? null;
                 $expiresOn = $receivedByLine[$line->id]['expires_on'] ?? null;
 
-                $totalCost = Money::fromString((string) $line->line_amount)
+                // Las columnas siguen en decimal(18,4) hasta la migración de S6: una fila
+                // vieja puede traer 4 decimales, por eso se lee con el redondeo explícito.
+                $totalCost = Money::rounded((string) $line->line_amount)
                     ->add(Money::fromString($allocatedFreight[$line->id]))
                     ->add(Money::fromString($allocatedOtherCosts[$line->id]));
 

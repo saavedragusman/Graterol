@@ -121,12 +121,12 @@ it('reproduces the golden case exactly: 20 kg of chicken at US$ 56,00 [BR-13]', 
 
     expect($closed->status)->toBe('closed')
         ->and($closed->actual_shrinkage_kg)->toBe('0.600')
-        ->and($byName('Filete de pechuga')->allocated_cost)->toBe('24.5738')
-        ->and($byName('Muslo')->allocated_cost)->toBe('19.1550')
-        ->and($byName('Alas')->allocated_cost)->toBe('5.5134')
-        ->and($byName('Carapacho')->allocated_cost)->toBe('4.1586')
-        ->and($byName('Hígado y molleja')->allocated_cost)->toBe('2.3629')
-        ->and($byName('Piel y grasa')->allocated_cost)->toBe('0.2363');
+        ->and($byName('Filete de pechuga')->allocated_cost)->toBe('24.5700')
+        ->and($byName('Muslo')->allocated_cost)->toBe('19.1600')
+        ->and($byName('Alas')->allocated_cost)->toBe('5.5100')
+        ->and($byName('Carapacho')->allocated_cost)->toBe('4.1600')
+        ->and($byName('Hígado y molleja')->allocated_cost)->toBe('2.3600')
+        ->and($byName('Piel y grasa')->allocated_cost)->toBe('0.2400');
 
     $sum = array_reduce(
         $closed->lines->all(),

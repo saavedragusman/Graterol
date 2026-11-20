@@ -21,15 +21,15 @@ it('creates the output batch with unit cost = allocated cost ÷ actual weight [B
         sourceId: 1,
         productId: $filete->id,
         weightKg: '4.800',
-        totalCost: '24.5738',
+        totalCost: '24.57',
         currency: 'VES',
         exchangeRate: '85.5000',
         userId: $user->id,
     );
 
     expect($batch->product_id)->toBe($filete->id)
-        ->and($batch->total_cost)->toBe('24.5738')
-        ->and($batch->unit_cost)->toBe('5.1195')
+        ->and($batch->total_cost)->toBe('24.5700')
+        ->and($batch->unit_cost)->toBe('5.1188')
         ->and($batch->code)->toBe('butchery_order_line-1');
 });
 
@@ -41,7 +41,7 @@ it('registers the butchery_out movement linked to the order line [BR-12][C10]', 
         sourceId: 7,
         productId: $filete->id,
         weightKg: '6.400',
-        totalCost: '19.1550',
+        totalCost: '19.16',
         currency: 'VES',
         exchangeRate: '85.5000',
         userId: $user->id,
