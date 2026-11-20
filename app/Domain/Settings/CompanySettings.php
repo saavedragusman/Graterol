@@ -17,6 +17,9 @@ class CompanySettings
 {
     public const NAME = 'company.name';
 
+    // Texto libre bajo el nombre (p. ej. ciudad o sede); opcional.
+    public const SUBTITLE = 'company.subtitle';
+
     public const LOGO_PATH = 'company.logo_path';
 
     public const FAVICON_PATH = 'company.favicon_path';
@@ -57,6 +60,7 @@ class CompanySettings
     /** @var list<string> */
     public const KEYS = [
         self::NAME,
+        self::SUBTITLE,
         self::LOGO_PATH,
         self::FAVICON_PATH,
         self::BRAND_COLOR,
@@ -72,6 +76,11 @@ class CompanySettings
     public function name(): string
     {
         return $this->get(self::NAME) ?? self::DEFAULT_NAME;
+    }
+
+    public function subtitle(): ?string
+    {
+        return $this->get(self::SUBTITLE);
     }
 
     public function brandColor(): string
@@ -133,6 +142,7 @@ class CompanySettings
     {
         return [
             self::NAME => $this->get(self::NAME),
+            self::SUBTITLE => $this->subtitle(),
             self::LOGO_PATH => $this->logoPath(),
             self::FAVICON_PATH => $this->faviconPath(),
             self::BRAND_COLOR => $this->brandColor(),

@@ -36,6 +36,7 @@ class ManageCompanySettings extends Page
     /** Formulario => clave en settings. */
     private const FIELDS = [
         'name' => CompanySettings::NAME,
+        'subtitle' => CompanySettings::SUBTITLE,
         'logo_path' => CompanySettings::LOGO_PATH,
         'favicon_path' => CompanySettings::FAVICON_PATH,
         'brand_color' => CompanySettings::BRAND_COLOR,
@@ -86,6 +87,11 @@ class ManageCompanySettings extends Page
                             TextInput::make('name')
                                 ->label('Nombre comercial')
                                 ->required()
+                                ->maxLength(100)
+                                ->columnSpanFull(),
+                            TextInput::make('subtitle')
+                                ->label('Subtítulo (opcional)')
+                                ->helperText('Se muestra junto al logo, por ejemplo la ciudad o la sede.')
                                 ->maxLength(100)
                                 ->columnSpanFull(),
                             FileUpload::make('logo_path')

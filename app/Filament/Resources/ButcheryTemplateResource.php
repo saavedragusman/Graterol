@@ -42,6 +42,9 @@ class ButcheryTemplateResource extends Resource
 
     protected static ?string $pluralModelLabel = 'plantillas de despiece';
 
+    // Filament capitaliza cada palabra del plural; la etiqueta del menú va en español normal.
+    protected static ?string $navigationLabel = 'Plantillas de despiece';
+
     public static function form(Schema $schema): Schema
     {
         return $schema->components([
