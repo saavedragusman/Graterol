@@ -41,6 +41,7 @@ class AuditLogResource extends Resource
         'purchase' => 'Compra', // VoidPurchaseAction.php:65
         'butchery_order' => 'Orden de despiece', // VoidButcheryOrderAction.php:92
         'setting' => 'Configuración', // UpdateSettingsAction.php:45
+        'role' => 'Rol', // CreateRoleAction / UpdateRoleAction / DeleteRoleAction
     ];
 
     /** Acciones auditadas hoy; una acción desconocida se muestra tal cual. */
@@ -48,6 +49,9 @@ class AuditLogResource extends Resource
         'purchase.void' => 'Anulación', // VoidPurchaseAction.php:66
         'butchery_order.void' => 'Anulación', // VoidButcheryOrderAction.php:93
         'updated' => 'Cambio', // UpdateSettingsAction.php:46
+        'role.created' => 'Creación', // CreateRoleAction
+        'role.updated' => 'Cambio', // UpdateRoleAction
+        'role.deleted' => 'Borrado', // DeleteRoleAction
     ];
 
     public static function typeLabel(?string $type): string

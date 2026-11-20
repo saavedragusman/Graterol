@@ -14,7 +14,9 @@ use App\Domain\Purchasing\Policies\PurchasePolicy;
 use App\Domain\Purchasing\Policies\SupplierPolicy;
 use App\Domain\Settings\CompanySettings;
 use App\Domain\Settings\Models\AuditLog;
+use App\Domain\Settings\Models\Role;
 use App\Domain\Settings\Policies\AuditLogPolicy;
+use App\Domain\Settings\Policies\RolePolicy;
 use App\Support\DisplayTimezone;
 use Filament\Support\Facades\FilamentTimezone;
 use Illuminate\Support\Facades\Gate;
@@ -45,5 +47,6 @@ class AppServiceProvider extends ServiceProvider
         Gate::policy(ButcheryTemplate::class, ButcheryTemplatePolicy::class);
         Gate::policy(ButcheryOrder::class, ButcheryOrderPolicy::class);
         Gate::policy(AuditLog::class, AuditLogPolicy::class);
+        Gate::policy(Role::class, RolePolicy::class);
     }
 }
