@@ -19,7 +19,7 @@ Rama `feat/m1-office-theme`, sale de `feat/m1-roles` (293cf46). Aplica a la ofic
 |---|---|---|---|
 | T1 | S4 | worker — fuentes woff2 en `public/fonts` y `@font-face` | 4eb2e69 |
 | T2 | S2, S3, S5, S6 | worker — `theme.css`, registro en Vite y en `AdminPanelProvider` | 4eb2e69 |
-| T3 | S8 | inline — `SidebarRate` + hook `SIDEBAR_FOOTER` + `--brand-night` fijo | (este commit) |
+| T3 | S8 | inline — `SidebarRate` + hook `SIDEBAR_FOOTER` + `--brand-night` fijo | a3ce3c0 |
 
 ## Log
 
