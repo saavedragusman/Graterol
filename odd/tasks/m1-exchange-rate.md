@@ -15,11 +15,12 @@ Rama `feat/m1-exchange-rate`, sale de `feat/m1-office-theme` (8301ee0).
 
 | ID | Specs | Ruta | Commit |
 |---|---|---|---|
-| T1 | S3 | worker — programación en `routes/console.php` con test | |
-| T2 | S4, S5, S6 | worker — `PermissionKey::RatesManage`, Policy, página/recurso Filament, auditoría | |
+| T1 | S3 | worker — programación en `routes/console.php` con test | 430d931 |
+| T2 | S4, S5, S6 | worker — `PermissionKey::RatesManage`, Policy, página/recurso Filament, auditoría | a7bf419 |
 
 ## Log
 
 - **L1** (2026-11-20): «la tasa que se muestra es la del 12».
 - **L2** Decisiones del humano: «Cargar la de hoy ahora», «Programar la carga diaria», «Pantalla para registrar la tasa a mano»; hora «8:00 a. m. de Caracas».
 - **L3** Datos: tras la carga manual hay dos filas iguales (ids 2 y 3, 918,7662); inofensivo por ser solo inserción.
+- **L4** T1 en 430d931 y T2 en a7bf419: 339/339, pint, types:check 0. `schedule:list` muestra `bcv-rate-fetch` (08:00–12:00 Caracas). RED observado. Para que corra hace falta un proceso del programador: local `./vendor/bin/sail artisan schedule:work`; producción, cron `* * * * * cd /ruta && php artisan schedule:run`. El `withoutOverlapping` necesita un `CACHE_STORE` con locks (no se leyó `.env`). Sin ver en navegador el ítem «Tasa BCV» del menú. Pasos del humano: migrar no hace falta; sí `db:seed --class=RolePermissionSeeder` para que el administrador reciba `rates.manage`.
