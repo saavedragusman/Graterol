@@ -1,6 +1,12 @@
 <script setup lang="ts">
 import { computed, reactive, ref } from 'vue';
-import { router, Link } from '@inertiajs/vue3';
+import { router } from '@inertiajs/vue3';
+import AppButton from '../../components/AppButton.vue';
+import AppHeader from '../../components/AppHeader.vue';
+import AppInput from '../../components/AppInput.vue';
+import ListRow from '../../components/ListRow.vue';
+import StickyActionBar from '../../components/StickyActionBar.vue';
+import { formatKg, normalizeDecimal } from '../../lib/format';
 
 interface Product {
     name: string;
@@ -54,7 +60,7 @@ function confirm(): void {
         {
             lines: props.purchase.lines.map((line) => ({
                 id: line.id,
-                received_weight_kg: weighed[line.id].received_weight_kg,
+                received_weight_kg: normalizeDecimal(weighed[line.id].received_weight_kg),
                 received_pieces: weighed[line.id].received_pieces === '' ? null : Number(weighed[line.id].received_pieces),
             })),
         },
@@ -68,61 +74,49 @@ function confirm(): void {
 </script>
 
 <template>
-    <div class="flex min-h-screen flex-col bg-canvas">
-        <header class="flex items-center gap-3 border-b border-line bg-surface px-4 py-3">
-            <Link href="/purchasing/receipts" class="text-sm text-ink-muted">‹ Volver</Link>
-            <div>
-                <h1 class="text-[15px] font-bold text-ink">{{ purchase.supplier.name }}</h1>
-                <p class="text-[13px] text-ink-muted">Factura {{ purchase.supplier_invoice_number }}</p>
-            </div>
-        </header>
+    <div class="flex min-h-screen flex-col bg-canvas text-ink">
+        <AppHeader
+            :title="purchase.supplier.name"
+            :subtitle="`Factura ${purchase.supplier_invoice_number}`"
+            back-href="/purchasing/receipts"
+        />
 
-        <main class="flex-1 space-y-3 overflow-y-auto p-4 pb-28">
-            <div
-                v-for="line in purchase.lines"
-                :key="line.id"
-                class="rounded-md border border-line bg-surface p-4"
-            >
-                <div class="mb-2 flex items-center justify-between">
-                    <span class="text-[15px] font-bold text-ink">{{ line.product.name }}</span>
-                    <span class="text-[13px] text-ink-muted">Facturado: {{ line.invoiced_weight_kg }} kg</span>
+        <main class="mx-auto flex w-full max-w-xl flex-1 flex-col gap-3 px-4 pb-32 pt-3.5">
+            <section v-for="line in purchase.lines" :key="line.id" class="rounded-[20px] bg-surface py-2">
+                <ListRow
+                    icon="package"
+                    tone="brand"
+                    :title="line.product.name"
+                    :subtitle="`Facturado: ${formatKg(line.invoiced_weight_kg)} kg`"
+                />
+                <div class="flex gap-3 px-4 pb-2 pt-1">
+                    <AppInput
+                        v-model="weighed[line.id].received_weight_kg"
+                        class="flex-1"
+                        label="Kg recibidos"
+                        numeric
+                        inputmode="decimal"
+                        placeholder="0,000"
+                    />
+                    <AppInput
+                        v-if="line.invoiced_pieces !== null"
+                        v-model="weighed[line.id].received_pieces"
+                        class="w-28"
+                        label="Piezas"
+                        type="number"
+                        numeric
+                        inputmode="numeric"
+                        step="1"
+                        min="0"
+                    />
                 </div>
-
-                <div class="flex gap-3">
-                    <label class="flex-1 text-[13px] text-ink-muted">
-                        Kg recibidos
-                        <input
-                            v-model="weighed[line.id].received_weight_kg"
-                            type="text"
-                            inputmode="decimal"
-                            class="mt-1 block w-full rounded-md border border-line px-3 py-2 text-[16px] text-ink focus:border-2 focus:border-brand focus:outline-none"
-                            placeholder="0.000"
-                        >
-                    </label>
-                    <label v-if="line.invoiced_pieces !== null" class="w-28 text-[13px] text-ink-muted">
-                        Piezas
-                        <input
-                            v-model="weighed[line.id].received_pieces"
-                            type="number"
-                            step="1"
-                            min="0"
-                            inputmode="numeric"
-                            class="mt-1 block w-full rounded-md border border-line px-3 py-2 text-[16px] text-ink focus:border-2 focus:border-brand focus:outline-none"
-                        >
-                    </label>
-                </div>
-            </div>
+            </section>
         </main>
 
-        <div class="fixed inset-x-0 bottom-0 border-t border-line bg-surface p-4">
-            <button
-                type="button"
-                :disabled="!allWeighed || submitting"
-                class="min-h-[56px] w-full rounded-md bg-accent font-bold text-on-accent disabled:bg-canvas disabled:text-ink-muted"
-                @click="confirm"
-            >
+        <StickyActionBar>
+            <AppButton variant="accent" size="lg" :disabled="!allWeighed || submitting" @click="confirm">
                 Confirmar recepción
-            </button>
-        </div>
+            </AppButton>
+        </StickyActionBar>
     </div>
 </template>
