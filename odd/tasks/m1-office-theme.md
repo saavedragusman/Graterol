@@ -16,11 +16,12 @@ Rama `feat/m1-office-theme`, sale de `feat/m1-roles` (293cf46). Aplica a la ofic
 
 | ID | Specs | Ruta | Commit |
 |---|---|---|---|
-| T1 | S4 | worker — fuentes woff2 en `public/fonts` y `@font-face` | |
-| T2 | S2, S3, S5, S6 | worker — `theme.css`, registro en Vite y en `AdminPanelProvider` | |
+| T1 | S4 | worker — fuentes woff2 en `public/fonts` y `@font-face` | 4eb2e69 |
+| T2 | S2, S3, S5, S6 | worker — `theme.css`, registro en Vite y en `AdminPanelProvider` | 4eb2e69 |
 
 ## Log
 
 - **L1** (2026-11-20, pedido literal): «aun no veo las cambios en el front». Aclarado por el humano: «El diseño de la oficina».
 - **L2** Decisión del humano: fuentes «Los descargo yo».
 - **L3** Hallazgo: `resources/css/filament/` no existía y no había fuentes; §2.5 estaba documentado pero sin implementar.
+- **L4** Hecho en 4eb2e69: 289/289, pint, types:check 0, build ok (el tema sale en el manifest), Vitest 24/24. La PWA dejó de cargar la fuente de Bunny (BR-26). El panel recibe `--brand`/`--accent` por un render hook. **No verificado visualmente** (sin navegador): contraste del menú, alto de fila de 44 px, badges, foco, carga de fuentes y modo oscuro; lo confirma el humano. `theme.css` importa `app.css`, lo que suma ~49 KB al CSS; separar los tokens en un archivo propio queda como mejora.
