@@ -1,7 +1,7 @@
 # M1 — Gestión de roles, permisos y usuarios desde la oficina
 
 Hito M1 (BR-03, roles). Rama `feat/m1-roles`, que sale de `fix/m1-company-settings` al cerrarla.
-Estado: T4 (auditoría) en curso. T1–T3 esperan que el humano confirme la migración `is_active`/`is_system` y el seeder no destructivo.
+Estado: T4 hecho. Diseño de T1–T3 aprobado completo (2026-11-20, L6). En implementación.
 
 ## Specs
 
@@ -14,7 +14,7 @@ Estado: T4 (auditoría) en curso. T1–T3 esperan que el humano confirme la migr
 - **S7** — Nunca quedarse afuera: ningún cambio (de roles, permisos, asignaciones o desactivación) puede dejar el sistema sin al menos un usuario activo con permiso para gestionar roles.
 - **S8** — Vista de auditoría: «había una opción en el menú, para ver las auditorías y sus movimientos se abrían en un popup». Va en «Configuración › Auditoría», es de solo lectura (C15: inmutable) y muestra fecha y hora en Caracas, usuario, qué se tocó, acción y motivo. Filtros por tipo, usuario y rango de fechas, con lo más nuevo primero. El botón «Ver» abre un popup con el detalle: el valor anterior y el nuevo, campo por campo. Quién la ve: «Solo administrador», con el permiso `audit.view`.
 
-## Diseño técnico (propuesto)
+## Diseño técnico (aprobado)
 
 - Permisos nuevos en `PermissionKey`: `roles.manage` y `users.manage`. `PermissionKey::label()` y `module()` dan el nombre en español y el grupo (Compras, Despiece, Catálogo, POS, Ventas, Configuración). Los permisos futuros (`inventory.*` de M4) aparecen solos en la pantalla.
 - Actions en `app/Domain/Settings/Actions`: `CreateRoleAction`, `UpdateRoleAction` (nombre y permisos), `DeleteRoleAction` (rechaza administrador y roles con usuarios), `CreateUserAction`, `UpdateUserRolesAction`, `DeactivateUserAction` / `ReactivateUserAction`, `ResetUserPasswordAction` y `DeleteUserAction` (solo sin historial). Todas transaccionales, con `AuditLog` y con la guarda de S7.
@@ -43,3 +43,4 @@ Estado: T4 (auditoría) en curso. T1–T3 esperan que el humano confirme la migr
 - **L3** Hallazgos (explorador): no hay pantalla de usuarios ni de roles; los usuarios solo se crean por seeder; `RolePermissionSeeder` hace `sync()` en cada corrida; no hay ninguna guarda contra el bloqueo; varios tests usan los nombres fijos de los roles.
 - **L4** (pedido literal): «ok quiero añadir otra cosa que tambien estoy seguro que ya habia porque lo vi varias veces y hasta lo probe fue la vista de auditoria, habia una opcion en el menu, para ver las audiorias y sus movimientos se abrian en un popup que paso que ahora no se ve?». Búsqueda: no existe en ninguna rama, en el historial de `app/Filament`, en los objetos sueltos ni en los paquetes; solo `audit_logs` y su modelo (M2). Decisiones: «No, construila de cero»; «Solo administrador»; «En feat/m1-roles».
 - **L5** T4 en dacf9de: 215/215, pint, types:check 0, build ok. RED observado (7/7). Se agregó `->authorize('view')` al popup «Ver», para que el detalle también pase por la Policy.
+- **L6** Confirmación del humano: migración `users.is_active` + `roles.is_system`: «Sí, aprobada»; seeder no destructivo (crea los roles iniciales solo si no existen y agrega al administrador los permisos nuevos): «Sí, así».
