@@ -14,6 +14,8 @@
 
 ## 1. Principios
 
+Los principios 1–3 y 8 son de la PWA; la oficina (Filament) tiene los suyos en §2.5. Los demás aplican a las dos superficies.
+
 1. **Móvil primero.** La PWA se diseña a 390 px y luego se amplía a tablet (≥ 768) y escritorio (≥ 1280).
 2. **Una acción principal por pantalla**, fija abajo y al alcance del pulgar (barra de acción o navegación inferior).
 3. **Toques de 48 px o más.** Teclado numérico 50 px, botón principal 56 px, botón principal en tablet 64 px.
@@ -64,7 +66,7 @@ Reglas:
 
 - En móvil el texto base nunca baja de 16 px en campos (evita el zoom de iOS); 12 px solo para rótulos y metadatos.
 - Montos y pesos: `font-variant-numeric: tabular-nums`.
-- **Fuentes locales (obligatorio por BR-26):** la PWA vende sin conexión, así que las fuentes se sirven desde la app y no desde Google Fonts ni Bunny. Cómo incluirlas (archivos `woff2` en `public/` o paquete npm) es una dependencia nueva: `[DEC-PENDIENTE]`, la aprueba el humano (C1).
+- **Fuentes locales (obligatorio por BR-26):** la PWA vende sin conexión, así que las fuentes se sirven desde la app y no desde Google Fonts ni Bunny. Se incluyen como archivos `woff2` en `public/fonts/`, declarados con `@font-face`, sin dependencia nueva (resuelta: 2026-11-20). La oficina usa los mismos archivos.
 
 ### 2.3 Espacio, radios y sombras
 
@@ -103,10 +105,46 @@ Los tokens viven como variables CSS para que Settings pueda cambiarlos por clien
 }
 ```
 
-- El layout de la PWA puede sobrescribir `--brand` y `--accent` con un `<style>` generado desde Settings. Si los colores de marca serán configurables desde M1 o fijos por ahora es `[DEC-PENDIENTE]`. El logo y el nombre del negocio sí son configuración desde M1 (empresa). Sin conexión, la PWA usa los últimos valores guardados.
-- **Filament (oficina):** usa sus componentes nativos. Solo hereda el color primario (`brand`), la fuente Figtree y el logo. `d-dashboard.html` y `d-inventario.html` son referencia de **contenido y jerarquía**, no de píxeles. La API de colores y temas del panel se verifica con Context7. La oficina requiere conexión; el modo sin conexión es solo de la PWA.
+- **Marca configurable (C6, resuelta: 2026-11-20):** el nombre, el logo y los colores `brand` y `accent` son configuración de la empresa (M1) y se editan desde Settings. Los valores de `app.css` son solo el respaldo cuando Settings está vacío. La PWA sobrescribe `--brand` y `--accent` con un `<style>` generado desde Settings; sin conexión usa los últimos valores guardados. La oficina los lee al arrancar el panel (§2.5).
 
-## 3. Componentes (Vue, `resources/js/components/`)
+### 2.5 Oficina (Filament)
+
+La oficina es una superficie de escritorio, con conexión y datos densos. Sigue siendo Filament (C1), con un tema propio que aplica estos tokens.
+
+**Principios propios** (reemplazan a §1.1–1.3 y §1.8):
+1. **Escritorio primero.** Se diseña a 1280 px; en tablet debe seguir siendo usable, pero no es la referencia.
+2. **Densidad de tabla.** Filas de 44 px, campos y filtros de 40–44 px y toques de 40 px o más.
+3. **Necesita conexión.** Sin conexión muestra «Necesita conexión» y nunca datos viejos (§4).
+
+**Tema:**
+- Archivo `resources/css/filament/admin/theme.css`, que importa los tokens de §2.4 y las fuentes de §2.2. No requiere dependencia nueva, porque Tailwind ya está. La forma de registrar el tema en Filament 5 se verifica con Context7 antes de implementarlo.
+- `d-dashboard.html` y `d-inventario.html` son referencia visual, no solo de contenido. Deben coincidir con la maqueta en: encabezado de página, tarjetas KPI, tablas (alto de fila, divisores `line-soft`, cifras tabulares a la derecha), badges, filtros y menú lateral (`brand-night`, ítem activo en `brand`, tasa BCV en `accent`).
+- Lo demás (modales, notificaciones, paginación, formularios de recursos) se deja como lo trae Filament con los colores del panel. Solo se sobrescribe lo que se lista arriba, para reducir el costo de mantenimiento al actualizar Filament.
+
+**Mapeo de colores del panel:**
+
+| Rol en Filament | Token |
+|---|---|
+| `primary` | `brand` |
+| `accent` (color adicional registrado) | `accent`; solo en las acciones de §1.5 («Confirmar» y el siguiente paso), con texto `on-accent` |
+| `success` | `success` |
+| `warning` | `warning` |
+| `info` | `info` |
+| `danger` | `brand` (error o bloqueo, igual que §2.1) |
+| `gray` | escala neutra derivada de `ink` / `line` |
+
+- El panel genera cada paleta de 11 tonos (50–950) a partir del hex de Settings al arrancar (`Color::hex`), así que cambiar la marca no requiere recompilar. El nombre y el logo también salen de Settings (C6), nunca se escriben en el proveedor del panel.
+- Los badges usan el mismo mapeo semántico que `StatusBadge` (§3): fondo `*-soft` y texto del tono.
+- **Modo oscuro:** se mantiene en la oficina (resuelta: 2026-11-20). En modo oscuro el panel usa las paletas generadas por Filament con esos mismos colores. Los tokens de superficie (`canvas`, `surface`, `line`, `ink`) no tienen variante oscura, así que el tema solo los sobrescribe en modo claro. Definir una variante oscura propia es una decisión aparte. La PWA no tiene modo oscuro.
+
+**Componentes:** los de §3 que la oficina necesite (`KpiCard`, `StatusBadge`, `ListRow`, `ProgressBar`) tienen un equivalente Blade en el panel, con la misma especificación.
+
+**Costo:** cada pantalla de oficina con la apariencia de la maqueta lleva más trabajo que una pantalla con el estilo nativo de Filament. Además, al subir de versión de Filament hay que revisar el tema contra `d-dashboard.html` y `d-inventario.html`.
+
+
+## 3. Componentes
+
+En la PWA son componentes Vue en `resources/js/components/`. En la oficina, los que hagan falta son componentes Blade del panel, con la misma especificación (§2.5).
 
 Los componentes solo muestran y orquestan. Precios, totales, impuestos y vuelto llegan calculados del backend (C5); la PWA calcula valores provisionales únicamente sin conexión y los marca como tales hasta sincronizar.
 
@@ -150,7 +188,7 @@ Los componentes solo muestran y orquestan. Precios, totales, impuestos y vuelto 
   - «Registrar abono» se abre desde la ficha del cliente (PWA y Filament): saldo pendiente arriba, `PaymentMethodTile` para el método, monto con equivalencia a la tasa del día y la lista de ventas a las que se aplica (la más antigua primero, editable).
   - Saldos vencidos con `StatusBadge` en `warning` («Vencido hace 12 días»); al día en `success`.
   - El estado de cuenta y el reporte por antigüedad viven en Filament (oficina); en la PWA solo se consulta el saldo del cliente.
-- **Formularios:** etiqueta visible siempre (no basta el placeholder); campo de 48–52 px; foco con borde de 2 px `brand`; error debajo del campo en `brand`; aviso en `warning`.
+- **Formularios:** etiqueta visible siempre (no basta el placeholder); campo de 48–52 px en la PWA y 40–44 px en la oficina; foco con borde de 2 px `brand`; error debajo del campo en `brand`; aviso en `warning`.
 - **Carga:** esqueletos en `canvas` sobre tarjetas `surface`; no hay spinners de pantalla completa en el POS.
 - **Fechas y horas:** en `America/Caracas` (C13), con estilo «Lunes 9 de noviembre» y «7:30 a. m.».
 - **Accesibilidad:** `<button>` y `<a>` reales; `aria-label` en botones de solo ícono; gráficos con `role="img"` y descripción; foco visible; `SyncStatus` anuncia los cambios de estado con `aria-live`.
