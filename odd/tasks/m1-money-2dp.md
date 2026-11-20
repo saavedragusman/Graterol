@@ -18,7 +18,7 @@ Rama `feat/m1-money-2dp`, sale de `feat/m1-exchange-rate` (c7a1853). Cambia C9 y
 | ID | Specs | Ruta | Commit |
 |---|---|---|---|
 | T0 | S1-S5 | explorador — mapa de impacto (Money, Actions, columnas, tests) | — |
-| U1 | S1-S5 | inline — C9 (ya cambiado por el humano), BR-01, BR-12, BR-24 y comentario de `C9NoFloatTest` | (este commit) |
+| U1 | S1-S5 | inline — C9 (ya cambiado por el humano), BR-01, BR-12, BR-24 y comentario de `C9NoFloatTest` | 58a1319 |
 | U2+U3 | S1, S3, S4, S5 | worker — `Money` sin doble redondeo, `UnitAmount`, cálculos de compras/despiece/inventario; columnas aún sin cambiar | |
 | U4-U6 | S6, S8 | worker — migración de columnas con reparto de residuo y actualización de tests | |
 | U7 | todos | verificador independiente + cierre | |
