@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Middleware;
 
+use App\Domain\Settings\CompanySettings;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 
@@ -37,9 +38,15 @@ class HandleInertiaRequests extends Middleware
      */
     public function share(Request $request): array
     {
+        $company = app(CompanySettings::class);
+
         return [
             ...parent::share($request),
-            //
+            // C6: identidad de la empresa desde settings; los colores van en el layout.
+            'company' => [
+                'name' => $company->name(),
+                'logoUrl' => $company->logoUrl(),
+            ],
         ];
     }
 }

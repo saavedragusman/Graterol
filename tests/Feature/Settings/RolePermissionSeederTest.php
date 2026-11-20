@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Domain\Settings\Models\Permission;
 use App\Domain\Settings\Models\Role;
+use App\Domain\Settings\PermissionKey;
 use App\Models\User;
 use Database\Seeders\RolePermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -66,6 +67,6 @@ it('is idempotent and does not duplicate permissions or roles [BR-03]', function
     (new RolePermissionSeeder)->run();
     (new RolePermissionSeeder)->run();
 
-    expect(Permission::count())->toBe(13)
+    expect(Permission::count())->toBe(count(PermissionKey::cases()))
         ->and(Role::count())->toBe(3);
 });
