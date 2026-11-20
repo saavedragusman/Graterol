@@ -18,13 +18,20 @@ Saca del código los datos del piloto (C6): nombre, logo, favicon, colores e IVA
 
 | ID | Specs | Ruta | Commit |
 |---|---|---|---|
-| T1 | S1, S3, S7, S8 | inline — `PermissionKey::SettingsManage`, `CompanySettings` (lectura + valores por defecto), `UpdateSettingsAction` (transacción + AuditLog), seeder ficticio, test arquitectura C6 | |
-| T2 | S2, S3, S6, S7 | inline — página Filament `ManageCompanySettings` (nombre, logo, favicon, brand, accent, IVA charcutería) | |
-| T3 | S4 | inline — `AdminPanelProvider` con closures desde Settings | |
-| T4 | S5 | inline — Inertia comparte `company`; `app.blade.php` inyecta `:root`; `app.css` pasa a `:root` + `@theme inline` | |
-| T5 | S6 | inline — `CreateProductAction` lee el IVA de Settings; se elimina `config/graterol.php` | |
+| T1 | S1, S3, S7, S8 | inline — `PermissionKey::SettingsManage`, `CompanySettings` (lectura + valores por defecto), `UpdateSettingsAction` (transacción + AuditLog), seeder ficticio, test arquitectura C6 | 3e0a4be |
+| T2 | S2, S3, S6, S7 | inline — página Filament `ManageCompanySettings` (nombre, logo, favicon, brand, accent, IVA charcutería) | 3e0a4be |
+| T3 | S4 | inline — `AdminPanelProvider` con closures desde Settings | 3e0a4be |
+| T4 | S5 | inline — Inertia comparte `company`; `app.blade.php` inyecta `:root`; `app.css` pasa a `:root` + `@theme inline` | 3e0a4be |
+| T5 | S6 | inline — `CreateProductAction` lee el IVA de Settings; se elimina `config/graterol.php` | 9e79502 (borrado de config en 3e0a4be) |
 
 Risk: item 2 (permiso nuevo y subida de archivos) e item 3 (`CreateProductAction` es código compartido del catálogo).
+
+## Evidencia
+
+- `artisan test`: 187/187 · `pint --test` ok · `types:check` 0 errores · `pnpm build` ok · `pnpm test` 21/21.
+- Antes de corregirlos fallaron 2 tests existentes: `RolePermissionSeederTest` tenía fijos 13 permisos (ahora cuenta `PermissionKey::cases()`) y `C9NoFloatTest` detectó la palabra «float» en un comentario.
+- Verificador independiente (gentle-ai-verify): S1–S8 cumplidos, sin bloqueantes. Dos observaciones, corregidas con su test: el regex hex usaba `$` (aceptaba un salto de línea final) y ahora usa `\z`, centralizado en `CompanySettings::HEX_COLOR_PATTERN`; los colores se validan también al leer, con fallback al valor por defecto si una fila se escribió fuera del Action. Suite final: 189/189, pint ok, types:check 0.
+- Assess sobre 0baa01d..9e79502: risk high (escalado por el ítem 2), con verificador independiente; la revisión nativa no corresponde (under_budget).
 
 ## Log
 

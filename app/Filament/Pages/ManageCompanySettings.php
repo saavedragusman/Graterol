@@ -32,8 +32,6 @@ use UnitEnum;
  */
 class ManageCompanySettings extends Page
 {
-    private const HEX = '/^#[0-9A-Fa-f]{6}$/';
-
     /** Formulario => clave en settings. */
     private const FIELDS = [
         'name' => CompanySettings::NAME,
@@ -107,12 +105,12 @@ class ManageCompanySettings extends Page
                                 ->label('Color de marca')
                                 ->helperText('Navegación activa, encabezados y botón primario.')
                                 ->required()
-                                ->regex(self::HEX),
+                                ->regex(CompanySettings::HEX_COLOR_PATTERN),
                             ColorPicker::make('accent_color')
                                 ->label('Color de acción')
                                 ->helperText('Solo para «Vender», «Cobrar», «Confirmar» y el siguiente paso.')
                                 ->required()
-                                ->regex(self::HEX),
+                                ->regex(CompanySettings::HEX_COLOR_PATTERN),
                         ]),
                     Section::make('Impuestos')
                         ->schema([

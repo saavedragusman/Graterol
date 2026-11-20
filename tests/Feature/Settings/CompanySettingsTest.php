@@ -84,3 +84,19 @@ it('clears logo and favicon when set to null [C6]', function () {
     $action->execute([CompanySettings::LOGO_PATH => null], null);
     expect(app(CompanySettings::class)->logoUrl())->toBeNull();
 });
+
+it('rejects a hex color with a trailing newline [C6]', function () {
+    expect(fn () => app(UpdateSettingsAction::class)->execute(
+        [CompanySettings::BRAND_COLOR => "#AABBCC\n"], null
+    ))->toThrow(InvalidArgumentException::class);
+});
+
+it('falls back to the default when a stored color is malformed [C6]', function () {
+    // Filas escritas fuera de UpdateSettingsAction no llegan crudas al CSS del layout.
+    Setting::create(['key' => CompanySettings::BRAND_COLOR, 'value' => 'x; } body{display:none']);
+    Setting::create(['key' => CompanySettings::ACCENT_COLOR, 'value' => "#AABBCC\n"]);
+
+    $company = app(CompanySettings::class);
+    expect($company->brandColor())->toBe(CompanySettings::DEFAULT_BRAND_COLOR)
+        ->and($company->accentColor())->toBe(CompanySettings::DEFAULT_ACCENT_COLOR);
+});

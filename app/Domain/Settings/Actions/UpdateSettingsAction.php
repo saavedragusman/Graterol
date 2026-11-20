@@ -79,7 +79,7 @@ class UpdateSettingsAction
 
     private function color(string $key, ?string $value): string
     {
-        if ($value === null || preg_match('/^#[0-9A-Fa-f]{6}$/', $value) !== 1) {
+        if ($value === null || preg_match(CompanySettings::HEX_COLOR_PATTERN, $value) !== 1) {
             throw new InvalidArgumentException("Color inválido para {$key}: use el formato #RRGGBB.");
         }
 

@@ -38,6 +38,9 @@ class CompanySettings
 
     public const LOGO_DIRECTORY = 'branding';
 
+    // \z y no $: $ acepta un salto de línea final.
+    public const HEX_COLOR_PATTERN = '/^#[0-9A-Fa-f]{6}\z/';
+
     /** @var list<string> */
     public const KEYS = [
         self::NAME,
@@ -58,12 +61,12 @@ class CompanySettings
 
     public function brandColor(): string
     {
-        return $this->get(self::BRAND_COLOR) ?? self::DEFAULT_BRAND_COLOR;
+        return $this->color(self::BRAND_COLOR, self::DEFAULT_BRAND_COLOR);
     }
 
     public function accentColor(): string
     {
-        return $this->get(self::ACCENT_COLOR) ?? self::DEFAULT_ACCENT_COLOR;
+        return $this->color(self::ACCENT_COLOR, self::DEFAULT_ACCENT_COLOR);
     }
 
     public function logoPath(): ?string
@@ -115,6 +118,17 @@ class CompanySettings
         $value = $this->values[$key] ?? null;
 
         return $value === null || $value === '' ? null : $value;
+    }
+
+    /**
+     * El color termina en CSS del layout y en la paleta del panel: si la fila
+     * no tiene formato #RRGGBB (escrita fuera de UpdateSettingsAction), se usa el valor por defecto.
+     */
+    private function color(string $key, string $default): string
+    {
+        $value = $this->get($key);
+
+        return $value !== null && preg_match(self::HEX_COLOR_PATTERN, $value) === 1 ? $value : $default;
     }
 
     private function publicUrl(?string $path): ?string
