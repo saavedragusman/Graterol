@@ -45,3 +45,36 @@ export function formatPoints(value: string | number): string {
 export function normalizeDecimal(value: string): string {
     return value.trim().replace(',', '.');
 }
+
+/** Zona de presentación fija (C13): se guarda en UTC y se muestra en Caracas. */
+export const DISPLAY_TIMEZONE = 'America/Caracas';
+
+const dateFormatter = new Intl.DateTimeFormat('es-VE', {
+    timeZone: DISPLAY_TIMEZONE,
+    weekday: 'long',
+    day: 'numeric',
+    month: 'long',
+});
+
+const timeFormatter = new Intl.DateTimeFormat('es-VE', {
+    timeZone: DISPLAY_TIMEZONE,
+    hour: 'numeric',
+    minute: '2-digit',
+    hour12: true,
+});
+
+function capitalize(text: string): string {
+    return text.charAt(0).toUpperCase() + text.slice(1);
+}
+
+/** Fecha en Caracas, estilo design.md §4: "Jueves 19 de noviembre". */
+export function formatDate(value: string | Date): string {
+    const text = dateFormatter.format(new Date(value)).replace(',', '');
+
+    return capitalize(text);
+}
+
+/** Hora en Caracas, estilo design.md §4: "7:30 a. m.". */
+export function formatTime(value: string | Date): string {
+    return timeFormatter.format(new Date(value)).replace(/\u202f|\u00a0/g, ' ');
+}
