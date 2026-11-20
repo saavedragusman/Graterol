@@ -27,8 +27,8 @@ Saca del código los datos del piloto (C6): nombre, logo, favicon, colores e IVA
 | T3 | S4 | inline — `AdminPanelProvider` con closures desde Settings | 3e0a4be |
 | T4 | S5 | inline — Inertia comparte `company`; `app.blade.php` inyecta `:root`; `app.css` pasa a `:root` + `@theme inline` | 3e0a4be |
 | T6 | S9, S7 | inline — `CompanySettings::deviationThresholdPercent()`; `OrderController` y `ButcheryOrderResource` lo leen de ahí; campo en la pantalla | c6c95c4 |
-| T7 | S10 | worker | |
-| T8 | S11 | worker | |
+| T7 | S10 | worker — `catalog.default_currency` (USD/VES, USD por defecto); las Actions de compra y precio sin moneda explícita usan el ajuste | cad41ac |
+| T8 | S11 | worker — `FilamentTimezone::set(DisplayTimezone::CARACAS)`; `format.ts` con `formatDate`/`formatTime` en Caracas | fb987ca |
 | T9 | S12 | explore (solo diseño) | — |
 | T5 | S6 | inline — `CreateProductAction` lee el IVA de Settings; se elimina `config/graterol.php` | 9e79502 (borrado de config en 3e0a4be) |
 
@@ -49,3 +49,4 @@ Risk: item 2 (permiso nuevo y subida de archivos) e item 3 (`CreateProductAction
 - **L3** Hallazgo: no existe ninguna página de Settings en el historial de git; `AdminPanelProvider.php:32-37` tenía fijos el nombre, el logo y los colores del piloto.
 - **L5** (pedido literal): «umbral de desviacion que significa? porque no se edita? no quiero nada fork» → T6. Suite: 193/193, pint ok, types:check 0.
 - **L6** Auditoría de valores fijos (explorador): no queda nada del piloto. Decisiones del humano: mercado «Solo Venezuela» (USD+Bs, BCV, RIF y Caracas quedan fijos por diseño); moneda por defecto configurable; C13 con Caracas fija; pantalla de roles «Sí, la planifico». La URL de la tasa queda en `.env`, por instalación (riesgo SSRF si fuera editable desde la oficina). Lo que todavía no existe (métodos de pago, EAN-13, IGTF, stock negativo, vencimientos, crédito) nace como configuración o catálogo en su hito.
+- **L7** T7: con un solo ajuste no se podían conservar los dos valores por defecto anteriores (formularios en USD, Actions sin moneda en VES). Se eligió USD, que es lo que ve el usuario. El test `PurchasingResourcesTest` («shows purchase amounts in USD with the Bs line…») ahora pasa `currency: 'VES'` explícito en su preparación, y su expectativa no cambió. Cambio de comportamiento: una Action de compra o precio llamada sin moneda usa el ajuste (USD por defecto), no VES. T8: `FilamentTimezone` global; ningún Resource necesitó cambios por columna. Suite: 206/206, pint, types:check, build, Vitest 24/24. T9: diseño en `odd/tasks/m1-roles.md`.
