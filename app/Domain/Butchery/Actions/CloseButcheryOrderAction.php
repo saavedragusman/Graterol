@@ -8,7 +8,6 @@ use App\Domain\Butchery\Models\ButcheryOrder;
 use App\Domain\Catalog\Models\Product;
 use App\Domain\Catalog\PriceList;
 use App\Domain\Inventory\Actions\CreateLotFromButcheryOutputAction;
-use App\Support\ValueObjects\Money;
 use BcMath\Number;
 use Illuminate\Support\Facades\DB;
 use RuntimeException;
@@ -74,7 +73,7 @@ class CloseButcheryOrderAction
             }
 
             $batch = $order->batch;
-            $orderInputCost = Money::fromString((string) $batch->unit_cost)->mul((string) $order->input_weight_kg);
+            $orderInputCost = $order->inputCost();
 
             $allocated = (new AllocateButcheryCostsAction)->execute($orderInputCost->toInternalString(), $cutsByKey);
 

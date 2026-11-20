@@ -94,4 +94,60 @@ final class Money
 
         return $label.' '.self::fromString($amount)->toDisplayString();
     }
+
+    /**
+     * Doble monto de pantalla (design.md §3 MoneyAmount): divisa ($) arriba y
+     * Bs debajo con la tasa usada. USD → Bs multiplica por la tasa; VES → USD
+     * divide entre ella (BcMath a 4 decimales, sin flotantes, C9). Sin tasa
+     * (null, vacía o cero) solo se devuelve el lado de la moneda original: la
+     * tasa nunca se inventa. La tasa es Bs por USD.
+     *
+     * @return array{usd: ?string, bs: ?string, rate: ?string}
+     */
+    public static function dualDisplay(?string $amount, string $currency, ?string $rate): array
+    {
+        if ($amount === null || $amount === '') {
+            return ['usd' => null, 'bs' => null, 'rate' => null];
+        }
+
+        $isUsd = strtoupper($currency) === 'USD';
+        $original = self::display($amount, $currency);
+
+        $hasRate = $rate !== null && $rate !== '' && (new Number($rate))->compare(new Number('0')) > 0;
+
+        if (! $hasRate) {
+            return ['usd' => $isUsd ? $original : null, 'bs' => $isUsd ? null : $original, 'rate' => null];
+        }
+
+        $value = self::fromString($amount);
+        $rateNumber = new Number($rate);
+
+        if ($isUsd) {
+            $converted = new self($value->value * $rateNumber);
+
+            return ['usd' => $original, 'bs' => self::display($converted->toInternalString(), 'VES'), 'rate' => self::display($rate, 'VES')];
+        }
+
+        $converted = new self($value->value->div($rateNumber, self::INTERNAL_SCALE));
+
+        return ['usd' => self::display($converted->toInternalString(), 'USD'), 'bs' => $original, 'rate' => self::display($rate, 'VES')];
+    }
+
+    /**
+     * Las dos líneas de pantalla del doble monto: principal en divisa ($) y
+     * secundaria en Bs con la tasa. Sin tasa y en Bs, el principal es el Bs
+     * original y no hay secundaria.
+     *
+     * @return array{main: ?string, secondary: ?string}
+     */
+    public static function dualLines(?string $amount, string $currency, ?string $rate): array
+    {
+        $dual = self::dualDisplay($amount, $currency, $rate);
+
+        if ($dual['usd'] === null) {
+            return ['main' => $dual['bs'], 'secondary' => null];
+        }
+
+        return ['main' => $dual['usd'], 'secondary' => $dual['bs']];
+    }
 }

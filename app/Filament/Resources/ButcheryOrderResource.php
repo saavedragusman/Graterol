@@ -74,7 +74,9 @@ class ButcheryOrderResource extends Resource
                         ->placeholder('—')
                         ->color(fn (?string $state): string => $state !== null && bccomp(ltrim($state, '-'), self::deviationThreshold(), 2) > 0 ? 'warning' : 'success'),
                     TextEntry::make('allocated_cost')->label('Costo asignado')->placeholder('—')
-                        ->formatStateUsing(fn (?string $state, ButcheryOrderLine $record): string => Money::display($state, (string) $record->order->batch->currency)),
+                        ->formatStateUsing(fn (?string $state, ButcheryOrderLine $record): string => self::dual($state, $record)['main'] ?? '—')
+                        // C13: la tasa es la congelada en el lote de la orden.
+                        ->helperText(fn (?string $state, ButcheryOrderLine $record): ?string => self::dual($state, $record)['secondary']),
                 ]),
             ]),
         ]);
@@ -107,6 +109,16 @@ class ButcheryOrderResource extends Resource
             'index' => ListButcheryOrders::route('/'),
             'view' => ViewButcheryOrder::route('/{record}'),
         ];
+    }
+
+    /**
+     * @return array{main: ?string, secondary: ?string}
+     */
+    private static function dual(?string $amount, ButcheryOrderLine $line): array
+    {
+        $batch = $line->order->batch;
+
+        return Money::dualLines($amount, (string) $batch->currency, $batch->exchange_rate === null ? null : (string) $batch->exchange_rate);
     }
 
     /**

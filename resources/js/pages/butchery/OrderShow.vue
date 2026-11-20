@@ -7,12 +7,19 @@ import AppIcon from '../../components/AppIcon.vue';
 import AppInput from '../../components/AppInput.vue';
 import AppNotice from '../../components/AppNotice.vue';
 import DeviationIndicator from '../../components/DeviationIndicator.vue';
+import MoneyAmount from '../../components/MoneyAmount.vue';
 import HeaderStat from '../../components/HeaderStat.vue';
 import ProgressBar from '../../components/ProgressBar.vue';
 import StatusBadge from '../../components/StatusBadge.vue';
 import StickyActionBar from '../../components/StickyActionBar.vue';
 import { isAboveThreshold } from '../../lib/deviation';
-import { formatKg, normalizeDecimal } from '../../lib/format';
+import { formatKg, formatPercent, normalizeDecimal } from '../../lib/format';
+
+interface DualMoney {
+    usd: string | null;
+    bs: string | null;
+    rate: string | null;
+}
 
 interface Product {
     name: string;
@@ -49,7 +56,7 @@ interface Order {
     lines: OrderLine[];
 }
 
-const props = defineProps<{ order: Order; batchTotalCostDisplay: string; deviationThresholdPercent: string }>();
+const props = defineProps<{ order: Order; inputCost: DualMoney; deviationThresholdPercent: string }>();
 
 const page = usePage<{ errors?: Record<string, string> }>();
 const errors = computed(() => page.props.errors ?? {});
@@ -134,7 +141,9 @@ function lineError(lineId: number): string | undefined {
                 <StatusBadge :tone="statusTone">{{ statusLabel }}</StatusBadge>
             </template>
             <HeaderStat label="Entrada" :value="`${formatKg(order.input_weight_kg)} kg`" />
-            <HeaderStat label="Costo lote" :value="batchTotalCostDisplay" />
+            <HeaderStat label="Costo lote">
+                <MoneyAmount :usd="inputCost.usd" :bs="inputCost.bs" :rate="inputCost.rate" tone="on-dark" />
+            </HeaderStat>
             <HeaderStat label="Carnicero" :value="order.butcher.name" />
         </AppHeader>
 
@@ -169,7 +178,7 @@ function lineError(lineId: number): string | undefined {
                         <span class="flex min-w-0 flex-1 flex-col">
                             <strong class="text-[15px]">{{ line.cut_product.name }}</strong>
                             <span class="text-[13px] text-ink-muted">
-                                Esperado {{ formatKg(line.expected_weight_kg) }} kg · {{ line.expected_yield_percent }} %
+                                Esperado {{ formatKg(line.expected_weight_kg) }} kg · {{ formatPercent(line.expected_yield_percent) }}
                             </span>
                         </span>
                         <span v-if="line.actual_weight_kg !== null" class="flex flex-col items-end gap-0.5">
@@ -209,7 +218,7 @@ function lineError(lineId: number): string | undefined {
                     Orden cerrada. El costo se repartió por valor de mercado de cada corte; la merma no lleva costo.
                 </p>
                 <p v-else class="text-[14px] leading-snug">
-                    Al cerrar, el costo de {{ batchTotalCostDisplay }} se reparte por valor de mercado de cada corte. La merma no lleva costo.
+                    Al cerrar, el costo de {{ inputCost.usd ?? inputCost.bs }} se reparte por valor de mercado de cada corte. La merma no lleva costo.
                 </p>
             </section>
         </main>

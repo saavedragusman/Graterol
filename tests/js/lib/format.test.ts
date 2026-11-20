@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { formatKg, formatPoints, normalizeDecimal } from '@/lib/format';
+import { formatKg, formatPercent, formatPoints, normalizeDecimal } from '@/lib/format';
 
 describe('formatKg', () => {
     it('muestra siempre 3 decimales con coma', () => {
@@ -28,5 +28,13 @@ describe('normalizeDecimal', () => {
     it('cambia la coma por punto', () => {
         expect(normalizeDecimal('4,5')).toBe('4.5');
         expect(normalizeDecimal('4.5')).toBe('4.5');
+    });
+});
+
+describe('formatPercent', () => {
+    it('usa coma decimal, 2 decimales y espacio antes del %', () => {
+        expect(formatPercent('99.00')).toBe('99,00 %');
+        expect(formatPercent('2.5')).toBe('2,50 %');
+        expect(formatPercent(100)).toBe('100,00 %');
     });
 });

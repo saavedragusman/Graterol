@@ -9,6 +9,7 @@ use App\Domain\Catalog\PriceList;
 use App\Domain\Catalog\ProductCategory;
 use App\Domain\Catalog\ProductType;
 use App\Domain\Catalog\Unit;
+use App\Domain\Settings\Actions\RegisterExchangeRateAction;
 use App\Domain\Settings\Models\Role;
 use App\Filament\Resources\ProductResource\Pages\CreateProduct;
 use App\Filament\Resources\ProductResource\Pages\EditProduct;
@@ -141,5 +142,19 @@ it('shows the detail price with its currency, or "Sin precio" when missing [BR-0
 
     Livewire::test(ListProducts::class)
         ->assertSee('$ 9,50')
+        ->assertSee('Sin precio')
+        ->assertDontSee('Bs ');
+});
+
+it('shows the detail price in USD with the Bs line using today\'s BCV rate [BR-02]', function () {
+    prUser('administrador');
+    (new RegisterExchangeRateAction)->execute('85.5000', 'manual');
+    $priced = (new CreateProductAction)->execute('Lomito', ProductType::Derived, Unit::Kilogram, ProductCategory::NaturalMeat);
+    (new SetProductPriceAction)->execute($priced, PriceList::Detail, '9.5000', 'USD');
+    (new CreateProductAction)->execute('Costilla', ProductType::Derived, Unit::Kilogram, ProductCategory::NaturalMeat);
+
+    Livewire::test(ListProducts::class)
+        ->assertSee('$ 9,50')
+        ->assertSee('Bs 812,25')
         ->assertSee('Sin precio');
 });

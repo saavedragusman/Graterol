@@ -195,3 +195,13 @@ it('lists orders and filters them by status', function () {
         ->filterTable('status', 'closed')
         ->assertCanSeeTableRecords([$order]);
 });
+
+it('shows the allocated cost in USD with the Bs line using the lot frozen rate [C13][BR-02]', function () {
+    $user = bfUser('administrador');
+    $order = bfOrderWithOutput($user);
+
+    // Lote en Bs 20,00 con tasa congelada 85,50 → $ 0,23 arriba y Bs 20,00 debajo.
+    Livewire::test(ViewButcheryOrder::class, ['record' => $order->getKey()])
+        ->assertSee('$ 0,23')
+        ->assertSee('Bs 20,00');
+});

@@ -75,7 +75,12 @@ class OrderController extends Controller
 
         return Inertia::render('butchery/OrderShow', [
             'order' => $order,
-            'batchTotalCostDisplay' => Money::display((string) $order->batch->total_cost, (string) $order->batch->currency),
+            // Costo de la entrada de esta orden (no del lote completo, DEC-07), con la tasa congelada del lote (C13).
+            'inputCost' => Money::dualDisplay(
+                $order->inputCost()->toInternalString(),
+                (string) $order->batch->currency,
+                $order->batch->exchange_rate === null ? null : (string) $order->batch->exchange_rate,
+            ),
             'deviationThresholdPercent' => Setting::valueFor('butchery.deviation_threshold_percent', '2.00'),
         ]);
     }

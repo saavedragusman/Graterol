@@ -9,6 +9,7 @@ use App\Domain\Catalog\Models\ProductPrice;
 use App\Domain\Inventory\Actions\CreateLotFromPurchaseLineAction;
 use App\Domain\Settings\Models\Role;
 use App\Models\User;
+use App\Support\ValueObjects\Money;
 use Database\Seeders\RolePermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
@@ -162,4 +163,49 @@ it('rejects opening an order without the butchery.process permission [C14]', fun
     $this->actingAs($cajero)
         ->post('/butchery/orders', ['batch_id' => $ctx['batch']->id, 'input_weight_kg' => '10.000'])
         ->assertForbidden();
+});
+
+it('shows the cost of the order input, not the whole lot cost, on a partial order [DEC-07][BR-12]', function () {
+    $user = carniceroButcher();
+    $chicken = createRawMaterial();
+    $filete = createCut('Filete');
+
+    (new CreateButcheryTemplateAction)->execute(
+        rawMaterialProductId: $chicken->id,
+        name: 'Pollo entero',
+        expectedShrinkagePercent: '0.00',
+        lines: [['cut_product_id' => $filete->id, 'expected_yield_percent' => '100.00']],
+        createdByUserId: $user->id,
+    );
+
+    // Lote de 98 kg con costo total 125.00 USD; la orden toma solo 20 kg.
+    $batch = (new CreateLotFromPurchaseLineAction)->execute(
+        sourceType: 'purchase_line',
+        sourceId: 1,
+        productId: $chicken->id,
+        pieces: null,
+        receivedWeightKg: '98.000',
+        totalCost: '125.0000',
+        currency: 'USD',
+        exchangeRate: '85.5000',
+        userId: $user->id,
+    );
+    $order = (new OpenButcheryOrderAction)->execute($batch->id, '20.000', $user->id);
+
+    $expected = $order->inputCost()->toInternalString();
+
+    // Misma cuenta que CloseButcheryOrderAction: unit_cost × kg de la orden.
+    expect($expected)->toBe(
+        Money::fromString((string) $batch->fresh()->unit_cost)->mul('20.000')->toInternalString()
+    )->and(Money::fromString($expected)->toDisplayString())->toBe('25,51');
+
+    $this->actingAs($user)
+        ->get("/butchery/orders/{$order->id}")
+        ->assertOk()
+        ->assertInertia(fn ($page) => $page
+            ->where('inputCost.usd', '$ 25,51')
+            ->where('inputCost.bs', 'Bs 2.181,11')
+            ->where('inputCost.rate', 'Bs 85,50')
+            ->missing('batchTotalCostDisplay')
+        );
 });

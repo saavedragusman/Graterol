@@ -9,6 +9,7 @@ use App\Domain\Catalog\PriceList;
 use App\Domain\Catalog\ProductCategory;
 use App\Domain\Catalog\ProductType;
 use App\Domain\Catalog\Unit;
+use App\Domain\Settings\Models\ExchangeRate;
 use App\Filament\Resources\ProductResource\Pages\CreateProduct;
 use App\Filament\Resources\ProductResource\Pages\EditProduct;
 use App\Filament\Resources\ProductResource\Pages\ListProducts;
@@ -103,6 +104,15 @@ class ProductResource extends Resource
 
     public static function table(Table $table): Table
     {
+        // Los precios del catálogo no congelan tasa: se usa la tasa BCV vigente hoy (BR-02).
+        $rate = ExchangeRate::current()?->rate;
+        $rate = $rate === null ? null : (string) $rate;
+        $dual = fn (Product $record): array => Money::dualLines(
+            $record->priceFor(PriceList::Detail->value)?->getRawOriginal('amount'),
+            (string) $record->priceFor(PriceList::Detail->value)?->currency,
+            $rate,
+        );
+
         return $table
             ->columns([
                 TextColumn::make('name')->label('Nombre')->searchable()->sortable(),
@@ -116,7 +126,8 @@ class ProductResource extends Resource
                 TextColumn::make('detail_price')->label('Precio detal')
                     ->state(fn (Product $record): ?string => $record->priceFor(PriceList::Detail->value)?->getRawOriginal('amount'))
                     ->placeholder('Sin precio')
-                    ->formatStateUsing(fn (?string $state, Product $record): string => Money::display($state, (string) $record->priceFor(PriceList::Detail->value)?->currency)),
+                    ->formatStateUsing(fn (?string $state, Product $record): string => $dual($record)['main'] ?? '—')
+                    ->description(fn (Product $record): ?string => $dual($record)['secondary']),
                 IconColumn::make('active')->label('Activo')->boolean(),
             ])
             ->filters([

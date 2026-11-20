@@ -13,6 +13,16 @@ const pointsFormatter = new Intl.NumberFormat('es-VE', {
     maximumFractionDigits: 2,
 });
 
+const percentFormatter = new Intl.NumberFormat('es-VE', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+});
+
+/** Porcentaje es-VE con 2 decimales y espacio antes del %: "99,00 %". */
+export function formatPercent(value: string | number): string {
+    return `${percentFormatter.format(Number(value))} %`;
+}
+
 /** Kg con exactamente 3 decimales: "20,000". */
 export function formatKg(value: string | number): string {
     return kgFormatter.format(Number(value));
