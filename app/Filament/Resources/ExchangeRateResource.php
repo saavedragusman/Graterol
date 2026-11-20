@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Filament\Resources;
 
+use App\Domain\Settings\Actions\RegisterExchangeRateAction;
 use App\Domain\Settings\Models\ExchangeRate;
 use App\Filament\Resources\ExchangeRateResource\Pages\ListExchangeRates;
 use App\Support\Formatting\EsVeNumberFormatter;
-use App\Support\ValueObjects\Money;
 use BackedEnum;
 use Filament\Resources\Resource;
 use Filament\Tables\Columns\TextColumn;
@@ -49,7 +49,7 @@ class ExchangeRateResource extends Resource
                     ->extraAttributes(['class' => 'tabular-nums'])
                     ->formatStateUsing(fn (?string $state): string => $state === null
                         ? '—'
-                        : EsVeNumberFormatter::format($state, Money::INTERNAL_SCALE)), // la tasa se ve con 4 decimales
+                        : EsVeNumberFormatter::format($state, RegisterExchangeRateAction::SCALE)), // BR-02: 2 decimales
                 TextColumn::make('source')->label('Fuente')->badge()
                     ->formatStateUsing(fn (?string $state): string => self::SOURCE_LABELS[$state] ?? (string) $state)
                     ->color(fn (?string $state): string => $state === 'automatic' ? 'info' : 'gray'),

@@ -55,11 +55,14 @@ class RegisterManualExchangeRateAction
             throw new InvalidArgumentException('La tasa debe ser un número positivo con hasta 4 decimales y menor a 1.000.000.000.');
         }
 
-        if ((new Number($value))->compare(new Number('0')) <= 0) {
+        // BR-02: se guarda con 2 decimales (half-up); debe seguir siendo mayor que cero ya redondeada.
+        $rounded = (string) (new Number($value))->round(RegisterExchangeRateAction::SCALE);
+
+        if ((new Number($rounded))->compare(new Number('0')) <= 0) {
             throw new InvalidArgumentException('La tasa debe ser mayor que cero.');
         }
 
-        return (string) (new Number($value))->round(4);
+        return $rounded;
     }
 
     /**

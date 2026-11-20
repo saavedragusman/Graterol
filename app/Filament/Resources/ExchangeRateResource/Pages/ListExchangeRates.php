@@ -33,7 +33,7 @@ class ListExchangeRates extends ListRecords
                     TextInput::make('rate')->label('Tasa (Bs por USD)')
                         ->required()
                         ->inputMode('decimal')
-                        ->helperText('Hasta 4 decimales; mayor que cero.'),
+                        ->helperText('Mayor que cero. Se guarda con 2 decimales (se redondea).'),
                 ])
                 ->action(function (array $data): void {
                     /** @var User $user */

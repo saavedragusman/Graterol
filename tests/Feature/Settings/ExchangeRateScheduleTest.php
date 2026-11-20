@@ -72,7 +72,7 @@ it('stores the rate when the job runs in the scheduler process [S3]', function (
 
     expect(ExchangeRate::count())->toBe(1)
         ->and(ExchangeRate::first()->source)->toBe('automatic')
-        ->and(ExchangeRate::first()->rate)->toBe('918.7662');
+        ->and(ExchangeRate::first()->rate)->toBe('918.7700');
 });
 
 it('logs instead of throwing when the source fails [S3][C7]', function () {

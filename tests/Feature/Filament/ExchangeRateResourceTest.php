@@ -48,8 +48,8 @@ it('lists the history newest first with Spanish labels [S4]', function () {
         ->assertSee('Manual')
         ->assertSee('Sistema')
         ->assertSee($admin->name)
-        ->assertSee('1.234,5000')
-        ->assertSee('80,0000');
+        ->assertSee('1.234,50')->assertDontSee('1.234,5000')
+        ->assertSee('80,00')->assertDontSee('80,0000');
 });
 
 it('filters by source [S4]', function () {
@@ -72,7 +72,7 @@ it('registers a rate from the modal and audits it [S4][S5]', function () {
         ->assertNotified();
 
     $rate = ExchangeRate::firstOrFail();
-    expect($rate->rate)->toBe('918.7662')
+    expect($rate->rate)->toBe('918.7700')
         ->and($rate->source)->toBe('manual')
         ->and($rate->registered_by)->toBe($admin->id)
         ->and(AuditLog::where('action', 'exchange_rate.registered')->count())->toBe(1);

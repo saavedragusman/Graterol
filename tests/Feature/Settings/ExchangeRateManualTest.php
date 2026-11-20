@@ -27,10 +27,10 @@ function rateActor(string $role = 'administrador'): User
 it('registers a manual rate with source, actor and audit log [S4][S5]', function () {
     $actor = rateActor();
 
-    $rate = app(RegisterManualExchangeRateAction::class)->execute('918.7662', $actor);
+    $rate = app(RegisterManualExchangeRateAction::class)->execute('918.7662', $actor); // se guarda redondeada a 2 decimales
 
     expect($rate->source)->toBe('manual')
-        ->and($rate->rate)->toBe('918.7662')
+        ->and($rate->rate)->toBe('918.7700')
         ->and($rate->registered_by)->toBe($actor->id)
         ->and(ExchangeRate::count())->toBe(1);
 
@@ -40,7 +40,7 @@ it('registers a manual rate with source, actor and audit log [S4][S5]', function
         ->and($log->action)->toBe('exchange_rate.registered')
         ->and($log->user_id)->toBe($actor->id)
         ->and($log->before)->toBeNull()
-        ->and($log->after['rate'])->toBe('918.7662')
+        ->and($log->after['rate'])->toBe('918.7700')
         ->and($log->after['source'])->toBe('manual')
         ->and($log->after)->toHaveKey('effective_at');
 });
@@ -50,10 +50,12 @@ it('accepts comma input and normalizes to 4 decimals [S4][C9]', function (string
 
     expect($rate->rate)->toBe($expected);
 })->with([
-    ['918,7662', '918.7662'],
+    ['918,7662', '918.7700'],
+    ['918.764', '918.7600'],
+    ['918.765', '918.7700'], // half-up
     ['85,5', '85.5000'],
     [' 90 ', '90.0000'],
-    ['0.0001', '0.0001'],
+    ['0.01', '0.0100'],
     ['999999999', '999999999.0000'],
 ]);
 
@@ -78,7 +80,7 @@ it('rejects invalid rates leaving rows and audit unchanged [S4][C9]', function (
 
     expect(ExchangeRate::count())->toBe(0)
         ->and(AuditLog::count())->toBe(0);
-})->with(['0', '0,0000', '-5', 'abc', '', '1.23456', '1000000000', '1e3', '1.234,5', '12,']);
+})->with(['0', '0,0000', '0.004', '-5', 'abc', '', '1.23456', '1000000000', '1e3', '1.234,5', '12,']);
 
 it('never updates previous rows when registering a new one [S6]', function () {
     $actor = rateActor();
