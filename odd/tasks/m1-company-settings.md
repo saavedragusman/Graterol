@@ -14,6 +14,9 @@ Saca del código los datos del piloto (C6): nombre, logo, favicon, colores e IVA
 - **S7** — Cada cambio de configuración se audita (C15): usuario, valor anterior y valor nuevo. Una entrada inválida (hex mal formado, archivo que no es imagen, IVA fuera de 0–100) no cambia nada.
 - **S8** — Sin configuración, el sistema usa los valores neutros del producto. Los seeds usan datos ficticios, nunca los del piloto (AGENTS §6).
 - **S9** — «umbral de desviacion que significa? porque no se edita? no quiero nada fork». El umbral de desviación del despiece (BR-11, global por DEC-05) se edita en la misma pantalla, que pasa a llamarse «Configuración general» (secciones Identidad, Impuestos y Despiece). Valor entre 0 y 100, con 2,00 por defecto.
+- **S10** — Moneda por defecto: «¿Hago configurable la moneda que aparece por defecto en compras y precios?» → «Sí, en Configuración general». Ajuste «Moneda por defecto» (USD o VES) en la sección nueva «Monedas», que usan como valor inicial los formularios y Actions de compras y precios. Los valores fijos `'USD'`/`'VES'` que se usan como *default* salen del código. La lógica dual USD+Bs no cambia (mercado: «Solo Venezuela»). Por defecto, el valor actual de cada lugar; si hoy difieren entre compras y precios, se conserva ese comportamiento hasta que se configure.
+- **S11** — Zona horaria: «Fija Caracas, como dice C13». Se guarda en UTC y las fechas y horas se muestran en `America/Caracas` en la oficina (Filament) y en la PWA. Formato de §4 de design.md: «Lunes 9 de noviembre», «7:30 a. m.».
+- **S12** — Roles: «¿Querés una pantalla para gestionar roles y permisos desde la oficina?» → «Sí, la planifico». Solo el diseño; no se escribe código hasta que el humano lo apruebe.
 
 ## Tasks
 
@@ -24,6 +27,9 @@ Saca del código los datos del piloto (C6): nombre, logo, favicon, colores e IVA
 | T3 | S4 | inline — `AdminPanelProvider` con closures desde Settings | 3e0a4be |
 | T4 | S5 | inline — Inertia comparte `company`; `app.blade.php` inyecta `:root`; `app.css` pasa a `:root` + `@theme inline` | 3e0a4be |
 | T6 | S9, S7 | inline — `CompanySettings::deviationThresholdPercent()`; `OrderController` y `ButcheryOrderResource` lo leen de ahí; campo en la pantalla | c6c95c4 |
+| T7 | S10 | worker | |
+| T8 | S11 | worker | |
+| T9 | S12 | explore (solo diseño) | — |
 | T5 | S6 | inline — `CreateProductAction` lee el IVA de Settings; se elimina `config/graterol.php` | 9e79502 (borrado de config en 3e0a4be) |
 
 Risk: item 2 (permiso nuevo y subida de archivos) e item 3 (`CreateProductAction` es código compartido del catálogo).
@@ -42,3 +48,4 @@ Risk: item 2 (permiso nuevo y subida de archivos) e item 3 (`CreateProductAction
 - **L4** Decisión técnica: en `app.css`, los tonos de la familia brand/accent se derivan con `color-mix()` para que una marca distinta quede coherente; se registró en design.md §2.4. El layout inyecta `html:root` para ganarle al CSS que Vite inyecta en desarrollo. El SVG queda excluido de los formatos de logo (riesgo de XSS al servirlo desde el mismo origen).
 - **L3** Hallazgo: no existe ninguna página de Settings en el historial de git; `AdminPanelProvider.php:32-37` tenía fijos el nombre, el logo y los colores del piloto.
 - **L5** (pedido literal): «umbral de desviacion que significa? porque no se edita? no quiero nada fork» → T6. Suite: 193/193, pint ok, types:check 0.
+- **L6** Auditoría de valores fijos (explorador): no queda nada del piloto. Decisiones del humano: mercado «Solo Venezuela» (USD+Bs, BCV, RIF y Caracas quedan fijos por diseño); moneda por defecto configurable; C13 con Caracas fija; pantalla de roles «Sí, la planifico». La URL de la tasa queda en `.env`, por instalación (riesgo SSRF si fuera editable desde la oficina). Lo que todavía no existe (métodos de pago, EAN-13, IGTF, stock negativo, vencimientos, crédito) nace como configuración o catálogo en su hito.
