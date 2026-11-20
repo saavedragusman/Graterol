@@ -31,8 +31,8 @@ Estado: T4 hecho. Diseño de T1–T3 aprobado completo (2026-11-20, L6). En impl
 
 | ID | Specs | Ruta | Commit |
 |---|---|---|---|
-| T1 | S1, S6 | `PermissionKey` label/module + permisos nuevos + seeder no destructivo | |
-| T2 | S3, S5, S7 | Actions y Policy de roles + pantalla Roles | |
+| T1 | S1, S6 | `PermissionKey` label/module + permisos nuevos + seeder no destructivo | d4f9fea |
+| T2 | S3, S5, S7 | Actions y Policy de roles + pantalla Roles | 3027037 |
 | T4 | S8, S6 | worker — `AuditLogResource` de solo lectura + `audit.view` + `AuditLogPolicy`; «Ver» autoriza por registro | dacf9de |
 | T3 | S2, S4, S5, S7 | migración `is_active`, Actions y Policy de usuarios + pantalla Usuarios + bloqueo de inactivos | |
 
@@ -44,3 +44,4 @@ Estado: T4 hecho. Diseño de T1–T3 aprobado completo (2026-11-20, L6). En impl
 - **L4** (pedido literal): «ok quiero añadir otra cosa que tambien estoy seguro que ya habia porque lo vi varias veces y hasta lo probe fue la vista de auditoria, habia una opcion en el menu, para ver las audiorias y sus movimientos se abrian en un popup que paso que ahora no se ve?». Búsqueda: no existe en ninguna rama, en el historial de `app/Filament`, en los objetos sueltos ni en los paquetes; solo `audit_logs` y su modelo (M2). Decisiones: «No, construila de cero»; «Solo administrador»; «En feat/m1-roles».
 - **L5** T4 en dacf9de: 215/215, pint, types:check 0, build ok. RED observado (7/7). Se agregó `->authorize('view')` al popup «Ver», para que el detalle también pase por la Policy.
 - **L6** Confirmación del humano: migración `users.is_active` + `roles.is_system`: «Sí, aprobada»; seeder no destructivo (crea los roles iniciales solo si no existen y agrega al administrador los permisos nuevos): «Sí, así».
+- **L7** El worker de T1/T2 se cortó por cuota. Dejó el código casi completo y 3 tests de `RoleResourceTest` en rojo: 2 esperaban los permisos en orden alfabético cuando la pantalla usa el del enum, y 1 escenario de la guarda le quitaba el rol al propio usuario del test y no vaciaba el grupo Configuración. Se corrigieron los escenarios; el código no cambió. Revisión del padre: guarda `EnsureRoleManagerRemains` (condición «activo» aislada para T3), migración `is_system` con marcado de administrador, seeder con `syncWithoutDetaching` y creación solo si el rol no existe. Suite: 244/244, pint, types:check 0, build ok. Observación: si el humano borra cajero o carnicero, el próximo `db:seed` los vuelve a crear con sus permisos iniciales.
