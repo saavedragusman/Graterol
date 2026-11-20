@@ -24,4 +24,5 @@ enum PermissionKey: string
     case SalesVoid = 'sales.void';
     case SalesReturn = 'sales.return';
     case SettingsManage = 'settings.manage';
+    case AuditView = 'audit.view';
 }
