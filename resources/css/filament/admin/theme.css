@@ -169,3 +169,11 @@ html:not(.dark) .fi-wi-stats-overview-stat-label {
     font-size: 13px;
     color: var(--ink-muted);
 }
+
+/* --- Scroll del menú oscuro: el rojo de marca no se ve sobre brand-night, se aclara --- */
+.fi-sidebar-nav {
+    scrollbar-color: color-mix(in oklab, var(--brand) 60%, white) transparent;
+}
+.fi-sidebar-nav::-webkit-scrollbar-thumb {
+    background-color: color-mix(in oklab, var(--brand) 60%, white);
+}

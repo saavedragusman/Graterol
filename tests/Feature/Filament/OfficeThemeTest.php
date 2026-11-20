@@ -122,3 +122,11 @@ it('uses brand-night #2A1215 as the sidebar background by default [S3]', functio
     expect(file_get_contents(resource_path('css/app.css')))
         ->toMatch('/--brand-night:\s*#2a1215;/i');
 });
+
+it('styles a thin scrollbar with the brand color through the token, not a hex [S3][C6]', function () {
+    $css = file_get_contents(resource_path('css/app.css'));
+
+    expect($css)->toContain('scrollbar-width: thin')
+        ->and($css)->toMatch('/scrollbar-color:\s*var\(--brand\)/')
+        ->and($css)->toContain('::-webkit-scrollbar');
+});

@@ -74,3 +74,26 @@
     --color-chart-neutral: var(--chart-neutral);
     --color-chart-muted: var(--chart-muted);
 }
+
+/*
+ * Barra de scroll fina y en el color de marca (var(--brand), configurable por cliente, C6).
+ * Firefox usa scrollbar-*; Chrome, Edge y Safari usan ::-webkit-scrollbar.
+ */
+* {
+    scrollbar-width: thin;
+    scrollbar-color: var(--brand) transparent;
+}
+*::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+*::-webkit-scrollbar-track {
+    background: transparent;
+}
+*::-webkit-scrollbar-thumb {
+    background-color: var(--brand);
+    border-radius: 999px;
+}
+*::-webkit-scrollbar-thumb:hover {
+    background-color: var(--brand-strong);
+}
