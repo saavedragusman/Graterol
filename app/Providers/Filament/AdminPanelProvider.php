@@ -11,6 +11,7 @@ use Filament\Pages\Dashboard;
 use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
+use Filament\View\PanelsRenderHook;
 use Filament\Widgets\AccountWidget;
 use Filament\Widgets\FilamentInfoWidget;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
@@ -18,6 +19,7 @@ use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
+use Illuminate\Support\HtmlString;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 
 class AdminPanelProvider extends PanelProvider
@@ -29,6 +31,21 @@ class AdminPanelProvider extends PanelProvider
             ->id('admin')
             ->path('admin')
             ->login()
+            // S2: tema de la oficina según docs/design.md §2.5 (compilado por Vite).
+            ->viteTheme('resources/css/filament/admin/theme.css')
+            // C6/S5: la marca de settings sobrescribe --brand y --accent también en el panel, igual que en la PWA.
+            ->renderHook(
+                PanelsRenderHook::HEAD_END,
+                function (): HtmlString {
+                    $company = app(CompanySettings::class);
+
+                    return new HtmlString(sprintf(
+                        '<style>html:root { --brand: %s; --accent: %s; }</style>',
+                        e($company->brandColor()),
+                        e($company->accentColor()),
+                    ));
+                },
+            )
             // C6: marca leída de settings en cada request (docs/design.md §2.5); nada del cliente en el código.
             ->colors(fn (CompanySettings $company): array => [
                 'primary' => Color::hex($company->brandColor()),
