@@ -23,7 +23,7 @@ Saca del código los datos del piloto (C6): nombre, logo, favicon, colores e IVA
 | T2 | S2, S3, S6, S7 | inline — página Filament `ManageCompanySettings` (nombre, logo, favicon, brand, accent, IVA charcutería) | 3e0a4be |
 | T3 | S4 | inline — `AdminPanelProvider` con closures desde Settings | 3e0a4be |
 | T4 | S5 | inline — Inertia comparte `company`; `app.blade.php` inyecta `:root`; `app.css` pasa a `:root` + `@theme inline` | 3e0a4be |
-| T6 | S9, S7 | inline — `CompanySettings::deviationThresholdPercent()`; `OrderController` y `ButcheryOrderResource` lo leen de ahí; campo en la pantalla | (este commit) |
+| T6 | S9, S7 | inline — `CompanySettings::deviationThresholdPercent()`; `OrderController` y `ButcheryOrderResource` lo leen de ahí; campo en la pantalla | c6c95c4 |
 | T5 | S6 | inline — `CreateProductAction` lee el IVA de Settings; se elimina `config/graterol.php` | 9e79502 (borrado de config en 3e0a4be) |
 
 Risk: item 2 (permiso nuevo y subida de archivos) e item 3 (`CreateProductAction` es código compartido del catálogo).
