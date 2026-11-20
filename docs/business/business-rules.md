@@ -3,7 +3,7 @@
 Cada regla se verifica con un test Pest que lleva su ID (C16). `[abierto]` = pendiente del contador o del cliente; se implementa como configuración con el valor por defecto indicado.
 
 ## General
-- **BR-01** Peso en kg con 3 decimales; montos de dinero con 2 decimales exactos, sin redondear al sumar (3,99 + 3,99 = 7,98). Solo se redondea donde un cálculo crea el monto: al centavo más cercano (half-up), una sola vez. El precio y el costo por kg son valores unitarios y conservan 4 decimales. Decisión del humano, 2026-11-20.
+- **BR-01** Peso en kg con 3 decimales; montos de dinero con 2 decimales exactos, sin redondear al sumar (3,99 + 3,99 = 7,98). Solo se redondea donde un cálculo crea el monto: al centavo más cercano (half-up), una sola vez (excepción: el reparto de costos del despiece, BR-12). El precio y el costo por kg son valores unitarios y conservan 4 decimales. Decisión del humano, 2026-11-20.
 - **BR-02** La tasa BCV es diaria: carga automática con respaldo manual. Cada operación guarda la tasa que usó. La tasa se guarda y se usa con 2 decimales (redondeo half-up al cargarla), no con los 4 de la fuente; decisión del humano, 2026-11-20.
 - **BR-03** Roles iniciales como conjuntos de permisos `module.action` (C14): administrador (todos los permisos asignados), cajero (POS y su propio cierre) y carnicero (recepción y despiece). Anular o devolver requiere un permiso propio, que de inicio solo tiene el administrador.
 
@@ -20,7 +20,7 @@ Cada regla se verifica con un test Pest que lleva su ID (C16). `[abierto]` = pen
 - **BR-09** Cada orden de despiece registra el lote, los kg de entrada y el carnicero, y muestra los kg esperados por corte.
 - **BR-10** Merma real = kg de entrada − Σ kg de salida. Si las salidas superan la entrada, la orden se rechaza.
 - **BR-11** Se alerta cuando un corte se desvía de la plantilla más que el umbral configurado (2 puntos por defecto).
-- **BR-12** Costeo por valor relativo de mercado: `Costo_i = C_total × (kg_i·p_i) / Σ(kg_j·p_j)`. La merma no lleva costo. Cada `Costo_i` se redondea al centavo (half-up) y el residuo va al corte de mayor valor, para que Σ costos = C_total exacto.
+- **BR-12** Costeo por valor relativo de mercado: `Costo_i = C_total × (kg_i·p_i) / Σ(kg_j·p_j)`. La merma no lleva costo. Cada `Costo_i` se calcula con 4 decimales y luego se redondea al centavo (half-up); el residuo de cada paso (primero a 4 decimales, luego al centavo) va al corte de mayor valor, para que Σ costos = C_total exacto. Es la única excepción a «redondear una sola vez» (BR-01) y es necesaria para reproducir el caso dorado de BR-13; decisión del humano, 2026-11-20.
 - **BR-13** Caso dorado: 20 kg de pollo a US$ 56,00 → filete 24,57 · muslo 19,16 · alas 5,51 · carapacho 4,16 · hígado y molleja 2,36 · piel 0,24 (tabla de la propuesta técnica).
 
 ## Inventario
