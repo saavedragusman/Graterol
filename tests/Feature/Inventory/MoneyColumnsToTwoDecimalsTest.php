@@ -358,3 +358,61 @@ function seedLegacyMoney2dp(): array
 
     return [$purchaseId, $lineId];
 }
+
+it('reconciles a single-line purchase and leaves odd legacy rows alone [S6 edge cases]', function () {
+    $migration = moneyMigration();
+    $migration->down();
+
+    $supplierId = Supplier::factory()->create()->id;
+    $rawId = createRawMaterial()->id;
+    $userId = User::factory()->create()->id;
+
+    // Compra de un solo renglón: el residuo cae en esa línea y cuadra con el flete redondeado.
+    $purchaseId = DB::table('purchases')->insertGetId([
+        'supplier_id' => $supplierId, 'supplier_invoice_number' => 'F-3', 'supplier_invoice_date' => now()->toDateString(),
+        'currency' => 'VES', 'exchange_rate' => '85.5050', 'freight_amount' => '10.0049', 'other_costs_amount' => '0.0000', 'status' => 'received',
+    ]);
+    $lineId = DB::table('purchase_lines')->insertGetId([
+        'purchase_id' => $purchaseId, 'product_id' => $rawId, 'invoiced_weight_kg' => '5.000', 'line_amount' => '20.0000',
+        'received_weight_kg' => '5.000', 'allocated_freight' => '10.0049', 'allocated_other_costs' => null,
+    ]);
+
+    // Lote sin línea de origen y lote con total NULL: no fallan.
+    $orphanId = legacyBatch('orphan-1', 'purchase_line', 999999, $rawId, '1.0000', '12.3456', '85.5050');
+    $nullTotalId = legacyBatch('null-total', 'purchase_line', $lineId, $rawId, '1.0000', '1.0000', '85.5050');
+    DB::statement('ALTER TABLE batches ALTER COLUMN total_cost DROP NOT NULL');
+    DB::table('batches')->where('id', $nullTotalId)->update(['total_cost' => null]);
+
+    // Orden cerrada sin costos asignados (NULL) y orden con residuo negativo.
+    $inputId = legacyBatch('input-2', 'purchase_line', null, $rawId, '1.0000', '0.0100', '85.5050');
+    $templateId = DB::table('butchery_templates')->insertGetId([
+        'raw_material_product_id' => $rawId, 'name' => 'Plantilla 2', 'expected_shrinkage_percent' => '5.00', 'created_by' => $userId,
+    ]);
+    $orderIds = [];
+    foreach (['ORD-N', 'ORD-R'] as $code) {
+        $orderIds[$code] = DB::table('butchery_orders')->insertGetId([
+            'code' => $code, 'batch_id' => $inputId, 'template_id' => $templateId, 'input_weight_kg' => '2.000',
+            'expected_shrinkage_percent' => '5.00', 'butcher_id' => $userId, 'status' => 'closed',
+        ]);
+    }
+    $line = fn (int $orderId, string $weight, ?string $cost) => DB::table('butchery_order_lines')->insertGetId([
+        'order_id' => $orderId, 'cut_product_id' => createCut('Corte '.uniqid())->id, 'expected_yield_percent' => '10.00',
+        'expected_weight_kg' => $weight, 'actual_weight_kg' => $weight, 'reference_price_per_kg' => '1.0000', 'allocated_cost' => $cost,
+    ]);
+    $nullLine = $line($orderIds['ORD-N'], '1.000', null);
+    $negA = $line($orderIds['ORD-R'], '2.000', '0.0050');
+    $negB = $line($orderIds['ORD-R'], '1.000', '0.0050');
+
+    $migration->up();
+
+    expect(DB::table('purchase_lines')->where('id', $lineId)->value('allocated_freight'))->toBe('10.00')
+        ->and(DB::table('purchases')->where('id', $purchaseId)->value('freight_amount'))->toBe('10.00')
+        ->and(DB::table('batches')->where('id', $orphanId)->value('total_cost'))->toBe('12.35')
+        ->and(DB::table('batches')->where('id', $nullTotalId)->value('total_cost'))->toBeNull()
+        ->and(DB::table('purchase_lines')->where('id', $lineId)->value('allocated_other_costs'))->toBeNull()
+        ->and(DB::table('butchery_order_lines')->where('id', $nullLine)->value('allocated_cost'))->toBeNull();
+
+    // Residuo: 0.0050 + 0.0050 = 0.0100 exacto; cada corte redondea a 0.01 (suma 0.02) y el de mayor valor cede 0.01.
+    expect(DB::table('butchery_order_lines')->whereIn('id', [$negA, $negB])->orderBy('id')->pluck('allocated_cost')->all())->toBe(['0.00', '0.01'])
+        ->and((string) DB::table('butchery_order_lines')->whereIn('id', [$negA, $negB])->sum('allocated_cost'))->toBe('0.01');
+});
