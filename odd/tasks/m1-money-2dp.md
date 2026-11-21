@@ -37,3 +37,4 @@ Rama `feat/m1-money-2dp`, sale de `feat/m1-exchange-rate` (c7a1853). Cambia C9 y
 
 
 - **L9** Punto 1 de L8 hecho: la migración solo redondea `total_cost` de un lote de compra y lo reconcilia con línea + flete + otros costos únicamente si el total viejo ya era esa suma al cuarto decimal (tabla temporal calculada antes de redondear). Test ajustado: lotes 1 y 2 con suma completa (103,86 / 63,63) y lote 3 sin flete (40,00). 360/360, pint y types:check en verde. Pendiente: decisión sobre `unit_cost` (L8-2), verificador independiente y cierre.
+- **L10** Decisión del humano («A»): `unit_cost` de lotes y kardex NO se recalcula. En lotes anteriores a la migración `unit_cost × peso` puede diferir unos centavos de `total_cost`; el kardex es inmutable (C10) y los reportes valoran con `total_cost` (lo pagado). En filas nuevas no hay diferencia: `unit_cost` sale de `total_cost ÷ peso` con un solo redondeo. Pendiente: verificador independiente y cierre.
