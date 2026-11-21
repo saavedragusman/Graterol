@@ -113,7 +113,9 @@ function seedLegacyMoney(): array
             'allocated_freight' => $freight,
             'allocated_other_costs' => $other,
         ]);
-        $batchId = legacyBatch("purchase_line-{$lineId}", 'purchase_line', $lineId, $rawId, '2.2222', '999.9999', '85.5050');
+        // Lotes 1 y 2: total viejo = monto + flete + otros. Lote 3: guardado sin flete (solo el monto).
+        $legacyTotal = ['103.8409', '63.6348', '40.0049'][$i];
+        $batchId = legacyBatch("purchase_line-{$lineId}", 'purchase_line', $lineId, $rawId, '2.2222', $legacyTotal, '85.5050');
         DB::table('purchase_lines')->where('id', $lineId)->update(['batch_id' => $batchId]);
         $purchaseLineIds[$i] = $lineId;
         $purchaseBatchIds[$i] = $batchId;
@@ -273,9 +275,10 @@ it('rounds legacy 4-decimal amounts half-up and splits the cent residue so alloc
         ->and((string) DB::table('purchase_lines')->where('purchase_id', $ids['purchaseId'])->sum('allocated_freight'))->toBe('10.00')
         ->and((string) DB::table('purchase_lines')->where('purchase_id', $ids['purchaseId'])->sum('allocated_other_costs'))->toBe('1.01');
 
-    // Lote de compra = monto + flete + otros, calculado con las partes ya redondeadas.
+    // Lotes 1 y 2 eran la suma completa: se reconcilian con las partes redondeadas.
+    // El lote 3 se guardó sin flete: solo se redondea su total (40.0049 → 40.00), no se le suma el flete.
     expect(DB::table('batches')->whereIn('id', $ids['purchaseBatchIds'])->orderBy('id')->pluck('total_cost')->all())
-        ->toBe(['103.86', '63.63', '43.53'])
+        ->toBe(['103.86', '63.63', '40.00'])
         ->and(DB::table('batches')->whereIn('id', $ids['purchaseBatchIds'])->orderBy('id')->pluck('exchange_rate')->unique()->all())->toBe(['85.51']);
 
     // Compra en borrador: se redondea y lo no asignado sigue nulo.

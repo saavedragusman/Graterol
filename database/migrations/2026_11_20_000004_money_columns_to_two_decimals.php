@@ -40,8 +40,10 @@ return new class extends Migration
      *     al centavo. El residuo va al corte de mayor valor (peso real × precio de
      *     referencia), el de menor id en empate (misma regla que
      *     AllocateButcheryCostsAction).
-     *  3. batches.total_cost de un lote de compra = line_amount + allocated_freight +
-     *     allocated_other_costs de su línea, ya redondeados.
+     *  3. batches.total_cost de un lote de compra: si el total viejo ya era igual a
+     *     line_amount + allocated_freight + allocated_other_costs de su línea (al
+     *     cuarto decimal), pasa a esa suma con las partes ya redondeadas; si no (por
+     *     ejemplo un lote guardado sin flete), solo se redondea el total que tenía.
      *  4. batches.total_cost de un lote de salida de despiece = allocated_cost
      *     redondeado de su línea.
      *
@@ -51,6 +53,20 @@ return new class extends Migration
      */
     public function up(): void
     {
+        // Antes de redondear nada: lotes de compra cuyo total viejo ya era línea + flete + otros costos.
+        DB::statement('DROP TABLE IF EXISTS tmp_batches_with_full_sum');
+        DB::statement(<<<'SQL'
+            CREATE TEMPORARY TABLE tmp_batches_with_full_sum AS
+            SELECT batches.id
+            FROM batches
+            JOIN purchase_lines ON batches.source_type = 'purchase_line' AND batches.source_id = purchase_lines.id
+            WHERE batches.total_cost IS NOT NULL
+              AND round(batches.total_cost, 4) = round(
+                  purchase_lines.line_amount
+                  + COALESCE(purchase_lines.allocated_freight, 0)
+                  + COALESCE(purchase_lines.allocated_other_costs, 0), 4)
+        SQL);
+
         // Tasas congeladas y de la tabla de tasas: half-up a 2 decimales (BR-02).
         DB::statement('UPDATE exchange_rates SET rate = round(rate, 2)');
         DB::statement('UPDATE purchases SET exchange_rate = round(exchange_rate, 2)');
@@ -97,7 +113,14 @@ return new class extends Migration
             WHERE butchery_order_lines.id = fixed.id
         SQL);
 
-        // Costo total de los lotes, calculado desde las partes ya redondeadas.
+        // Costo total de los lotes de compra: solo se redondea el que tenían...
+        DB::statement(<<<'SQL'
+            UPDATE batches
+            SET total_cost = round(total_cost, 2)
+            WHERE source_type = 'purchase_line' AND total_cost IS NOT NULL
+        SQL);
+
+        // ...y se reconcilia con las partes redondeadas solo si ya era la suma completa.
         DB::statement(<<<'SQL'
             UPDATE batches
             SET total_cost = purchase_lines.line_amount
@@ -107,7 +130,10 @@ return new class extends Migration
             WHERE batches.source_type = 'purchase_line'
               AND batches.source_id = purchase_lines.id
               AND batches.total_cost IS NOT NULL
+              AND batches.id IN (SELECT id FROM tmp_batches_with_full_sum)
         SQL);
+
+        DB::statement('DROP TABLE tmp_batches_with_full_sum');
 
         DB::statement(<<<'SQL'
             UPDATE batches
