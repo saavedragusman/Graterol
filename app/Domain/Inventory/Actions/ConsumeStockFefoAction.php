@@ -7,9 +7,9 @@ namespace App\Domain\Inventory\Actions;
 use App\Domain\Inventory\Data\FefoAllocation;
 use App\Domain\Inventory\Data\FefoConsumption;
 use App\Domain\Inventory\Models\Batch;
-use App\Domain\Inventory\Models\InventoryMovement;
 use App\Domain\Inventory\MovementType;
 use App\Domain\Inventory\Queries\StockBalance;
+use App\Domain\Inventory\StockExitWriter;
 use App\Domain\Settings\Models\Setting;
 use App\Support\ValueObjects\DecimalScale;
 use App\Support\ValueObjects\Money;
@@ -41,7 +41,10 @@ class ConsumeStockFefoAction
 {
     public const ALLOW_SALE_WITHOUT_STOCK = 'inventory.allow_sale_without_stock';
 
-    public function __construct(private readonly StockBalance $stock = new StockBalance) {}
+    public function __construct(
+        private readonly StockBalance $stock = new StockBalance,
+        private readonly StockExitWriter $exits = new StockExitWriter,
+    ) {}
 
     public function execute(
         int $productId,
@@ -93,10 +96,7 @@ class ConsumeStockFefoAction
                 $take = $remaining < $balance ? $remaining : $balance;
 
                 // La parte que deja el lote en 0,000 kg toma exactamente el valor restante (C9).
-                $emptiesLot = $take->compare($balance) === 0;
-                $cost = $emptiesLot
-                    ? $this->stock->valueForBatchLocked($batch->id)
-                    : UnitAmount::fromString((string) $batch->unit_cost)->times((string) $take);
+                $cost = $this->exits->costOf($batch, $take, $balance);
 
                 $allocations[] = $this->write($batch, $take, $cost, $type, $referenceType, $referenceId, $userId, $reason);
                 $remaining -= $take;
@@ -175,22 +175,9 @@ class ConsumeStockFefoAction
         int $userId,
         ?string $reason,
     ): FefoAllocation {
-        $kgString = DecimalScale::round($kg, 3);
+        $this->exits->write($batch, $kg, $cost, $type, $referenceType, $referenceId, $userId, $reason);
 
-        InventoryMovement::create([
-            'batch_id' => $batch->id,
-            'type' => $type->value,
-            'quantity' => '-'.$kgString,
-            'unit_cost' => $batch->unit_cost,
-            'total_cost' => Money::zero()->sub($cost)->toInternalString(),
-            'user_id' => $userId,
-            'reference_type' => $referenceType,
-            'reference_id' => $referenceId,
-            'reason' => $reason,
-            'occurred_at' => now(),
-        ]);
-
-        return new FefoAllocation($batch, (string) $kgString, $cost);
+        return new FefoAllocation($batch, (string) DecimalScale::round($kg, 3), $cost);
     }
 
     /**
