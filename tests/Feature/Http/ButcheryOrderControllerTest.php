@@ -7,6 +7,8 @@ use App\Domain\Butchery\Actions\OpenButcheryOrderAction;
 use App\Domain\Butchery\Models\ButcheryOrder;
 use App\Domain\Catalog\Models\ProductPrice;
 use App\Domain\Inventory\Actions\CreateLotFromPurchaseLineAction;
+use App\Domain\Settings\Actions\UpdateSettingsAction;
+use App\Domain\Settings\CompanySettings;
 use App\Domain\Settings\Models\Role;
 use App\Models\User;
 use App\Support\ValueObjects\Money;
@@ -208,4 +210,18 @@ it('shows the cost of the order input, not the whole lot cost, on a partial orde
             ->where('inputCost.rate', 'Bs 85,50')
             ->missing('batchTotalCostDisplay')
         );
+});
+
+it('sends the deviation threshold configured from the office to the PWA [BR-11][C6]', function () {
+    $user = carniceroButcher();
+    $ctx = chickenBatchWithTemplate($user);
+    $order = (new OpenButcheryOrderAction)->execute($ctx['batch']->id, '10.000', $user->id);
+    app(UpdateSettingsAction::class)->execute(
+        [CompanySettings::DEVIATION_THRESHOLD_PERCENT => '4'], null
+    );
+
+    $this->actingAs($user)
+        ->get("/butchery/orders/{$order->id}")
+        ->assertOk()
+        ->assertInertia(fn ($page) => $page->where('deviationThresholdPercent', '4.00'));
 });

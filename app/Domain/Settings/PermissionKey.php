@@ -23,4 +23,5 @@ enum PermissionKey: string
     case CatalogManage = 'catalog.manage';
     case SalesVoid = 'sales.void';
     case SalesReturn = 'sales.return';
+    case SettingsManage = 'settings.manage';
 }

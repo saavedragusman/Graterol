@@ -8,12 +8,13 @@ use App\Domain\Catalog\Models\Product;
 use App\Domain\Catalog\ProductCategory;
 use App\Domain\Catalog\ProductType;
 use App\Domain\Catalog\Unit;
+use App\Domain\Settings\CompanySettings;
 use Illuminate\Support\Facades\DB;
 
 /**
  * BR-04/BR-05: crea un producto y decide su IVA según la categoría.
  * Las carnes naturales son exentas y no aceptan una tasa distinta de cero;
- * charcutería y el resto se gravan a la tasa configurada salvo que se
+ * charcutería y el resto se gravan a la tasa configurada en settings (C6) salvo que se
  * indique una tasa explícita.
  */
 class CreateProductAction
@@ -27,7 +28,7 @@ class CreateProductAction
     ): Product {
         return DB::transaction(function () use ($name, $type, $unit, $category, $taxRate) {
             $isExempt = $category === ProductCategory::NaturalMeat;
-            $rate = $isExempt ? '0.00' : ($taxRate ?? config('graterol.charcuteria_vat_rate'));
+            $rate = $isExempt ? '0.00' : ($taxRate ?? app(CompanySettings::class)->charcuteriaVatRate());
 
             return Product::create([
                 'name' => $name,

@@ -2,6 +2,7 @@
 
 namespace App\Providers\Filament;
 
+use App\Domain\Settings\CompanySettings;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
@@ -28,14 +29,15 @@ class AdminPanelProvider extends PanelProvider
             ->id('admin')
             ->path('admin')
             ->login()
-            ->colors([
-                'primary' => Color::hex('#B5121B'),
-                'secondary' => Color::hex('#fbbb13'),
+            // C6: marca leída de settings en cada request (docs/design.md §2.5); nada del cliente en el código.
+            ->colors(fn (CompanySettings $company): array => [
+                'primary' => Color::hex($company->brandColor()),
+                'accent' => Color::hex($company->accentColor()),
             ])
-            ->brandName('Distribuidora Graterol')
-            ->brandLogo(asset('images/graterol-logo.webp'))
+            ->brandName(fn (CompanySettings $company): string => $company->name())
+            ->brandLogo(fn (CompanySettings $company): ?string => $company->logoUrl())
             ->brandLogoHeight('4rem')
-            ->favicon(asset('images/favicon.png'))
+            ->favicon(fn (CompanySettings $company): ?string => $company->faviconUrl())
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\Filament\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\Filament\Pages')
             ->pages([

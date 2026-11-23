@@ -10,7 +10,7 @@ use App\Domain\Butchery\Actions\OpenButcheryOrderAction;
 use App\Domain\Butchery\Actions\RegisterButcheryOutputWeightAction;
 use App\Domain\Butchery\Models\ButcheryOrder;
 use App\Domain\Inventory\Models\Batch;
-use App\Domain\Settings\Models\Setting;
+use App\Domain\Settings\CompanySettings;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Butchery\CloseButcheryOrderRequest;
 use App\Http\Requests\Butchery\OpenButcheryOrderRequest;
@@ -81,7 +81,7 @@ class OrderController extends Controller
                 (string) $order->batch->currency,
                 $order->batch->exchange_rate === null ? null : (string) $order->batch->exchange_rate,
             ),
-            'deviationThresholdPercent' => Setting::valueFor('butchery.deviation_threshold_percent', '2.00'),
+            'deviationThresholdPercent' => app(CompanySettings::class)->deviationThresholdPercent(),
         ]);
     }
 

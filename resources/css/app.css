@@ -3,31 +3,63 @@
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
 @source '../../storage/framework/views/*.php';
 
+/*
+ * docs/design.md §2.1 y §2.4 — tokens de color como variables CSS para que la
+ * marca de settings (C6) los sobrescriba sin recompilar. Estos son los valores
+ * por defecto del producto. --brand y --accent llegan desde el layout; los tonos
+ * de su familia se derivan de ellos para que cualquier marca quede coherente.
+ */
+:root {
+    --brand: #a51016;
+    --accent: #f6b01a;
+    --brand-strong: color-mix(in oklab, var(--brand) 66%, black);
+    --brand-night: color-mix(in oklab, var(--brand) 22%, #1f1a17);
+    --brand-soft: color-mix(in oklab, var(--brand) 9%, white);
+    --on-accent: #2b1d00;
+    --accent-soft: color-mix(in oklab, var(--accent) 22%, white);
+    --on-accent-soft: #6b4a00;
+    --canvas: #f7f3ee;
+    --surface: #ffffff;
+    --line: #e6dfd7;
+    --line-soft: #f0eae3;
+    --ink: #1f1a17;
+    --ink-muted: #6b625c;
+    --success: #1e7a46;
+    --success-soft: #e5f3ea;
+    --warning: #b45309;
+    --warning-soft: #fdf1e3;
+    --info: #1d4ed8;
+    --info-soft: #e8eefc;
+    --chart-neutral: #8c827b;
+    --chart-muted: color-mix(in oklab, var(--brand) 30%, white);
+}
+
 @theme {
     --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
         'Segoe UI Symbol', 'Noto Color Emoji';
+}
 
-    /* docs/design.md §2.1 — tokens de color, valores por defecto del piloto. */
-    --color-brand: #a51016;
-    --color-brand-strong: #6e0a0f;
-    --color-brand-night: #2a1215;
-    --color-brand-soft: #fbe9ea;
-    --color-accent: #f6b01a;
-    --color-on-accent: #2b1d00;
-    --color-accent-soft: #fdf0cf;
-    --color-on-accent-soft: #6b4a00;
-    --color-canvas: #f7f3ee;
-    --color-surface: #ffffff;
-    --color-line: #e6dfd7;
-    --color-line-soft: #f0eae3;
-    --color-ink: #1f1a17;
-    --color-ink-muted: #6b625c;
-    --color-success: #1e7a46;
-    --color-success-soft: #e5f3ea;
-    --color-warning: #b45309;
-    --color-warning-soft: #fdf1e3;
-    --color-info: #1d4ed8;
-    --color-info-soft: #e8eefc;
-    --color-chart-neutral: #8c827b;
-    --color-chart-muted: #e7b7b9;
+@theme inline {
+    --color-brand: var(--brand);
+    --color-brand-strong: var(--brand-strong);
+    --color-brand-night: var(--brand-night);
+    --color-brand-soft: var(--brand-soft);
+    --color-accent: var(--accent);
+    --color-on-accent: var(--on-accent);
+    --color-accent-soft: var(--accent-soft);
+    --color-on-accent-soft: var(--on-accent-soft);
+    --color-canvas: var(--canvas);
+    --color-surface: var(--surface);
+    --color-line: var(--line);
+    --color-line-soft: var(--line-soft);
+    --color-ink: var(--ink);
+    --color-ink-muted: var(--ink-muted);
+    --color-success: var(--success);
+    --color-success-soft: var(--success-soft);
+    --color-warning: var(--warning);
+    --color-warning-soft: var(--warning-soft);
+    --color-info: var(--info);
+    --color-info-soft: var(--info-soft);
+    --color-chart-neutral: var(--chart-neutral);
+    --color-chart-muted: var(--chart-muted);
 }

@@ -10,6 +10,8 @@ use App\Domain\Catalog\ProductCategory;
 use App\Domain\Catalog\ProductType;
 use App\Domain\Catalog\Unit;
 use App\Domain\Settings\Actions\RegisterExchangeRateAction;
+use App\Domain\Settings\Actions\UpdateSettingsAction;
+use App\Domain\Settings\CompanySettings;
 use App\Domain\Settings\Models\Role;
 use App\Filament\Resources\ProductResource\Pages\CreateProduct;
 use App\Filament\Resources\ProductResource\Pages\EditProduct;
@@ -157,4 +159,11 @@ it('shows the detail price in USD with the Bs line using today\'s BCV rate [BR-0
         ->assertSee('$ 9,50')
         ->assertSee('Bs 812,25')
         ->assertSee('Sin precio');
+});
+
+it('preselects the configured default currency in the price form [S10]', function () {
+    prUser('administrador');
+    (new UpdateSettingsAction)->execute([CompanySettings::DEFAULT_CURRENCY => 'VES'], null);
+
+    Livewire::test(CreateProduct::class)->assertFormSet(['price_currency' => 'VES']);
 });

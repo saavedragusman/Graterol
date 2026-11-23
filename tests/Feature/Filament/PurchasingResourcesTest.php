@@ -12,6 +12,8 @@ use App\Domain\Purchasing\Actions\ReceivePurchaseAction;
 use App\Domain\Purchasing\Models\Purchase;
 use App\Domain\Purchasing\Models\Supplier;
 use App\Domain\Settings\Actions\RegisterExchangeRateAction;
+use App\Domain\Settings\Actions\UpdateSettingsAction;
+use App\Domain\Settings\CompanySettings;
 use App\Domain\Settings\Models\Role;
 use App\Filament\Resources\PurchaseResource;
 use App\Filament\Resources\PurchaseResource\Pages\CreatePurchase;
@@ -56,6 +58,8 @@ function fpDraft(): Purchase
         invoiceNumber: 'F-100',
         invoiceDate: now(),
         lines: [['product_id' => fpProduct()->id, 'invoiced_weight_kg' => '100.000', 'line_amount' => '110.0000']],
+        // Factura en Bs explícita: la moneda por defecto sale de Settings (S10).
+        currency: 'VES',
     );
 }
 
@@ -279,4 +283,11 @@ it('forbids creating suppliers without purchasing.manage-suppliers [BR-03]', fun
     fpUser('carnicero');
 
     Livewire::test(CreateSupplier::class)->assertForbidden();
+});
+
+it('preselects the configured default currency in the purchase form [S10]', function () {
+    fpUser('administrador');
+    (new UpdateSettingsAction)->execute([CompanySettings::DEFAULT_CURRENCY => 'VES'], null);
+
+    Livewire::test(CreatePurchase::class)->assertFormSet(['currency' => 'VES']);
 });

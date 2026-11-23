@@ -106,6 +106,7 @@ Los tokens viven como variables CSS para que Settings pueda cambiarlos por clien
 ```
 
 - **Marca configurable (C6, resuelta: 2026-11-20):** el nombre, el logo y los colores `brand` y `accent` son configuración de la empresa (M1) y se editan desde Settings. Los valores de `app.css` son solo el respaldo cuando Settings está vacío. La PWA sobrescribe `--brand` y `--accent` con un `<style>` generado desde Settings; sin conexión usa los últimos valores guardados. La oficina los lee al arrancar el panel (§2.5).
+- **Tonos derivados:** como `brand` y `accent` cambian por cliente, `brand-strong`, `brand-night`, `brand-soft`, `accent-soft` y `chart-muted` se derivan de ellos con `color-mix()` en `app.css`, para que cualquier marca quede coherente. Con los colores del piloto dan valores cercanos a los de §2.1. `on-accent` y `on-accent-soft` quedan fijos: si un cliente elige un `accent` oscuro, hay que revisar el contraste a mano.
 
 ### 2.5 Oficina (Filament)
 

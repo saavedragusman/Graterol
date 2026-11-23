@@ -28,7 +28,7 @@ class CreateProduct extends CreateRecord
             ProductCategory::from((string) $data['product_category']),
             $data['detail_price'] ?? null,
             $data['wholesale_price'] ?? null,
-            (string) ($data['price_currency'] ?? 'USD'),
+            filled($data['price_currency'] ?? null) ? (string) $data['price_currency'] : null,
         );
     }
 

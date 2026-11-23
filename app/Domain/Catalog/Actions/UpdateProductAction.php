@@ -19,7 +19,7 @@ class UpdateProductAction
         bool $active,
         mixed $detailPrice = null,
         mixed $wholesalePrice = null,
-        string $currency = 'USD',
+        ?string $currency = null,
     ): Product {
         return DB::transaction(function () use ($product, $name, $active, $detailPrice, $wholesalePrice, $currency): Product {
             $product->update(['name' => $name, 'active' => $active]);
