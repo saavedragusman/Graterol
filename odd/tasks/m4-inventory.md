@@ -105,7 +105,7 @@ Opciones:
 Recomendación técnica: A. BR-15 los une con «o» en una misma enunciación; si el negocio quiere separarlos es un tipo más sin romper nada. Se evita agregar columnas al kardex (C10 ya fija sus campos). Un sobrante por conteo es `count_adjustment` positivo; una merma tipificada solo resta.
 ```
 
-Resuelta: A, 2026-11-23 (el humano aceptó la recomendación técnica).
+Resuelta: B, 2026-11-23 (cambia la recomendación original). Cinco tipos de movimiento: `shrinkage_dehydration`, `shrinkage_slicing`, `shrinkage_expiry` (vencimiento), `shrinkage_confiscation` (decomiso) y `count_adjustment` (positivo o negativo). Vencimiento y decomiso van separados porque el decomiso es frecuente en Venezuela y el negocio quiere filtrarlos y reportarlos por aparte. Motivo de texto obligatorio en todos; el decomiso se registra con el motivo que lo originó.
 
 ```text
 [DEC-PENDIENTE] M4/BR-15 — DEC-05 Responsable y permisos de la merma
@@ -153,7 +153,7 @@ Resuelta: A, 2026-11-23 (el humano aceptó la recomendación técnica).
 Contexto: la maqueta muestra «Valorizado al costo», «Lotes activos», «Vencen en 3 días» y «Mermas del mes». design.md §5 dice «Pendientes: Ninguno», pero ninguna BR define estas cifras. El «inventario valorizado» como reporte es de M6. Los lotes guardan su propia moneda (`batches.currency`, por defecto `VES`) y la «moneda contable» sigue abierta con el contador.
 Duda: ¿se implementan los cuatro KPI y con qué cálculo?
 Opciones:
-  A) Los cuatro, con estas definiciones: Lotes activos = lotes con saldo > 0. Valorizado = Σ del valor de los lotes activos (regla de costo y valor del lote, §3: lo que entró menos lo que salió), agrupado por moneda del lote (normalmente una sola; sin convertir). Vencen en N días = lotes activos con fecha dentro de N días (N de DEC-09). Mermas del mes = Σ kg de los movimientos de merma (los tres tipos de merma) y de los `count_adjustment` negativos del mes calendario en `America/Caracas`.
+  A) Los cuatro, con estas definiciones: Lotes activos = lotes con saldo > 0. Valorizado = Σ del valor de los lotes activos (regla de costo y valor del lote, §3: lo que entró menos lo que salió), agrupado por moneda del lote (normalmente una sola; sin convertir). Vencen en N días = lotes activos con fecha dentro de N días (N de DEC-09). Mermas del mes = Σ kg de los movimientos de merma (los cuatro tipos de merma) y de los `count_adjustment` negativos del mes calendario en `America/Caracas`.
   B) Solo «Lotes activos» y «Vencen en N días» (derivan directo del kardex y la fecha); «Valorizado» y «Mermas del mes» pasan a M6.
   C) Ninguno; la pantalla arranca en la tabla.
 Recomendación técnica: A. Son sumas del kardex sin regla nueva, la maqueta los dibuja y M6 reutilizará la misma consulta. Si el humano prefiere cerrar la moneda contable antes, se pasa a B.
@@ -256,7 +256,7 @@ Semillas: `inventory.allow_sale_without_stock`, `inventory.expiry_alert_days` en
 ### 4.2 Tipos de movimiento (kardex)
 
 Existentes (no cambian): `purchase_in`, `purchase_void`, `butchery_in`, `butchery_out`, `butchery_void`.
-Nuevos de M4 (DEC-04): `shrinkage_dehydration`, `shrinkage_slicing`, `shrinkage_expiry`, `count_adjustment`.
+Nuevos de M4 (DEC-04): `shrinkage_dehydration`, `shrinkage_slicing`, `shrinkage_expiry`, `shrinkage_confiscation`, `count_adjustment`.
 Reservado: `sale_out` (BR-14; lo escribe M5).
 Signos: entradas positivas, salidas y mermas negativas; `count_adjustment` con el signo de la diferencia.
 
@@ -326,7 +326,7 @@ Antes de crear o cambiar cualquier pantalla se relee `docs/design.md`. **Tokens:
 #### 4.5.2 Registrar merma (Filament, modal de acción)
 
 - **Referencia:** solo existe el botón «Registrar merma» en `d-inventario.html`; **no hay maqueta del formulario**. Se construye con los patrones de design.md §4 «Formularios» y un modal nativo de Filament (en B con los tokens del tema).
-- **Campos:** Lote (selector con búsqueda: código y producto, mostrando saldo), Tipo de merma (los tres tipos de DEC-04, sin «ajuste por conteo», que solo lo crea el conteo), Peso (kg, 3 decimales; no puede superar el saldo, mensaje en `brand` debajo del campo), Motivo (obligatorio). Responsable: el usuario conectado, mostrado como dato (DEC-05).
+- **Campos:** Lote (selector con búsqueda: código y producto, mostrando saldo), Tipo de merma (los cuatro tipos de merma de DEC-04, sin «ajuste por conteo», que solo lo crea el conteo), Peso (kg, 3 decimales; no puede superar el saldo, mensaje en `brand` debajo del campo), Motivo (obligatorio). Responsable: el usuario conectado, mostrado como dato (DEC-05).
 - **Etiquetas:** siempre visibles (no solo placeholder); campos de 48–52 px; foco con borde de 2 px `brand`; error en `brand`. Botón de confirmación con la acción del modal (primario `brand`, no `accent`: `accent` se reserva para vender/cobrar/confirmar de la PWA). Resultado: notificación de éxito y el movimiento aparece arriba del kardex del lote.
 - **No implementado:** adjuntar fotos, categorías de motivo, aprobación (sin BR; si se quieren, `[DEC-PENDIENTE]` nuevo).
 
