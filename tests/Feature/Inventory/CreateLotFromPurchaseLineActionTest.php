@@ -34,7 +34,7 @@ it('creates the batch with unit cost = total cost ÷ received weight [BR-07]', f
         ->and($batch->unit_cost)->toBe('1.1224')
         ->and($batch->currency)->toBe('VES')
         ->and($batch->exchange_rate)->toBe('85.50')
-        ->and($batch->code)->toBe('purchase_line-1')
+        ->and($batch->code)->toBe('L-0001')
         ->and($batch->product_id)->toBe($product->id);
 });
 

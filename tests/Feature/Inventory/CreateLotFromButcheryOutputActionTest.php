@@ -30,7 +30,7 @@ it('creates the output batch with unit cost = allocated cost ÷ actual weight [B
     expect($batch->product_id)->toBe($filete->id)
         ->and($batch->total_cost)->toBe('24.57')
         ->and($batch->unit_cost)->toBe('5.1188')
-        ->and($batch->code)->toBe('butchery_order_line-1');
+        ->and($batch->code)->toBe('L-0001');
 });
 
 it('registers the butchery_out movement linked to the order line [BR-12][C10]', function () {

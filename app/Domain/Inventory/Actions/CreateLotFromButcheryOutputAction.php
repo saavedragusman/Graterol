@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Inventory\Actions;
 
+use App\Domain\Inventory\BatchCodeGenerator;
 use App\Domain\Inventory\Models\Batch;
 use App\Domain\Inventory\Models\InventoryMovement;
 use App\Domain\Inventory\MovementType;
@@ -42,7 +43,7 @@ class CreateLotFromButcheryOutputAction
 
         return DB::transaction(function () use ($sourceId, $productId, $weightKg, $totalCost, $currency, $exchangeRate, $userId, $unitCost) {
             $batch = Batch::create([
-                'code' => "butchery_order_line-{$sourceId}",
+                'code' => (new BatchCodeGenerator)->next(),
                 'product_id' => $productId,
                 'source_type' => 'butchery_order_line',
                 'source_id' => $sourceId,
