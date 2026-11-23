@@ -381,7 +381,7 @@ Cada tarea cita sus BR y dependencias. Las pruebas se escriben primero (rojo) y 
 - [x] **2.3** Modelos, casts decimales (`decimal:3`) y factories con datos ficticios para conteos. — depende de 2.1
 - [x] **2.4** Permisos `inventory.*`, seeder de roles y `BatchPolicy`/`InventoryCountPolicy`; test de arquitectura C14 en verde. — depende de 2.3, DEC-05
 - [x] **3.1** `StockBalance` y migración de `OpenButcheryOrderAction` y `ListAvailableRawMaterialBatchesAction` a ese servicio. — BR-14 · depende de 2.2
-- [ ] **3.2** `ConsumeStockFefoAction`: orden FEFO, costo por lote, reparto entre lotes, lotes sin fecha y vencidos, configuración de BR-17 y faltante, concurrencia. — BR-14, BR-17 · depende de 3.1, DEC-02, DEC-03
+- [x] **3.2** `ConsumeStockFefoAction`: orden FEFO, costo por lote, reparto entre lotes, lotes sin fecha y vencidos, configuración de BR-17 y faltante, concurrencia. — BR-14, BR-17 · depende de 3.1, DEC-02, DEC-03
 - [ ] **3.3** `RegisterShrinkageAction` con tipos, motivo obligatorio, saldo no negativo y auditoría. — BR-15, C15 · depende de 2.4, 3.1, DEC-04, DEC-05
 - [ ] **3.4** `OpenInventoryCountAction`, `RegisterCountedWeightAction`, `CancelInventoryCountAction`. — BR-16 · depende de 2.4, 3.1, DEC-07
 - [ ] **3.5** `ConfirmInventoryCountAction`: un ajuste por diferencia ≠ 0 (negativo con la regla de costo del lote, positivo a 0,00 por DEC-11 B) con el responsable de cada línea, auditoría, sesión confirmada inmutable. — BR-15, BR-16, C15 · depende de 3.3, 3.4
