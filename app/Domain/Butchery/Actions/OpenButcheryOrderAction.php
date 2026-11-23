@@ -104,7 +104,8 @@ class OpenButcheryOrderAction
 
     private function availableBalance(int $batchId): Number
     {
-        // BR-14: el saldo sale solo de StockBalance.
-        return new Number((new StockBalance)->forBatch($batchId));
+        // BR-14: el saldo sale solo de StockBalance. Ya estamos dentro de la
+        // transacción con el lote bloqueado (lockForUpdate), así que se relee con la variante bloqueada.
+        return new Number((new StockBalance)->forBatchLocked($batchId));
     }
 }
