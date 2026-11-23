@@ -28,7 +28,12 @@ class UserHistory
         // 2026_11_12_000005_create_purchases_table.php
         'purchases' => ['created_by', 'received_by', 'voided_by'],
         // 2026_11_10_000006_create_inventory_movements_table.php
-        'inventory_movements' => ['user_id'],
+        // 2026_11_23_000001_add_indexes_and_responsible_to_inventory_movements.php (responsible_user_id)
+        'inventory_movements' => ['user_id', 'responsible_user_id'],
+        // 2026_11_23_000002_create_inventory_counts_table.php
+        'inventory_counts' => ['created_by', 'confirmed_by'],
+        // 2026_11_23_000003_create_inventory_count_lines_table.php
+        'inventory_count_lines' => ['counted_by', 'responsible_user_id'],
         // 2026_11_12_000008_create_audit_logs_table.php
         'audit_logs' => ['user_id'],
         // 2026_11_17_000002_create_butchery_templates_table.php
