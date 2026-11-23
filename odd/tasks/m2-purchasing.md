@@ -1,7 +1,7 @@
 # M2 — Compras y recepción con pesaje
 
 > Documento ODD del hito M2. Rama: `feat/m2-purchasing`. Copia en Engram: `odd/m2-purchasing/tasks`.
-> Estado: **completo.** Las 12 tareas de §5 están cerradas; BR-06/BR-07 (criterio del roadmap) y BR-02/BR-03 en verde. Pendiente solo la confirmación de cierre del humano (AGENTS §4.3 puerta 2).
+> Estado: **completo.** Las 12 tareas de §5 están cerradas; BR-06/BR-07 (criterio del roadmap) y BR-02/BR-03 en verde. **CERRADO el 2026-11-23 por confirmación del humano (AGENTS §4.3 puerta 2).** Verificado ese día sobre `main`: 361/361 tests, `pint --test` y Larastan en verde.
 
 ## 1. Fuente
 
@@ -194,18 +194,18 @@ No hay pantalla de referencia para M2 en `docs/design/screens/` (design.md §5).
 
 ## 5. Tareas
 
-- [ ] **1.1** Revisar el esquema real de M0/M1 contra los supuestos de §4 y anotar diferencias aquí. — sin dependencias
-- [ ] **2.1** Migraciones `suppliers`, `purchases`, `purchase_lines` y columnas faltantes del lote. — depende de 1.1 y de DEC-04, DEC-06
-- [ ] **2.2** Modelos, casts decimales y factories con datos ficticios. — depende de 2.1
-- [ ] **2.3** Permisos y Policies; test de arquitectura C14 en verde. — BR-03 · depende de 2.2
-- [ ] **3.1** `AllocateCosts` con tests (reparto exacto, residuo, flete 0). — BR-07 · depende de DEC-02
-- [ ] **3.2** `CreatePurchase` / `UpdateDraftPurchase`; tasa del día guardada; validación de tipo de producto. — BR-02, BR-07 · depende de 2.3, DEC-05
-- [ ] **3.3** `CreateLotFromPurchaseLine` en Inventory con movimiento en el kardex. — BR-07, C10 · depende de 2.2, DEC-03
-- [ ] **3.4** `ReceivePurchase` en una transacción. — BR-06, BR-07 · depende de 3.1, 3.3
-- [ ] **3.5** `VoidPurchase` con movimientos inversos y auditoría. — BR-03, C12, C15 · depende de 3.4
-- [ ] **4.1** Filament: `SupplierResource` y `PurchaseResource`. — depende de 3.2, 3.5 y DEC-01
-- [ ] **4.2** PWA: `ReceiptsIndex` y `ReceiptShow`, rutas y FormRequest. — depende de 3.4 y DEC-01
-- [ ] **5.1** Evidencia: comandos de AGENTS §2, GGA, hashes y cierre. — depende de todo lo anterior
+- [x] **1.1** Revisar el esquema real de M0/M1 contra los supuestos de §4 y anotar diferencias aquí. — sin dependencias
+- [x] **2.1** Migraciones `suppliers`, `purchases`, `purchase_lines` y columnas faltantes del lote. — depende de 1.1 y de DEC-04, DEC-06
+- [x] **2.2** Modelos, casts decimales y factories con datos ficticios. — depende de 2.1
+- [x] **2.3** Permisos y Policies; test de arquitectura C14 en verde. — BR-03 · depende de 2.2
+- [x] **3.1** `AllocateCosts` con tests (reparto exacto, residuo, flete 0). — BR-07 · depende de DEC-02
+- [x] **3.2** `CreatePurchase` / `UpdateDraftPurchase`; tasa del día guardada; validación de tipo de producto. — BR-02, BR-07 · depende de 2.3, DEC-05
+- [x] **3.3** `CreateLotFromPurchaseLine` en Inventory con movimiento en el kardex. — BR-07, C10 · depende de 2.2, DEC-03
+- [x] **3.4** `ReceivePurchase` en una transacción. — BR-06, BR-07 · depende de 3.1, 3.3
+- [x] **3.5** `VoidPurchase` con movimientos inversos y auditoría. — BR-03, C12, C15 · depende de 3.4
+- [x] **4.1** Filament: `SupplierResource` y `PurchaseResource`. — depende de 3.2, 3.5 y DEC-01
+- [x] **4.2** PWA: `ReceiptsIndex` y `ReceiptShow`, rutas y FormRequest. — depende de 3.4 y DEC-01
+- [x] **5.1** Evidencia: comandos de AGENTS §2, GGA, hashes y cierre. — depende de todo lo anterior
 
 ## 6. Evidencia
 
