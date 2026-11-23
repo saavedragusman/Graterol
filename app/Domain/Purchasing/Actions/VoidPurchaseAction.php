@@ -32,7 +32,7 @@ class VoidPurchaseAction
 
             foreach ($lines as $line) {
                 if ($line->batch->movements->count() > 1) {
-                    throw new RuntimeException("El lote {$line->batch->code} ya tiene movimientos; la corrección va por un ajuste de inventario (M4), no por anular la compra.");
+                    throw new RuntimeException("El lote {$line->batch->code} ya tiene movimientos; registre una merma o un conteo del lote para corregirlo, no anule la compra.");
                 }
             }
 
