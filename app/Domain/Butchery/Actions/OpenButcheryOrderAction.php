@@ -10,6 +10,7 @@ use App\Domain\Catalog\Models\Product;
 use App\Domain\Catalog\ProductType;
 use App\Domain\Inventory\Models\Batch;
 use App\Domain\Inventory\Models\InventoryMovement;
+use App\Domain\Inventory\MovementType;
 use BcMath\Number;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -87,7 +88,7 @@ class OpenButcheryOrderAction
 
             InventoryMovement::create([
                 'batch_id' => $batch->id,
-                'type' => 'butchery_in',
+                'type' => MovementType::ButcheryIn->value,
                 'quantity' => (string) $input->mul(new Number('-1')),
                 'unit_cost' => $batch->unit_cost,
                 'user_id' => $butcherId,

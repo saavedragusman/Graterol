@@ -6,6 +6,7 @@ namespace App\Domain\Butchery\Actions;
 
 use App\Domain\Butchery\Models\ButcheryOrder;
 use App\Domain\Inventory\Models\InventoryMovement;
+use App\Domain\Inventory\MovementType;
 use App\Domain\Settings\Models\AuditLog;
 use Illuminate\Support\Facades\DB;
 use RuntimeException;
@@ -37,7 +38,7 @@ class VoidButcheryOrderAction
             }
 
             $entryMovement = InventoryMovement::where('batch_id', $order->batch_id)
-                ->where('type', 'butchery_in')
+                ->where('type', MovementType::ButcheryIn->value)
                 ->where('reference_type', 'butchery_order')
                 ->where('reference_id', $order->id)
                 ->first();
@@ -45,7 +46,7 @@ class VoidButcheryOrderAction
             if ($entryMovement !== null) {
                 InventoryMovement::create([
                     'batch_id' => $order->batch_id,
-                    'type' => 'butchery_void',
+                    'type' => MovementType::ButcheryVoid->value,
                     'quantity' => bcmul((string) $entryMovement->quantity, '-1', 3),
                     'unit_cost' => $entryMovement->unit_cost,
                     'user_id' => $voidedByUserId,
@@ -67,7 +68,7 @@ class VoidButcheryOrderAction
 
                 InventoryMovement::create([
                     'batch_id' => $outputBatch->id,
-                    'type' => 'butchery_void',
+                    'type' => MovementType::ButcheryVoid->value,
                     'quantity' => bcmul((string) $outputMovement->quantity, '-1', 3),
                     'unit_cost' => $outputMovement->unit_cost,
                     'user_id' => $voidedByUserId,

@@ -6,6 +6,7 @@ namespace App\Domain\Inventory\Actions;
 
 use App\Domain\Inventory\Models\Batch;
 use App\Domain\Inventory\Models\InventoryMovement;
+use App\Domain\Inventory\MovementType;
 use App\Support\ValueObjects\Money;
 use App\Support\ValueObjects\UnitAmount;
 use Carbon\CarbonInterface;
@@ -54,7 +55,7 @@ class CreateLotFromPurchaseLineAction
 
             InventoryMovement::create([
                 'batch_id' => $batch->id,
-                'type' => 'purchase_in',
+                'type' => MovementType::PurchaseIn->value,
                 'quantity' => $receivedWeightKg,
                 'unit_cost' => $unitCost,
                 'user_id' => $userId,
