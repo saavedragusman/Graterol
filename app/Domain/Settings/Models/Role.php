@@ -10,6 +10,12 @@ class Role extends Model
 {
     protected $fillable = ['name'];
 
+    /** `is_system` no es asignable en masa: solo lo fijan la migración y el seeder. */
+    protected function casts(): array
+    {
+        return ['is_system' => 'boolean'];
+    }
+
     /**
      * @return BelongsToMany<Permission, $this>
      */

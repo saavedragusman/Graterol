@@ -136,3 +136,9 @@ it('rejects a currency other than USD or VES and changes nothing [S7][S10]', fun
     expect(Setting::count())->toBe(0)
         ->and(AuditLog::count())->toBe(0);
 })->with(['EUR', 'usd', '', 'VES ']);
+
+it('builds image URLs relative to the current host, not to a fixed APP_URL [C6]', function () {
+    app(UpdateSettingsAction::class)->execute([CompanySettings::LOGO_PATH => 'branding/logo.png'], null);
+
+    expect(app(CompanySettings::class)->logoUrl())->toBe('/storage/branding/logo.png');
+});
