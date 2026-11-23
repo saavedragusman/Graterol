@@ -11,6 +11,7 @@ use App\Domain\Catalog\ProductType;
 use App\Domain\Inventory\Models\Batch;
 use App\Domain\Inventory\Models\InventoryMovement;
 use App\Domain\Inventory\MovementType;
+use App\Domain\Inventory\Queries\StockBalance;
 use BcMath\Number;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -103,12 +104,7 @@ class OpenButcheryOrderAction
 
     private function availableBalance(int $batchId): Number
     {
-        $balance = new Number('0');
-
-        foreach (InventoryMovement::where('batch_id', $batchId)->get(['quantity']) as $movement) {
-            $balance = $balance->add(new Number((string) $movement->quantity));
-        }
-
-        return $balance;
+        // BR-14: el saldo sale solo de StockBalance.
+        return new Number((new StockBalance)->forBatch($batchId));
     }
 }
