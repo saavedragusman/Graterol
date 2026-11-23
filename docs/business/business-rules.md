@@ -27,7 +27,7 @@ Cada regla se verifica con un test Pest que lleva su ID (C16). `[abierto]` = pen
 - **BR-14** Stock = Σ movimientos por lote. Las salidas consumen primero el lote que vence antes (FEFO) y toman su costo.
 - **BR-15** Mermas tipificadas, siempre con motivo y responsable: deshidratación, rebanado, vencimiento o decomiso, y ajuste por conteo.
 - **BR-16** El conteo físico con pesaje genera un ajuste por la diferencia.
-- **BR-17** Venta sin stock suficiente: `[abierto]`. Por defecto se permite, con alerta de ajuste pendiente.
+- **BR-17** Venta sin stock suficiente: por defecto se bloquea (se rechaza sin escribir nada). Un interruptor de configuración permite venderla, con alerta de ajuste pendiente. Decisión del humano, 2026-11-23.
 
 ## Ventas y POS
 - **BR-18** Venta por kg (peso digitado o etiqueta EAN-13 de balanza con prefijo configurable) o por pieza.

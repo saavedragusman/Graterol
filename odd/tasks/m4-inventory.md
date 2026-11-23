@@ -22,7 +22,7 @@ Texto literal de `docs/business/business-rules.md`:
 | **BR-14** | «Stock = Σ movimientos por lote. Las salidas consumen primero el lote que vence antes (FEFO) y toman su costo.» | Consulta única de saldo por lote y por producto; Action de salida FEFO que reparte una cantidad entre lotes y toma el costo de cada uno. La invoca M5 (ventas); M4 la entrega probada. |
 | **BR-15** | «Mermas tipificadas, siempre con motivo y responsable: deshidratación, rebanado, vencimiento o decomiso, y ajuste por conteo.» | Action para registrar una merma por lote, con tipo, motivo y responsable obligatorios (DEC-04, DEC-05). |
 | **BR-16** | «El conteo físico con pesaje genera un ajuste por la diferencia.» | Sesión de conteo por lote; al confirmarla genera el movimiento de ajuste por cada diferencia (DEC-07). |
-| **BR-17** | «Venta sin stock suficiente: `[abierto]`. Por defecto se permite, con alerta de ajuste pendiente.» | `[abierto]` → configuración `inventory.allow_sale_without_stock`, valor por defecto «permitir». La Action FEFO implementa ambos comportamientos y deja la alerta (DEC-03 define cómo se registra el faltante). |
+| **BR-17** | «Venta sin stock suficiente: `[abierto]`. Por defecto se permite, con alerta de ajuste pendiente.» | `[abierto]` → configuración `inventory.allow_sale_without_stock`, valor por defecto «bloquear» (DEC-03 b; BR-17 actualizada). La Action FEFO implementa ambos comportamientos y deja la alerta (DEC-03 define cómo se registra el faltante). |
 
 **Transversales ya implementadas, no se reimplementan:** BR-01 (peso 3 decimales, monto 4 internos y 2 en pantalla), BR-03 (roles como conjuntos de permisos `module.action`; anular o devolver con permiso propio), BR-07 y BR-12 (el costo del lote ya viene calculado), C10 (tabla `inventory_movements` y su trigger), C15 (tabla `audit_logs`, `AuditLog`).
 
@@ -92,7 +92,7 @@ Si el producto no tiene ningún lote, no hay costo que tomar: con (b)-A la Actio
 Recomendación técnica: (a) A; (b) A. Es literal con BR-14 y BR-17, mantiene cada movimiento con lote y costo (C10) y no crea tablas fuera del kardex. El caso «producto sin lotes» queda rechazado y se anota para M5.
 ```
 
-Resuelta: (a) A; (b) A, 2026-11-23 (el humano aceptó la recomendación técnica).
+Resuelta: (a) B; (b) bloquear por defecto con interruptor, 2026-11-23 (cambia la recomendación original; BR-17 actualizada en su propio commit). (a) FEFO salta los lotes vencidos y un lote vencido no cuenta como stock vendible: para sacarlo se da de baja con una merma por vencimiento (BR-15). (b) `inventory.allow_sale_without_stock` = `false` por defecto: la Action rechaza y no escribe nada. Con el interruptor en `true` aplica la opción (b)-A: el saldo del último lote queda negativo como «ajuste pendiente»; la parte que vacía el lote toma el residuo (C9) y el excedente se costea `kg × unit_cost` de ese lote.
 
 ```text
 [DEC-PENDIENTE] M4/BR-15 — DEC-04 Tipos de merma y movimiento que genera cada uno
@@ -105,7 +105,7 @@ Opciones:
 Recomendación técnica: A. BR-15 los une con «o» en una misma enunciación; si el negocio quiere separarlos es un tipo más sin romper nada. Se evita agregar columnas al kardex (C10 ya fija sus campos). Un sobrante por conteo es `count_adjustment` positivo; una merma tipificada solo resta.
 ```
 
-Resuelta: A, 2026-11-23 (el humano aceptó la recomendación técnica).
+Resuelta: B, 2026-11-23 (cambia la recomendación original). Cinco tipos de movimiento: `shrinkage_dehydration`, `shrinkage_slicing`, `shrinkage_expiry` (vencimiento), `shrinkage_confiscation` (decomiso) y `count_adjustment` (positivo o negativo). Vencimiento y decomiso van separados porque el decomiso es frecuente en Venezuela y el negocio quiere filtrarlos y reportarlos por aparte. Motivo de texto obligatorio en todos; el decomiso se registra con el motivo que lo originó.
 
 ```text
 [DEC-PENDIENTE] M4/BR-15 — DEC-05 Responsable y permisos de la merma
@@ -120,7 +120,7 @@ Opciones (2):
 Recomendación técnica: (1) A; (2) A (lo más conservador y reversible, AGENTS §9). Si la persona que pesa no es quien teclea, (1) B se agrega luego con una migración nueva.
 ```
 
-Resuelta: (1) A; (2) A, 2026-11-23 (el humano aceptó la recomendación técnica).
+Resuelta: (1) B; (2) A, 2026-11-23 ((1) cambia la recomendación original). El responsable es una persona elegible, distinta de quien registra: por ejemplo, el administrador registra y el carnicero pesa. `user_id` del movimiento sigue siendo quien registra y se agrega `responsible_user_id` (quien pesó o responde por la merma). Se elige entre los usuarios activos, con el usuario conectado preseleccionado; es obligatorio (BR-15). El responsable aplica también al conteo (BR-16, decisión del humano 2026-11-23): cada línea pesada lleva su responsable. (2) Los permisos `inventory.*` son solo del administrador, que asigna al carnicero lo que quiera desde la gestión de roles.
 
 ```text
 [DEC-PENDIENTE] M4/BR-15, BR-16 — DEC-06 ¿Dónde se registran las mermas y los conteos?
@@ -153,7 +153,7 @@ Resuelta: A, 2026-11-23 (el humano aceptó la recomendación técnica).
 Contexto: la maqueta muestra «Valorizado al costo», «Lotes activos», «Vencen en 3 días» y «Mermas del mes». design.md §5 dice «Pendientes: Ninguno», pero ninguna BR define estas cifras. El «inventario valorizado» como reporte es de M6. Los lotes guardan su propia moneda (`batches.currency`, por defecto `VES`) y la «moneda contable» sigue abierta con el contador.
 Duda: ¿se implementan los cuatro KPI y con qué cálculo?
 Opciones:
-  A) Los cuatro, con estas definiciones: Lotes activos = lotes con saldo > 0. Valorizado = Σ del valor de los lotes activos (regla de costo y valor del lote, §3: lo que entró menos lo que salió), agrupado por moneda del lote (normalmente una sola; sin convertir). Vencen en N días = lotes activos con fecha dentro de N días (N de DEC-09). Mermas del mes = Σ kg de los movimientos de merma (los tres tipos de merma) y de los `count_adjustment` negativos del mes calendario en `America/Caracas`.
+  A) Los cuatro, con estas definiciones: Lotes activos = lotes con saldo > 0. Valorizado = Σ del valor de los lotes activos (regla de costo y valor del lote, §3: lo que entró menos lo que salió), agrupado por moneda del lote (normalmente una sola; sin convertir). Vencen en N días = lotes activos con fecha dentro de N días (N de DEC-09). Mermas del mes = Σ kg de los movimientos de merma (los cuatro tipos de merma) y de los `count_adjustment` negativos del mes calendario en `America/Caracas`.
   B) Solo «Lotes activos» y «Vencen en N días» (derivan directo del kardex y la fecha); «Valorizado» y «Mermas del mes» pasan a M6.
   C) Ninguno; la pantalla arranca en la tabla.
 Recomendación técnica: A. Son sumas del kardex sin regla nueva, la maqueta los dibuja y M6 reutilizará la misma consulta. Si el humano prefiere cerrar la moneda contable antes, se pasa a B.
@@ -209,7 +209,7 @@ Resuelta: B, 2026-11-23. El sobrante entra al kardex como `count_adjustment` pos
 - **Merma.** Siempre resta, nunca deja el saldo del lote por debajo de cero (rechaza) y toma su costo según la regla anterior. Motivo obligatorio y no vacío validado en la Action (la columna `reason` hoy es nullable; C10 pide el motivo). Cada merma y cada ajuste por conteo deja una fila de `audit_logs` con saldo antes y después (C15: «ajustes de inventario»).
 - **Enum de tipos.** Se crea `App\Domain\Inventory\MovementType` (backed enum de strings, patrón de `ProductType`) con los tipos actuales, los de DEC-04 y `sale_out` (reservado, lo escribe M5), con su etiqueta en español, ícono y tono para el kardex. Las Actions existentes pasan a usarlo sin cambiar los valores guardados (sin migración).
 - **Ajustes inversos.** Un error en un movimiento se corrige con un movimiento inverso (C10); M4 no agrega ninguna acción de «editar movimiento».
-- **Configuración sin pantalla** (como el umbral de M3): `inventory.allow_sale_without_stock` = `true` y `inventory.expiry_alert_days` = `3` en `SettingSeeder`.
+- **Configuración sin pantalla** (como el umbral de M3): `inventory.allow_sale_without_stock` = `false` y `inventory.expiry_alert_days` = `3` en `SettingSeeder`.
 - **Sin float** (C9): `BcMath\Number` en todo cálculo de saldo, reparto FEFO y valor.
 
 ## 4. Diseño técnico
@@ -218,9 +218,9 @@ Resuelta: B, 2026-11-23. El sobrante entra al kardex como `count_adjustment` pos
 
 ### 4.1 Tablas y migraciones (módulo `Inventory`)
 
-No se altera la estructura de `inventory_movements` ni de `batches` (el trigger de C10 permanece). Migraciones nuevas, ninguna edita una existente:
+Se agrega una columna nullable a `inventory_movements` (DEC-05 1 B); `batches` no se altera. El trigger de C10 solo rechaza `UPDATE`/`DELETE`, así que `ALTER TABLE ... ADD COLUMN` no lo toca y permanece. Migraciones nuevas, ninguna edita una existente:
 
-1. **Índice** en `inventory_movements(batch_id)` y `(type)`. Sin datos.
+1. **Índice** en `inventory_movements(batch_id)` y `(type)`, y columna `responsible_user_id` (FK `users`, nullable) en `inventory_movements` (DEC-05 1 B): quien pesó o responde por la merma; `user_id` sigue siendo quien registra. Los movimientos existentes quedan en `NULL`; no hay datos que reconstruir.
 2. **`inventory_counts`** (DEC-07)
 
 | Columna | Tipo | Nota |
@@ -245,7 +245,8 @@ No se altera la estructura de `inventory_movements` ni de `batches` (el trigger 
 | counted_weight_kg | numeric(12,3), nullable | Peso contado; puede ser 0 |
 | difference_kg | numeric(12,3), nullable | `counted − system`, calculado al pesar |
 | adjustment_movement_id | FK `inventory_movements`, nullable | Se llena al confirmar si la diferencia ≠ 0 |
-| counted_by, counted_at | FK users, timestamptz | |
+| counted_by, counted_at | FK users, timestamptz | `counted_by` es quien teclea el peso |
+| responsible_user_id | FK users, nullable | Quien pesó (puede ser otra persona que `counted_by`); obligatorio al registrar el peso (DEC-05 1 B) |
 | timestamps | | |
 
 4. **Migración de datos (solo si DEC-10 = B):** código `L-####` para lotes existentes. Riesgo alto (C18).
@@ -256,7 +257,7 @@ Semillas: `inventory.allow_sale_without_stock`, `inventory.expiry_alert_days` en
 ### 4.2 Tipos de movimiento (kardex)
 
 Existentes (no cambian): `purchase_in`, `purchase_void`, `butchery_in`, `butchery_out`, `butchery_void`.
-Nuevos de M4 (DEC-04): `shrinkage_dehydration`, `shrinkage_slicing`, `shrinkage_expiry`, `count_adjustment`.
+Nuevos de M4 (DEC-04): `shrinkage_dehydration`, `shrinkage_slicing`, `shrinkage_expiry`, `shrinkage_confiscation`, `count_adjustment`.
 Reservado: `sale_out` (BR-14; lo escribe M5).
 Signos: entradas positivas, salidas y mermas negativas; `count_adjustment` con el signo de la diferencia.
 
@@ -265,11 +266,11 @@ Signos: entradas positivas, salidas y mermas negativas; `count_adjustment` con e
 | Action | Qué hace | BR |
 |---|---|---|
 | `StockBalance` (servicio de consulta) | Saldo por lote, por producto, y listado de lotes activos con saldo. Única fuente de saldo del código. | BR-14 |
-| `ConsumeStockFefoAction` | Recibe producto, kg, tipo de movimiento, referencia y usuario. En una transacción: bloquea y ordena los lotes del producto con saldo > 0 por vencimiento, luego `received_at`, luego id (DEC-02); descuenta lote por lote costeando cada salida con la regla de costo y valor del lote (§3: la salida que lo deja en 0 toma el residuo); devuelve las asignaciones (lote, kg, costo) y el costo total. Si falta stock, aplica `inventory.allow_sale_without_stock` y DEC-03: bloquear → rechaza sin escribir nada; permitir → el faltante va según DEC-03. | BR-14, BR-17 |
-| `RegisterShrinkageAction` | Merma tipificada sobre un lote: tipo, kg > 0, motivo obligatorio; rechaza si supera el saldo; escribe el movimiento y la auditoría. Permiso `inventory.register-shrinkage`. | BR-15, C15 |
+| `ConsumeStockFefoAction` | Recibe producto, kg, tipo de movimiento, referencia y usuario. En una transacción: bloquea los lotes del producto con saldo > 0 y no vencidos (DEC-03 a B: los vencidos se saltan) y los ordena por vencimiento, luego `received_at`, luego id (DEC-02); descuenta lote por lote costeando cada salida con la regla de costo y valor del lote (§3: la salida que lo deja en 0 toma el residuo); devuelve las asignaciones (lote, kg, costo) y el costo total. Si falta stock, aplica `inventory.allow_sale_without_stock` y DEC-03: bloquear → rechaza sin escribir nada; permitir → el faltante va según DEC-03. | BR-14, BR-17 |
+| `RegisterShrinkageAction` | Merma tipificada sobre un lote: tipo, kg > 0, motivo obligatorio, responsable obligatorio (usuario activo, puede ser distinto de quien registra; se guarda en `responsible_user_id`); rechaza si supera el saldo; escribe el movimiento y la auditoría. Permiso `inventory.register-shrinkage`. | BR-15, C15 |
 | `OpenInventoryCountAction` | Crea la sesión `draft` con los lotes elegidos. | BR-16 |
-| `RegisterCountedWeightAction` | Guarda el peso contado de una línea y el saldo del sistema en ese momento (bloqueo del lote). Solo en `draft`. | BR-16 |
-| `ConfirmInventoryCountAction` | Transacción: exige todas las líneas pesadas; por cada diferencia ≠ 0 escribe un `count_adjustment` al costo del lote y una fila de `audit_logs`; pasa a `confirmed`. Rechaza una sesión no `draft`. | BR-15, BR-16, C15 |
+| `RegisterCountedWeightAction` | Guarda el peso contado de una línea, su responsable (obligatorio, usuario activo) y el saldo del sistema en ese momento (bloqueo del lote). Solo en `draft`. | BR-16 |
+| `ConfirmInventoryCountAction` | Transacción: exige todas las líneas pesadas; por cada diferencia ≠ 0 escribe un `count_adjustment` con el `responsible_user_id` de la línea (`user_id` = quien confirma) y una fila de `audit_logs`; el negativo se costea con la regla de costo y valor del lote (§3) y el positivo entra a costo 0,00 (DEC-11 B); pasa a `confirmed`. Rechaza una sesión no `draft`. | BR-15, BR-16, C15 |
 | `CancelInventoryCountAction` | `draft` → `cancelled`, sin movimientos. | C12 |
 
 `CreateLotFromPurchaseLineAction` y `CreateLotFromButcheryOutputAction` no cambian salvo DEC-10 (código de lote) y el uso del enum de tipos.
@@ -326,7 +327,7 @@ Antes de crear o cambiar cualquier pantalla se relee `docs/design.md`. **Tokens:
 #### 4.5.2 Registrar merma (Filament, modal de acción)
 
 - **Referencia:** solo existe el botón «Registrar merma» en `d-inventario.html`; **no hay maqueta del formulario**. Se construye con los patrones de design.md §4 «Formularios» y un modal nativo de Filament (en B con los tokens del tema).
-- **Campos:** Lote (selector con búsqueda: código y producto, mostrando saldo), Tipo de merma (los tres tipos de DEC-04, sin «ajuste por conteo», que solo lo crea el conteo), Peso (kg, 3 decimales; no puede superar el saldo, mensaje en `brand` debajo del campo), Motivo (obligatorio). Responsable: el usuario conectado, mostrado como dato (DEC-05).
+- **Campos:** Lote (selector con búsqueda: código y producto, mostrando saldo), Tipo de merma (los cuatro tipos de merma de DEC-04, sin «ajuste por conteo», que solo lo crea el conteo), Peso (kg, 3 decimales; no puede superar el saldo, mensaje en `brand` debajo del campo), Motivo (obligatorio). Responsable (obligatorio): selector de usuarios activos con el usuario conectado preseleccionado; puede elegirse otra persona, por ejemplo quien pesó. Quien registra queda aparte como `user_id` (DEC-05).
 - **Etiquetas:** siempre visibles (no solo placeholder); campos de 48–52 px; foco con borde de 2 px `brand`; error en `brand`. Botón de confirmación con la acción del modal (primario `brand`, no `accent`: `accent` se reserva para vender/cobrar/confirmar de la PWA). Resultado: notificación de éxito y el movimiento aparece arriba del kardex del lote.
 - **No implementado:** adjuntar fotos, categorías de motivo, aprobación (sin BR; si se quieren, `[DEC-PENDIENTE]` nuevo).
 
@@ -359,7 +360,7 @@ Cada tarea cita sus BR y dependencias. Las pruebas se escriben primero (rojo) y 
 - [ ] **3.2** `ConsumeStockFefoAction`: orden FEFO, costo por lote, reparto entre lotes, lotes sin fecha y vencidos, configuración de BR-17 y faltante, concurrencia. — BR-14, BR-17 · depende de 3.1, DEC-02, DEC-03
 - [ ] **3.3** `RegisterShrinkageAction` con tipos, motivo obligatorio, saldo no negativo y auditoría. — BR-15, C15 · depende de 2.4, 3.1, DEC-04, DEC-05
 - [ ] **3.4** `OpenInventoryCountAction`, `RegisterCountedWeightAction`, `CancelInventoryCountAction`. — BR-16 · depende de 2.4, 3.1, DEC-07
-- [ ] **3.5** `ConfirmInventoryCountAction`: un ajuste por diferencia ≠ 0 al costo del lote, auditoría, sesión confirmada inmutable. — BR-15, BR-16, C15 · depende de 3.3, 3.4
+- [ ] **3.5** `ConfirmInventoryCountAction`: un ajuste por diferencia ≠ 0 (negativo con la regla de costo del lote, positivo a 0,00 por DEC-11 B) con el responsable de cada línea, auditoría, sesión confirmada inmutable. — BR-15, BR-16, C15 · depende de 3.3, 3.4
 - [ ] **3.6** Ajustar el mensaje de `VoidButcheryOrderAction` (DEC-09 A) con un test que fije el texto. — C10 · depende de 3.3, 3.5, DEC-09
 - [ ] **3.7** Si DEC-10 = B: código de lote legible en ambas Actions y migración de datos con prueba de integridad (cada movimiento y orden conserva su lote). — BR-14 · depende de 1.1, DEC-10
 - [ ] **4.1** Estructura de la pantalla de inventario: tabla de lotes, filtros, KPI (DEC-08), alertas de vencimiento (DEC-09) y ajuste pendiente (BR-17) siguiendo §4.5.1. — BR-14, BR-17, C10 · depende de 3.1, 3.2, DEC-01, DEC-08, DEC-09
@@ -367,7 +368,7 @@ Cada tarea cita sus BR y dependencias. Las pruebas se escriben primero (rojo) y 
 - [ ] **4.3** Acción «Registrar merma» según §4.5.2. — BR-15 · depende de 3.3, 4.1
 - [ ] **4.4** `InventoryCountResource` según §4.5.3. — BR-16 · depende de 3.5, 4.1
 - [ ] **4.5** Si DEC-01 = B: tema de Filament y vistas con los tokens (sin hex ni estilos en línea), Figtree y Baloo 2 locales (dependencia nueva: `[DEC-PENDIENTE]` de design.md §2.2, la aprueba el humano, C1). Si = C: pantalla Vue. — depende de 1.0, DEC-01
-- [ ] **5.1** Tests de aceptación por BR (ver §6): FEFO con tres lotes y costos distintos, merma de cada tipo, conteo con diferencia positiva y negativa, venta sin stock en las dos configuraciones; regla de costo y valor (C9): lote de 200 kg con `total_cost` 190,01 vendido entero cuesta 190,01, lote de 950 kg con 1.000,00 consumido por partes suma 1.000,00 y queda en 0,00, y lote viejo de M1 donde `unit_cost × peso` ≠ `total_cost`. — BR-14 a BR-17 · depende de 3.2, 3.3, 3.5
+- [ ] **5.1** Tests de aceptación por BR (ver §6): FEFO con tres lotes y costos distintos, merma de cada tipo, conteo con diferencia positiva y negativa, venta sin stock en las dos configuraciones (por defecto bloquea; lote vencido saltado y no vendible); regla de costo y valor (C9): lote de 200 kg con `total_cost` 190,01 vendido entero cuesta 190,01, lote de 950 kg con 1.000,00 consumido por partes suma 1.000,00 y queda en 0,00, y lote viejo de M1 donde `unit_cost × peso` ≠ `total_cost`. — BR-14 a BR-17 · depende de 3.2, 3.3, 3.5
 - [ ] **6.1** Comandos de AGENTS §2 y GGA en verde; evidencia. — depende de todo lo anterior
 - [ ] **6.2** Verificador independiente (kardex = riesgo alto, C18); `gentle-ai review assess` sobre el rango de commits y, si sale `high`, se propone la revisión y se espera. — depende de 6.1
 - [ ] **6.3** Cierre: confirmación del humano (AGENTS §4.3 puerta 2). — depende de 6.2
@@ -380,8 +381,8 @@ Cada tarea cita sus BR y dependencias. Las pruebas se escriben primero (rojo) y 
 | BR | Test (ruta y nombre) | Resultado |
 |---|---|---|
 | BR-14 | `tests/Feature/Inventory/…` (saldo = Σ movimientos; FEFO consume el que vence antes y toma su costo; sin fecha; empate; vencido) | |
-| BR-15 | `tests/Feature/Inventory/…` (cada tipo; motivo obligatorio; no supera el saldo; auditoría) | |
-| BR-16 | `tests/Feature/Inventory/…` (diferencia positiva y negativa; sesión confirmada no se edita; sin diferencia = sin movimiento) | |
+| BR-15 | `tests/Feature/Inventory/…` (cada tipo; motivo obligatorio; no supera el saldo; auditoría; responsable distinto de quien registra queda guardado en `responsible_user_id` y `user_id` conserva a quien registró; responsable inexistente o inactivo se rechaza) | |
+| BR-16 | `tests/Feature/Inventory/…` (diferencia positiva y negativa; sesión confirmada no se edita; sin diferencia = sin movimiento; el responsable de cada línea queda en el movimiento y `user_id` es quien confirma; sin responsable no se puede registrar el peso) | |
 | BR-17 | `tests/Feature/Inventory/…` (permitir con alerta de ajuste pendiente; bloquear sin escribir nada) | |
 | C9 | `tests/Feature/Inventory/…` (Σ costo de las salidas = `total_cost`; el lote vaciado vale 0,00; sin float) | |
 | C10 | `InventoryMovementsImmutableTest` (heredado) más corrección por movimiento inverso | |
