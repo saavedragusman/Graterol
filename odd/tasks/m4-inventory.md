@@ -24,7 +24,7 @@ Texto literal de `docs/business/business-rules.md`:
 | **BR-16** | «El conteo físico con pesaje genera un ajuste por la diferencia.» | Sesión de conteo por lote; al confirmarla genera el movimiento de ajuste por cada diferencia (DEC-07). |
 | **BR-17** | «Venta sin stock suficiente: `[abierto]`. Por defecto se permite, con alerta de ajuste pendiente.» | `[abierto]` → configuración `inventory.allow_sale_without_stock`, valor por defecto «bloquear» (DEC-03 b; BR-17 actualizada). La Action FEFO implementa ambos comportamientos y deja la alerta (DEC-03 define cómo se registra el faltante). |
 
-**Transversales ya implementadas, no se reimplementan:** BR-01 (peso 3 decimales, monto 4 internos y 2 en pantalla), BR-03 (roles como conjuntos de permisos `module.action`; anular o devolver con permiso propio), BR-07 y BR-12 (el costo del lote ya viene calculado), C10 (tabla `inventory_movements` y su trigger), C15 (tabla `audit_logs`, `AuditLog`).
+**Transversales ya implementadas, no se reimplementan:** BR-01 (peso 3 decimales; montos con 2 decimales exactos y valores por kg con 4, `Money` y `UnitAmount`), BR-03 (roles como conjuntos de permisos `module.action`; anular o devolver con permiso propio), BR-07 y BR-12 (el costo del lote ya viene calculado), C10 (tabla `inventory_movements` y su trigger), C15 (tabla `audit_logs`, `AuditLog`).
 
 **Fuera de alcance de M4:**
 - La venta en sí (BR-18 a BR-26, M5): M4 no toca `Sales`. La Action FEFO se prueba con un tipo de movimiento reservado, `sale_out`, que M5 empieza a escribir de verdad.
@@ -201,6 +201,17 @@ Recomendación técnica: A, es lo más cercano a BR-16 («ajuste por la diferenc
 
 Resuelta: B, 2026-11-23. El sobrante entra al kardex como `count_adjustment` positivo con costo 0,00: no suma valor al lote (el valor sigue siendo `total_cost` − Σ salidas) y el costo por kg efectivo baja. Test: lote de 200 kg con `total_cost` 190,01, conteo de 201 kg → valor sigue en 190,01 y, al vender los 201 kg, Σ costo de salidas = 190,01.
 
+```text
+[DEC-PENDIENTE] M4/BR-14 — DEC-12 Fecha de vencimiento: la pantalla de recepción no la captura
+Contexto: M2 DEC-04 (A) pidió un campo opcional de vencimiento en cada línea de la recepción. Las Actions lo soportan, pero `ReceiptController` y la pantalla de recepción no lo envían (tarea 1.1). Hoy todo lote de compra nace sin fecha, así que FEFO (DEC-02 A) cae siempre en «primero en entrar», y «saltar los vencidos» (DEC-03 a B) y el KPI «Vencen en N días» nunca se activan.
+Duda: ¿M4 agrega el campo de vencimiento a la recepción?
+Opciones:
+  A) Sí: campo opcional «Vence» por línea en `ReceiptShow`, `ConfirmReceiptRequest` y `ReceiptController`, con test. Cambio chico que completa lo decidido en M2.
+  B) No: M4 funciona sin fechas y el campo queda para después. FEFO, vencidos y KPI quedan inertes hasta entonces.
+  C) Obligatorio para productos perecederos: exige una BR que lo defina (no existe).
+Recomendación técnica: A, es opcional y no inventa una regla; sin él, DEC-02, DEC-03 (a) y el KPI de vencimiento no hacen nada. No bloquea las tareas 2.x ni 3.1; sí condiciona el test de aceptación de vencidos (5.1) y la tarea 4.1.
+```
+
 **Decisiones técnicas resueltas sin bloquear (C19, puramente técnicas):**
 
 - **Saldo único.** Stock = Σ `inventory_movements.quantity` por lote (BR-14); no se guarda saldo denormalizado. Hoy hay dos cálculos duplicados (`OpenButcheryOrderAction::availableBalance` y `ListAvailableRawMaterialBatchesAction`); se unifican en un servicio `StockBalance` de `Inventory` y esas dos clases lo usan (con sus tests de M3 como PRESERVE). Para listas, `Batch::withSum('movements', 'quantity')` y un índice `inventory_movements(batch_id)` (PostgreSQL no lo crea solo para la FK).
@@ -215,6 +226,18 @@ Resuelta: B, 2026-11-23. El sobrante entra al kardex como `count_adjustment` pos
 ## 4. Diseño técnico
 
 > Supuestos a verificar en la tarea 1.1 antes de escribir código: `inventory_movements` y su trigger (M0); `batches` con `product_id` (M3), `expires_at`, `unit_cost`, `total_cost`, `currency`; `purchase_lines.expires_on` y `ReceivePurchaseAction` que lo pasa al lote; `PermissionKey` y `RolePermissionSeeder`; `settings` y `SettingSeeder` (M3 DEC-06); `AuditLog`; que `AdminPanelProvider` descubre `app/Filament/Resources` y `app/Filament/Pages`. Si algo no coincide, se anota aquí antes de seguir.
+
+### 4.0 Resultado de la tarea 1.1 (verificado el 2026-11-23 contra el código de `main`)
+
+Confirmados: `inventory_movements` y su trigger de fila (solo `UPDATE`/`DELETE`; un `ADD COLUMN` nullable es seguro, pero **no se puede rellenar con `UPDATE`**), `batches` (`code` string(30) único, `unit_cost` (18,4), `total_cost` (18,2), `expires_at` timestamp nullable, `currency` char(3), `product_id` nullable), `unit_cost` derivado del `total_cost` ya redondeado a 2 decimales (`UnitAmount::fromTotal`, división a 12 decimales y un solo redondeo half-up a 4), `PermissionKey` (un caso nuevo exige entrada en `label()` y `module()`), `settings` (`Setting::valueFor`; `CompanySettings::KEYS` solo si se lee por esa clase), descubrimiento de recursos y páginas de Filament, las dos sumas de saldo duplicadas y los cuatro tipos de movimiento actuales (`purchase_in`, `butchery_in`, `butchery_out`, `butchery_void`; ningún enum los referencia).
+
+Diferencias respecto de lo supuesto:
+1. **Sin índices** en `inventory_movements` (ni siquiera en las FK `batch_id` y `user_id`): la migración de índices de 2.1 es necesaria.
+2. **`expires_on` no llega desde la pantalla:** `ReceivePurchaseAction` y `CreateLotFromPurchaseLineAction` lo soportan, pero `ReceiptController` solo envía `received_weight_kg` y `received_pieces`. Hoy todo lote de compra nace sin fecha → DEC-12.
+3. **Hallazgo 7 (fecha de vencimiento):** la fecha se guarda como medianoche UTC (`config/app.php` en UTC), que en Caracas es el día anterior a las 20:00. Regla para M4: mostrar y comparar la fecha de `expires_at` **en UTC, sin convertir a `America/Caracas`**.
+4. **No hay helper de auditoría:** cada Action escribe `AuditLog::create([...])` en línea (`auditable_type`, `auditable_id`, `action`, `user_id`, `reason`, `before`, `after`). Las Actions de M4 hacen igual.
+5. **`batches.pieces`** (unsignedSmallInteger nullable) existe y no estaba listado; lo escribe `CreateLotFromPurchaseLineAction`.
+6. **Mensaje de anulación del despiece** (`VoidButcheryOrderAction.php:35`): ningún test alcanza esa rama (los de `VoidButcheryOrderActionTest` solo exigen `RuntimeException`). El test de 3.6 debe cubrir la rama con un lote de salida con más de un movimiento y fijar el texto nuevo.
 
 ### 4.1 Tablas y migraciones (módulo `Inventory`)
 
@@ -351,7 +374,7 @@ Sin rutas Inertia nuevas con DEC-06 A. Las páginas y recursos de Filament se re
 Cada tarea cita sus BR y dependencias. Las pruebas se escriben primero (rojo) y llevan el ID de la BR en el nombre (C16); riesgo alto (C18): TDD estricto en el kardex.
 
 - [x] **1.0** Aprobación de este documento por el humano y respuesta a los `[DEC-PENDIENTE]` de §3. Si DEC-01 = B o C: el humano autoriza el cambio a `docs/design.md` §2.4/§5 (commit aparte, antes del código de pantallas). — sin dependencias
-- [ ] **1.1** Revisar el esquema real contra los supuestos de §4 y el hallazgo 7 de §2.1 (zona horaria de `expires_at`). — depende de 1.0
+- [x] **1.1** Revisar el esquema real contra los supuestos de §4 y el hallazgo 7 de §2.1 (zona horaria de `expires_at`). — depende de 1.0
 - [ ] **2.1** Migraciones: índice de `inventory_movements`, `inventory_counts`, `inventory_count_lines`; semillas de `settings`. — depende de 1.1, DEC-07
 - [ ] **2.2** Enum `MovementType` con etiqueta/ícono/tono; las Actions existentes lo usan (PRESERVE: tests de M2/M3 sin cambios). — depende de 1.1, DEC-04
 - [ ] **2.3** Modelos, casts decimales (`decimal:3`) y factories con datos ficticios para conteos. — depende de 2.1
