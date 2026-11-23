@@ -379,7 +379,7 @@ Cada tarea cita sus BR y dependencias. Las pruebas se escriben primero (rojo) y 
 - [x] **2.2** Enum `MovementType` con etiqueta/ícono/tono; las Actions existentes lo usan (PRESERVE: tests de M2/M3 sin cambios). — depende de 1.1, DEC-04
 - [x] **2.3** Modelos, casts decimales (`decimal:3`) y factories con datos ficticios para conteos. — depende de 2.1
 - [x] **2.4** Permisos `inventory.*`, seeder de roles y `BatchPolicy`/`InventoryCountPolicy`; test de arquitectura C14 en verde. — depende de 2.3, DEC-05
-- [ ] **3.1** `StockBalance` y migración de `OpenButcheryOrderAction` y `ListAvailableRawMaterialBatchesAction` a ese servicio. — BR-14 · depende de 2.2
+- [x] **3.1** `StockBalance` y migración de `OpenButcheryOrderAction` y `ListAvailableRawMaterialBatchesAction` a ese servicio. — BR-14 · depende de 2.2
 - [ ] **3.2** `ConsumeStockFefoAction`: orden FEFO, costo por lote, reparto entre lotes, lotes sin fecha y vencidos, configuración de BR-17 y faltante, concurrencia. — BR-14, BR-17 · depende de 3.1, DEC-02, DEC-03
 - [ ] **3.3** `RegisterShrinkageAction` con tipos, motivo obligatorio, saldo no negativo y auditoría. — BR-15, C15 · depende de 2.4, 3.1, DEC-04, DEC-05
 - [ ] **3.4** `OpenInventoryCountAction`, `RegisterCountedWeightAction`, `CancelInventoryCountAction`. — BR-16 · depende de 2.4, 3.1, DEC-07
