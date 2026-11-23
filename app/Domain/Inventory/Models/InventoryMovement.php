@@ -15,6 +15,7 @@ class InventoryMovement extends Model
         'type',
         'quantity',
         'unit_cost',
+        'total_cost',
         'user_id',
         'responsible_user_id',
         'reference_type',
@@ -28,6 +29,7 @@ class InventoryMovement extends Model
         return [
             'quantity' => 'decimal:3',
             'unit_cost' => 'decimal:4',
+            'total_cost' => 'decimal:2',
             'occurred_at' => 'datetime',
         ];
     }
