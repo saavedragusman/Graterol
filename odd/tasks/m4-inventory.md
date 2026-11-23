@@ -22,7 +22,7 @@ Texto literal de `docs/business/business-rules.md`:
 | **BR-14** | «Stock = Σ movimientos por lote. Las salidas consumen primero el lote que vence antes (FEFO) y toman su costo.» | Consulta única de saldo por lote y por producto; Action de salida FEFO que reparte una cantidad entre lotes y toma el costo de cada uno. La invoca M5 (ventas); M4 la entrega probada. |
 | **BR-15** | «Mermas tipificadas, siempre con motivo y responsable: deshidratación, rebanado, vencimiento o decomiso, y ajuste por conteo.» | Action para registrar una merma por lote, con tipo, motivo y responsable obligatorios (DEC-04, DEC-05). |
 | **BR-16** | «El conteo físico con pesaje genera un ajuste por la diferencia.» | Sesión de conteo por lote; al confirmarla genera el movimiento de ajuste por cada diferencia (DEC-07). |
-| **BR-17** | «Venta sin stock suficiente: `[abierto]`. Por defecto se permite, con alerta de ajuste pendiente.» | `[abierto]` → configuración `inventory.allow_sale_without_stock`, valor por defecto «permitir». La Action FEFO implementa ambos comportamientos y deja la alerta (DEC-03 define cómo se registra el faltante). |
+| **BR-17** | «Venta sin stock suficiente: `[abierto]`. Por defecto se permite, con alerta de ajuste pendiente.» | `[abierto]` → configuración `inventory.allow_sale_without_stock`, valor por defecto «bloquear» (DEC-03 b; BR-17 actualizada). La Action FEFO implementa ambos comportamientos y deja la alerta (DEC-03 define cómo se registra el faltante). |
 
 **Transversales ya implementadas, no se reimplementan:** BR-01 (peso 3 decimales, monto 4 internos y 2 en pantalla), BR-03 (roles como conjuntos de permisos `module.action`; anular o devolver con permiso propio), BR-07 y BR-12 (el costo del lote ya viene calculado), C10 (tabla `inventory_movements` y su trigger), C15 (tabla `audit_logs`, `AuditLog`).
 
@@ -92,7 +92,7 @@ Si el producto no tiene ningún lote, no hay costo que tomar: con (b)-A la Actio
 Recomendación técnica: (a) A; (b) A. Es literal con BR-14 y BR-17, mantiene cada movimiento con lote y costo (C10) y no crea tablas fuera del kardex. El caso «producto sin lotes» queda rechazado y se anota para M5.
 ```
 
-Resuelta: (a) A; (b) A, 2026-11-23 (el humano aceptó la recomendación técnica).
+Resuelta: (a) B; (b) bloquear por defecto con interruptor, 2026-11-23 (cambia la recomendación original; BR-17 actualizada en su propio commit). (a) FEFO salta los lotes vencidos y un lote vencido no cuenta como stock vendible: para sacarlo se da de baja con una merma por vencimiento (BR-15). (b) `inventory.allow_sale_without_stock` = `false` por defecto: la Action rechaza y no escribe nada. Con el interruptor en `true` aplica la opción (b)-A: el saldo del último lote queda negativo como «ajuste pendiente»; la parte que vacía el lote toma el residuo (C9) y el excedente se costea `kg × unit_cost` de ese lote.
 
 ```text
 [DEC-PENDIENTE] M4/BR-15 — DEC-04 Tipos de merma y movimiento que genera cada uno
@@ -209,7 +209,7 @@ Resuelta: B, 2026-11-23. El sobrante entra al kardex como `count_adjustment` pos
 - **Merma.** Siempre resta, nunca deja el saldo del lote por debajo de cero (rechaza) y toma su costo según la regla anterior. Motivo obligatorio y no vacío validado en la Action (la columna `reason` hoy es nullable; C10 pide el motivo). Cada merma y cada ajuste por conteo deja una fila de `audit_logs` con saldo antes y después (C15: «ajustes de inventario»).
 - **Enum de tipos.** Se crea `App\Domain\Inventory\MovementType` (backed enum de strings, patrón de `ProductType`) con los tipos actuales, los de DEC-04 y `sale_out` (reservado, lo escribe M5), con su etiqueta en español, ícono y tono para el kardex. Las Actions existentes pasan a usarlo sin cambiar los valores guardados (sin migración).
 - **Ajustes inversos.** Un error en un movimiento se corrige con un movimiento inverso (C10); M4 no agrega ninguna acción de «editar movimiento».
-- **Configuración sin pantalla** (como el umbral de M3): `inventory.allow_sale_without_stock` = `true` y `inventory.expiry_alert_days` = `3` en `SettingSeeder`.
+- **Configuración sin pantalla** (como el umbral de M3): `inventory.allow_sale_without_stock` = `false` y `inventory.expiry_alert_days` = `3` en `SettingSeeder`.
 - **Sin float** (C9): `BcMath\Number` en todo cálculo de saldo, reparto FEFO y valor.
 
 ## 4. Diseño técnico
@@ -265,7 +265,7 @@ Signos: entradas positivas, salidas y mermas negativas; `count_adjustment` con e
 | Action | Qué hace | BR |
 |---|---|---|
 | `StockBalance` (servicio de consulta) | Saldo por lote, por producto, y listado de lotes activos con saldo. Única fuente de saldo del código. | BR-14 |
-| `ConsumeStockFefoAction` | Recibe producto, kg, tipo de movimiento, referencia y usuario. En una transacción: bloquea y ordena los lotes del producto con saldo > 0 por vencimiento, luego `received_at`, luego id (DEC-02); descuenta lote por lote costeando cada salida con la regla de costo y valor del lote (§3: la salida que lo deja en 0 toma el residuo); devuelve las asignaciones (lote, kg, costo) y el costo total. Si falta stock, aplica `inventory.allow_sale_without_stock` y DEC-03: bloquear → rechaza sin escribir nada; permitir → el faltante va según DEC-03. | BR-14, BR-17 |
+| `ConsumeStockFefoAction` | Recibe producto, kg, tipo de movimiento, referencia y usuario. En una transacción: bloquea los lotes del producto con saldo > 0 y no vencidos (DEC-03 a B: los vencidos se saltan) y los ordena por vencimiento, luego `received_at`, luego id (DEC-02); descuenta lote por lote costeando cada salida con la regla de costo y valor del lote (§3: la salida que lo deja en 0 toma el residuo); devuelve las asignaciones (lote, kg, costo) y el costo total. Si falta stock, aplica `inventory.allow_sale_without_stock` y DEC-03: bloquear → rechaza sin escribir nada; permitir → el faltante va según DEC-03. | BR-14, BR-17 |
 | `RegisterShrinkageAction` | Merma tipificada sobre un lote: tipo, kg > 0, motivo obligatorio; rechaza si supera el saldo; escribe el movimiento y la auditoría. Permiso `inventory.register-shrinkage`. | BR-15, C15 |
 | `OpenInventoryCountAction` | Crea la sesión `draft` con los lotes elegidos. | BR-16 |
 | `RegisterCountedWeightAction` | Guarda el peso contado de una línea y el saldo del sistema en ese momento (bloqueo del lote). Solo en `draft`. | BR-16 |
@@ -367,7 +367,7 @@ Cada tarea cita sus BR y dependencias. Las pruebas se escriben primero (rojo) y 
 - [ ] **4.3** Acción «Registrar merma» según §4.5.2. — BR-15 · depende de 3.3, 4.1
 - [ ] **4.4** `InventoryCountResource` según §4.5.3. — BR-16 · depende de 3.5, 4.1
 - [ ] **4.5** Si DEC-01 = B: tema de Filament y vistas con los tokens (sin hex ni estilos en línea), Figtree y Baloo 2 locales (dependencia nueva: `[DEC-PENDIENTE]` de design.md §2.2, la aprueba el humano, C1). Si = C: pantalla Vue. — depende de 1.0, DEC-01
-- [ ] **5.1** Tests de aceptación por BR (ver §6): FEFO con tres lotes y costos distintos, merma de cada tipo, conteo con diferencia positiva y negativa, venta sin stock en las dos configuraciones; regla de costo y valor (C9): lote de 200 kg con `total_cost` 190,01 vendido entero cuesta 190,01, lote de 950 kg con 1.000,00 consumido por partes suma 1.000,00 y queda en 0,00, y lote viejo de M1 donde `unit_cost × peso` ≠ `total_cost`. — BR-14 a BR-17 · depende de 3.2, 3.3, 3.5
+- [ ] **5.1** Tests de aceptación por BR (ver §6): FEFO con tres lotes y costos distintos, merma de cada tipo, conteo con diferencia positiva y negativa, venta sin stock en las dos configuraciones (por defecto bloquea; lote vencido saltado y no vendible); regla de costo y valor (C9): lote de 200 kg con `total_cost` 190,01 vendido entero cuesta 190,01, lote de 950 kg con 1.000,00 consumido por partes suma 1.000,00 y queda en 0,00, y lote viejo de M1 donde `unit_cost × peso` ≠ `total_cost`. — BR-14 a BR-17 · depende de 3.2, 3.3, 3.5
 - [ ] **6.1** Comandos de AGENTS §2 y GGA en verde; evidencia. — depende de todo lo anterior
 - [ ] **6.2** Verificador independiente (kardex = riesgo alto, C18); `gentle-ai review assess` sobre el rango de commits y, si sale `high`, se propone la revisión y se espera. — depende de 6.1
 - [ ] **6.3** Cierre: confirmación del humano (AGENTS §4.3 puerta 2). — depende de 6.2
