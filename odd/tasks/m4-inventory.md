@@ -120,7 +120,7 @@ Opciones (2):
 Recomendación técnica: (1) A; (2) A (lo más conservador y reversible, AGENTS §9). Si la persona que pesa no es quien teclea, (1) B se agrega luego con una migración nueva.
 ```
 
-Resuelta: (1) A; (2) A, 2026-11-23 (el humano aceptó la recomendación técnica).
+Resuelta: (1) B; (2) A, 2026-11-23 ((1) cambia la recomendación original). El responsable es una persona elegible, distinta de quien registra: por ejemplo, el administrador registra y el carnicero pesa. `user_id` del movimiento sigue siendo quien registra y se agrega `responsible_user_id` (quien pesó o responde por la merma). Se elige entre los usuarios activos, con el usuario conectado preseleccionado; es obligatorio (BR-15). (2) Los permisos `inventory.*` son solo del administrador, que asigna al carnicero lo que quiera desde la gestión de roles.
 
 ```text
 [DEC-PENDIENTE] M4/BR-15, BR-16 — DEC-06 ¿Dónde se registran las mermas y los conteos?
@@ -218,9 +218,9 @@ Resuelta: B, 2026-11-23. El sobrante entra al kardex como `count_adjustment` pos
 
 ### 4.1 Tablas y migraciones (módulo `Inventory`)
 
-No se altera la estructura de `inventory_movements` ni de `batches` (el trigger de C10 permanece). Migraciones nuevas, ninguna edita una existente:
+Se agrega una columna nullable a `inventory_movements` (DEC-05 1 B); `batches` no se altera. El trigger de C10 solo rechaza `UPDATE`/`DELETE`, así que `ALTER TABLE ... ADD COLUMN` no lo toca y permanece. Migraciones nuevas, ninguna edita una existente:
 
-1. **Índice** en `inventory_movements(batch_id)` y `(type)`. Sin datos.
+1. **Índice** en `inventory_movements(batch_id)` y `(type)`, y columna `responsible_user_id` (FK `users`, nullable) en `inventory_movements` (DEC-05 1 B): quien pesó o responde por la merma; `user_id` sigue siendo quien registra. Los movimientos existentes quedan en `NULL`; no hay datos que reconstruir.
 2. **`inventory_counts`** (DEC-07)
 
 | Columna | Tipo | Nota |
@@ -266,7 +266,7 @@ Signos: entradas positivas, salidas y mermas negativas; `count_adjustment` con e
 |---|---|---|
 | `StockBalance` (servicio de consulta) | Saldo por lote, por producto, y listado de lotes activos con saldo. Única fuente de saldo del código. | BR-14 |
 | `ConsumeStockFefoAction` | Recibe producto, kg, tipo de movimiento, referencia y usuario. En una transacción: bloquea los lotes del producto con saldo > 0 y no vencidos (DEC-03 a B: los vencidos se saltan) y los ordena por vencimiento, luego `received_at`, luego id (DEC-02); descuenta lote por lote costeando cada salida con la regla de costo y valor del lote (§3: la salida que lo deja en 0 toma el residuo); devuelve las asignaciones (lote, kg, costo) y el costo total. Si falta stock, aplica `inventory.allow_sale_without_stock` y DEC-03: bloquear → rechaza sin escribir nada; permitir → el faltante va según DEC-03. | BR-14, BR-17 |
-| `RegisterShrinkageAction` | Merma tipificada sobre un lote: tipo, kg > 0, motivo obligatorio; rechaza si supera el saldo; escribe el movimiento y la auditoría. Permiso `inventory.register-shrinkage`. | BR-15, C15 |
+| `RegisterShrinkageAction` | Merma tipificada sobre un lote: tipo, kg > 0, motivo obligatorio, responsable obligatorio (usuario activo, puede ser distinto de quien registra; se guarda en `responsible_user_id`); rechaza si supera el saldo; escribe el movimiento y la auditoría. Permiso `inventory.register-shrinkage`. | BR-15, C15 |
 | `OpenInventoryCountAction` | Crea la sesión `draft` con los lotes elegidos. | BR-16 |
 | `RegisterCountedWeightAction` | Guarda el peso contado de una línea y el saldo del sistema en ese momento (bloqueo del lote). Solo en `draft`. | BR-16 |
 | `ConfirmInventoryCountAction` | Transacción: exige todas las líneas pesadas; por cada diferencia ≠ 0 escribe un `count_adjustment` al costo del lote y una fila de `audit_logs`; pasa a `confirmed`. Rechaza una sesión no `draft`. | BR-15, BR-16, C15 |
@@ -326,7 +326,7 @@ Antes de crear o cambiar cualquier pantalla se relee `docs/design.md`. **Tokens:
 #### 4.5.2 Registrar merma (Filament, modal de acción)
 
 - **Referencia:** solo existe el botón «Registrar merma» en `d-inventario.html`; **no hay maqueta del formulario**. Se construye con los patrones de design.md §4 «Formularios» y un modal nativo de Filament (en B con los tokens del tema).
-- **Campos:** Lote (selector con búsqueda: código y producto, mostrando saldo), Tipo de merma (los cuatro tipos de merma de DEC-04, sin «ajuste por conteo», que solo lo crea el conteo), Peso (kg, 3 decimales; no puede superar el saldo, mensaje en `brand` debajo del campo), Motivo (obligatorio). Responsable: el usuario conectado, mostrado como dato (DEC-05).
+- **Campos:** Lote (selector con búsqueda: código y producto, mostrando saldo), Tipo de merma (los cuatro tipos de merma de DEC-04, sin «ajuste por conteo», que solo lo crea el conteo), Peso (kg, 3 decimales; no puede superar el saldo, mensaje en `brand` debajo del campo), Motivo (obligatorio). Responsable (obligatorio): selector de usuarios activos con el usuario conectado preseleccionado; puede elegirse otra persona, por ejemplo quien pesó. Quien registra queda aparte como `user_id` (DEC-05).
 - **Etiquetas:** siempre visibles (no solo placeholder); campos de 48–52 px; foco con borde de 2 px `brand`; error en `brand`. Botón de confirmación con la acción del modal (primario `brand`, no `accent`: `accent` se reserva para vender/cobrar/confirmar de la PWA). Resultado: notificación de éxito y el movimiento aparece arriba del kardex del lote.
 - **No implementado:** adjuntar fotos, categorías de motivo, aprobación (sin BR; si se quieren, `[DEC-PENDIENTE]` nuevo).
 
@@ -380,7 +380,7 @@ Cada tarea cita sus BR y dependencias. Las pruebas se escriben primero (rojo) y 
 | BR | Test (ruta y nombre) | Resultado |
 |---|---|---|
 | BR-14 | `tests/Feature/Inventory/…` (saldo = Σ movimientos; FEFO consume el que vence antes y toma su costo; sin fecha; empate; vencido) | |
-| BR-15 | `tests/Feature/Inventory/…` (cada tipo; motivo obligatorio; no supera el saldo; auditoría) | |
+| BR-15 | `tests/Feature/Inventory/…` (cada tipo; motivo obligatorio; no supera el saldo; auditoría; responsable distinto de quien registra queda guardado en `responsible_user_id` y `user_id` conserva a quien registró; responsable inexistente o inactivo se rechaza) | |
 | BR-16 | `tests/Feature/Inventory/…` (diferencia positiva y negativa; sesión confirmada no se edita; sin diferencia = sin movimiento) | |
 | BR-17 | `tests/Feature/Inventory/…` (permitir con alerta de ajuste pendiente; bloquear sin escribir nada) | |
 | C9 | `tests/Feature/Inventory/…` (Σ costo de las salidas = `total_cost`; el lote vaciado vale 0,00; sin float) | |
