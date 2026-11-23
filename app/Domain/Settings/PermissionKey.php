@@ -20,6 +20,9 @@ enum PermissionKey: string
     case ButcheryProcess = 'butchery.process';
     case ButcheryManageTemplates = 'butchery.manage-templates';
     case ButcheryVoid = 'butchery.void';
+    case InventoryView = 'inventory.view';
+    case InventoryRegisterShrinkage = 'inventory.register-shrinkage';
+    case InventoryCount = 'inventory.count';
     case CatalogManage = 'catalog.manage';
     case SalesVoid = 'sales.void';
     case SalesReturn = 'sales.return';
@@ -43,6 +46,9 @@ enum PermissionKey: string
             self::ButcheryProcess => 'Procesar despieces',
             self::ButcheryManageTemplates => 'Gestionar plantillas de despiece',
             self::ButcheryVoid => 'Anular despieces',
+            self::InventoryView => 'Ver el inventario y el kardex',
+            self::InventoryRegisterShrinkage => 'Registrar mermas de inventario',
+            self::InventoryCount => 'Realizar conteos físicos de inventario',
             self::CatalogManage => 'Gestionar el catálogo de productos',
             self::SalesVoid => 'Anular ventas',
             self::SalesReturn => 'Devolver ventas',
@@ -66,6 +72,9 @@ enum PermissionKey: string
             self::ButcheryProcess,
             self::ButcheryManageTemplates,
             self::ButcheryVoid => 'Despiece',
+            self::InventoryView,
+            self::InventoryRegisterShrinkage,
+            self::InventoryCount => 'Inventario',
             self::CatalogManage => 'Catálogo',
             self::PosSell,
             self::PosCloseOwn => 'POS',
