@@ -36,6 +36,7 @@ class CreatePurchase extends CreateRecord
                 freightAmount: $this->money($data['freight_amount'] ?? null),
                 otherCostsAmount: $this->money($data['other_costs_amount'] ?? null),
                 otherCostsNote: filled($data['other_costs_note'] ?? null) ? (string) $data['other_costs_note'] : null,
+                currency: (string) ($data['currency'] ?? 'USD'),
                 createdBy: auth()->id(),
             );
         } catch (RuntimeException $e) {

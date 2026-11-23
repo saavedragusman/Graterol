@@ -247,6 +247,9 @@ Total final: **83 tests en verde** (incluye los 33 heredados de M0/M1, sin rompe
 | `pnpm build` | en verde (580 módulos, ~235ms) |
 | GGA | aprobado en 12 de 13 commits; 1 fallo corregido en el acto (ver desviaciones) |
 
+### DEC-07 — Moneda de la compra (2026-11-18, QA de M3)
+Resuelta: A. El formulario de compra tiene «Moneda de la factura» (USD por defecto, o VES); la compra guarda su moneda y la tasa BCV vigente al crearla (C13), también en VES. La moneda se puede corregir mientras la compra esté en `draft`. En pantalla los montos llevan siempre su moneda: `$` o `Bs`, con 2 decimales (BR-01). Antes todas las compras quedaban en VES porque el formulario no pedía moneda.
+
 ### Commits
 `5f0bcaf` doc aprobado · `09b4c6b` migraciones · `7d4049f` modelos · `8548026` permisos/Policies · `fd24806` AllocateCosts · `e67d3b5` CreatePurchase/UpdateDraftPurchase · `ca2bfc5` CreateLotFromPurchaseLine · `cf97c1b` ReceivePurchase (cierra BR-06/BR-07) · `6043cbe` VoidPurchase/auditoría · `1157c16` Filament · `3f2aa4a` evidencia parcial · `b5e18d8` PWA Inertia/Vue · `6a97d06` fix recepción parcial · `da93717` cierre de evidencia · `67f1932` fix pesaje PWA (QA) · `0ee2df4` crear proveedor vuelve al listado (QA) · `5ba6304` raíz redirige al panel (QA).
 

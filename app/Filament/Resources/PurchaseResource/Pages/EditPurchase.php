@@ -53,6 +53,7 @@ class EditPurchase extends EditRecord
                 [
                     'supplier_invoice_number' => $data['supplier_invoice_number'],
                     'supplier_invoice_date' => $data['supplier_invoice_date'],
+                    'currency' => $data['currency'],
                     'freight_amount' => $this->money($data['freight_amount'] ?? null),
                     'other_costs_amount' => $this->money($data['other_costs_amount'] ?? null),
                     'other_costs_note' => filled($data['other_costs_note'] ?? null) ? $data['other_costs_note'] : null,

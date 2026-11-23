@@ -21,6 +21,7 @@ class CreateLotFromPurchaseLineAction
     public function execute(
         string $sourceType,
         int $sourceId,
+        int $productId,
         ?int $pieces,
         string $receivedWeightKg,
         string $totalCost,
@@ -31,9 +32,10 @@ class CreateLotFromPurchaseLineAction
     ): Batch {
         $unitCost = (string) (new Number($totalCost))->div(new Number($receivedWeightKg), 4);
 
-        return DB::transaction(function () use ($sourceType, $sourceId, $pieces, $receivedWeightKg, $totalCost, $currency, $exchangeRate, $userId, $expiresOn, $unitCost) {
+        return DB::transaction(function () use ($sourceType, $sourceId, $productId, $pieces, $receivedWeightKg, $totalCost, $currency, $exchangeRate, $userId, $expiresOn, $unitCost) {
             $batch = Batch::create([
                 'code' => "{$sourceType}-{$sourceId}",
+                'product_id' => $productId,
                 'source_type' => $sourceType,
                 'source_id' => $sourceId,
                 'unit' => 'kg',

@@ -97,6 +97,29 @@ it('creates a purchase with its lines through CreatePurchaseAction [DEC-01]', fu
         ->and($purchase->lines->first()->invoiced_pieces)->toBe(4);
 });
 
+it('guarda la moneda elegida y la tasa BCV vigente; por defecto USD [C13]', function () {
+    fpUser('administrador');
+    (new RegisterExchangeRateAction)->execute('85.5000', 'manual');
+    $supplier = Supplier::factory()->create();
+    $product = fpProduct();
+    $line = [['product_id' => $product->id, 'invoiced_weight_kg' => '10.000', 'line_amount' => '100']];
+
+    Livewire::test(CreatePurchase::class)
+        ->assertFormSet(['currency' => 'USD'])
+        ->fillForm(['supplier_id' => $supplier->id, 'supplier_invoice_number' => 'F-USD', 'supplier_invoice_date' => '2026-11-10', 'lines' => $line])
+        ->call('create')
+        ->assertHasNoFormErrors();
+
+    Livewire::test(CreatePurchase::class)
+        ->fillForm(['supplier_id' => $supplier->id, 'supplier_invoice_number' => 'F-VES', 'supplier_invoice_date' => '2026-11-10', 'currency' => 'VES', 'lines' => $line])
+        ->call('create')
+        ->assertHasNoFormErrors();
+
+    expect(Purchase::where('supplier_invoice_number', 'F-USD')->firstOrFail()->currency)->toBe('USD')
+        ->and(Purchase::where('supplier_invoice_number', 'F-VES')->firstOrFail()->currency)->toBe('VES')
+        ->and(Purchase::where('supplier_invoice_number', 'F-VES')->firstOrFail()->exchange_rate)->toBe('85.5000');
+});
+
 it('does not offer derived products and rejects them on submit [DEC-05]', function () {
     fpUser('administrador');
     (new RegisterExchangeRateAction)->execute('85.5000', 'manual');

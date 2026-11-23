@@ -26,7 +26,9 @@ it('creates administrador with every permission [BR-03]', function () {
         ->and($user->hasPermission('purchasing.create'))->toBeTrue()
         ->and($user->hasPermission('purchasing.void'))->toBeTrue()
         ->and($user->hasPermission('purchasing.manage-suppliers'))->toBeTrue()
-        ->and($user->hasPermission('butchery.process'))->toBeTrue();
+        ->and($user->hasPermission('butchery.process'))->toBeTrue()
+        ->and($user->hasPermission('butchery.manage-templates'))->toBeTrue()
+        ->and($user->hasPermission('butchery.void'))->toBeTrue();
 });
 
 it('restricts cajero to pos and its own close, never void or receiving [BR-03]', function () {
@@ -53,6 +55,8 @@ it('restricts carnicero to receiving and butchery, never pos or void [BR-03]', f
         ->and($user->hasPermission('purchasing.create'))->toBeFalse()
         ->and($user->hasPermission('purchasing.void'))->toBeFalse()
         ->and($user->hasPermission('butchery.process'))->toBeTrue()
+        ->and($user->hasPermission('butchery.manage-templates'))->toBeFalse()
+        ->and($user->hasPermission('butchery.void'))->toBeFalse()
         ->and($user->hasPermission('pos.sell'))->toBeFalse()
         ->and($user->hasPermission('sales.void'))->toBeFalse();
 });
@@ -61,6 +65,6 @@ it('is idempotent and does not duplicate permissions or roles [BR-03]', function
     (new RolePermissionSeeder)->run();
     (new RolePermissionSeeder)->run();
 
-    expect(Permission::count())->toBe(10)
+    expect(Permission::count())->toBe(12)
         ->and(Role::count())->toBe(3);
 });

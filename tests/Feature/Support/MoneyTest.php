@@ -38,3 +38,9 @@ it('BR-01: compara y detecta montos negativos', function () {
         ->and($zero->isNegative())->toBeFalse()
         ->and($negative->compareTo($zero))->toBe(-1);
 });
+
+it('BR-01: display muestra 2 decimales y siempre la moneda (Bs o $)', function () {
+    expect(Money::display('1284.5049', 'VES'))->toBe('Bs 1.284,50')
+        ->and(Money::display('56', 'USD'))->toBe('$ 56,00')
+        ->and(Money::display(null, 'VES'))->toBe('—');
+});
