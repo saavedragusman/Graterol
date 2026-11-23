@@ -16,6 +16,7 @@ class InventoryMovement extends Model
         'quantity',
         'unit_cost',
         'user_id',
+        'responsible_user_id',
         'reference_type',
         'reference_id',
         'reason',
@@ -45,5 +46,15 @@ class InventoryMovement extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    /**
+     * Quien pesó o responde por la merma (DEC-05); `user` es quien registra.
+     *
+     * @return BelongsTo<User, $this>
+     */
+    public function responsible(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'responsible_user_id');
     }
 }

@@ -3,12 +3,17 @@
 namespace App\Domain\Inventory\Models;
 
 use App\Domain\Catalog\Models\Product;
+use Database\Factories\BatchFactory;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Batch extends Model
 {
+    /** @use HasFactory<BatchFactory> */
+    use HasFactory;
+
     protected $fillable = [
         'code',
         'product_id',
@@ -49,5 +54,10 @@ class Batch extends Model
     public function product(): BelongsTo
     {
         return $this->belongsTo(Product::class);
+    }
+
+    protected static function newFactory(): BatchFactory
+    {
+        return BatchFactory::new();
     }
 }
