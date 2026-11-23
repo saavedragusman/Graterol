@@ -186,7 +186,7 @@ Opciones:
 Recomendación técnica: B, como tarea aparte y con prueba de que ningún movimiento ni orden pierde su lote; es lo que ve el usuario en la pantalla que más se mira. Si no se aprueba, A.
 ```
 
-Resuelta: B, 2026-11-23 (el humano aceptó la recomendación técnica).
+Resuelta: B, 2026-11-23 (el humano aceptó la recomendación técnica). Decisiones técnicas de la tarea 3.7 (2026-11-23): (1) el código nuevo sale de `BatchCodeGenerator` (siguiente `L-####` bajo candado asesor de PostgreSQL, sin huecos); (2) la migración guarda el código anterior en `batches.legacy_code` y su `down()` lo restaura; solo hace `UPDATE` sobre `batches`, nunca sobre el kardex; es idempotente; (3) como el código viejo era lo único que impedía dos lotes del mismo origen, se agregó el índice único `batches(source_type, source_id)` en su propia migración; (4) esta migración reescribe datos: antes de aplicarla en una base con datos reales hay que ensayarla sobre una copia. El mensaje de anulación de compra también pasó a «registre una merma o un conteo» para quedar igual que el de despiece.
 
 ```text
 [DEC-PENDIENTE] M4/BR-16, C9 — DEC-11 Costo de un sobrante por conteo (ajuste positivo)
@@ -385,8 +385,8 @@ Cada tarea cita sus BR y dependencias. Las pruebas se escriben primero (rojo) y 
 - [x] **3.3** `RegisterShrinkageAction` con tipos, motivo obligatorio, saldo no negativo y auditoría. — BR-15, C15 · depende de 2.4, 3.1, DEC-04, DEC-05
 - [x] **3.4** `OpenInventoryCountAction`, `RegisterCountedWeightAction`, `CancelInventoryCountAction`. — BR-16 · depende de 2.4, 3.1, DEC-07
 - [x] **3.5** `ConfirmInventoryCountAction`: un ajuste por diferencia ≠ 0 (negativo con la regla de costo del lote, positivo a 0,00 por DEC-11 B) con el responsable de cada línea, auditoría, sesión confirmada inmutable. — BR-15, BR-16, C15 · depende de 3.3, 3.4
-- [ ] **3.6** Ajustar el mensaje de `VoidButcheryOrderAction` (DEC-09 A) con un test que fije el texto. — C10 · depende de 3.3, 3.5, DEC-09
-- [ ] **3.7** Si DEC-10 = B: código de lote legible en ambas Actions y migración de datos con prueba de integridad (cada movimiento y orden conserva su lote). — BR-14 · depende de 1.1, DEC-10
+- [x] **3.6** Ajustar el mensaje de `VoidButcheryOrderAction` (DEC-09 A) con un test que fije el texto. — C10 · depende de 3.3, 3.5, DEC-09
+- [x] **3.7** Si DEC-10 = B: código de lote legible en ambas Actions y migración de datos con prueba de integridad (cada movimiento y orden conserva su lote). — BR-14 · depende de 1.1, DEC-10
 - [ ] **4.1** Estructura de la pantalla de inventario: tabla de lotes, filtros, KPI (DEC-08), alertas de vencimiento (DEC-09) y ajuste pendiente (BR-17) siguiendo §4.5.1. — BR-14, BR-17, C10 · depende de 3.1, 3.2, DEC-01, DEC-08, DEC-09
 - [ ] **4.2** Panel de kardex del lote con etiqueta, ícono y tono por tipo, saldo y nota. — BR-14, C10 · depende de 4.1
 - [ ] **4.3** Acción «Registrar merma» según §4.5.2. — BR-15 · depende de 3.3, 4.1
