@@ -35,7 +35,7 @@ class ButcheryOrderLine extends Model
             'expected_weight_kg' => 'decimal:3',
             'actual_weight_kg' => 'decimal:3',
             'reference_price_per_kg' => 'decimal:4',
-            'allocated_cost' => 'decimal:4',
+            'allocated_cost' => 'decimal:2',
             'deviation_percent' => 'decimal:2',
         ];
     }

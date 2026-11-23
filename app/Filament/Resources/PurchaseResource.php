@@ -51,6 +51,9 @@ class PurchaseResource extends Resource
 
     protected static ?string $pluralModelLabel = 'compras';
 
+    // Filament capitaliza cada palabra del plural; la etiqueta del menú va en español normal.
+    protected static ?string $navigationLabel = 'Compras';
+
     /** @var array<string, string> */
     public const STATUS_LABELS = [
         'draft' => 'Borrador',
@@ -110,12 +113,12 @@ class PurchaseResource extends Resource
                             ->required(),
                         TextInput::make('invoiced_weight_kg')->label('Kg facturados')->numeric()->minValue(0.001)->required(),
                         TextInput::make('invoiced_pieces')->label('Piezas facturadas')->integer()->minValue(0),
-                        TextInput::make('line_amount')->label('Monto de la línea')->numeric()->minValue(0)->required(),
+                        TextInput::make('line_amount')->label('Monto de la línea')->numeric()->minValue(0)->step('0.01')->rule('decimal:0,2')->required(),
                     ]),
             ]),
             Section::make('Costos adicionales')->columns(3)->schema([
-                TextInput::make('freight_amount')->label('Flete')->numeric()->minValue(0)->default('0'),
-                TextInput::make('other_costs_amount')->label('Otros costos')->numeric()->minValue(0)->default('0'),
+                TextInput::make('freight_amount')->label('Flete')->numeric()->minValue(0)->step('0.01')->rule('decimal:0,2')->default('0'),
+                TextInput::make('other_costs_amount')->label('Otros costos')->numeric()->minValue(0)->step('0.01')->rule('decimal:0,2')->default('0'),
                 TextInput::make('other_costs_note')->label('Nota de otros costos')->maxLength(255),
             ]),
         ]);

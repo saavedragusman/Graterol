@@ -3,21 +3,22 @@
 namespace App\Providers\Filament;
 
 use App\Domain\Settings\CompanySettings;
+use App\Filament\Pages\Dashboard;
+use App\Support\SidebarRate;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
-use Filament\Pages\Dashboard;
 use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
-use Filament\Widgets\AccountWidget;
-use Filament\Widgets\FilamentInfoWidget;
+use Filament\View\PanelsRenderHook;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
+use Illuminate\Support\HtmlString;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 
 class AdminPanelProvider extends PanelProvider
@@ -29,6 +30,35 @@ class AdminPanelProvider extends PanelProvider
             ->id('admin')
             ->path('admin')
             ->login()
+            // S2: tema de la oficina según docs/design.md §2.5 (compilado por Vite).
+            ->viteTheme('resources/css/filament/admin/theme.css')
+            // Subtítulo opcional junto al logo (C6); vacío no se muestra.
+            ->renderHook(
+                PanelsRenderHook::TOPBAR_LOGO_AFTER,
+                function (): HtmlString {
+                    $subtitle = app(CompanySettings::class)->subtitle();
+
+                    return new HtmlString($subtitle === null ? '' : '<span class="erp-brand-subtitle">'.e($subtitle).'</span>');
+                },
+            )
+            // BR-02: tasa BCV vigente al pie del menú lateral. Hora y fecha en Caracas (C13).
+            ->renderHook(
+                PanelsRenderHook::SIDEBAR_FOOTER,
+                fn () => view('filament.sidebar-rate', SidebarRate::forDisplay()),
+            )
+            // C6/S5: la marca de settings sobrescribe --brand y --accent también en el panel, igual que en la PWA.
+            ->renderHook(
+                PanelsRenderHook::HEAD_END,
+                function (): HtmlString {
+                    $company = app(CompanySettings::class);
+
+                    return new HtmlString(sprintf(
+                        '<style>html:root { --brand: %s; --accent: %s; }</style>',
+                        e($company->brandColor()),
+                        e($company->accentColor()),
+                    ));
+                },
+            )
             // C6: marca leída de settings en cada request (docs/design.md §2.5); nada del cliente en el código.
             ->colors(fn (CompanySettings $company): array => [
                 'primary' => Color::hex($company->brandColor()),
@@ -44,10 +74,7 @@ class AdminPanelProvider extends PanelProvider
                 Dashboard::class,
             ])
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\Filament\Widgets')
-            ->widgets([
-                AccountWidget::class,
-                FilamentInfoWidget::class,
-            ])
+            ->widgets([])
             ->middleware([
                 EncryptCookies::class,
                 AddQueuedCookiesToResponse::class,

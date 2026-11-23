@@ -43,9 +43,9 @@ it('corrects the invoiced amount and freight while the purchase is draft [DEC-01
         ['product_id' => $purchase->lines->first()->product_id, 'invoiced_weight_kg' => '100.000', 'line_amount' => '107.8000'],
     ]);
 
-    expect($updated->freight_amount)->toBe('12.0000')
+    expect($updated->freight_amount)->toBe('12.00')
         ->and($updated->lines)->toHaveCount(1)
-        ->and($updated->lines->first()->line_amount)->toBe('107.8000');
+        ->and($updated->lines->first()->line_amount)->toBe('107.80');
 });
 
 it('rejects editing a purchase that is no longer draft [C12]', function () {
@@ -66,9 +66,9 @@ it('ignores status, exchange_rate and supplier_id even if sent in header attribu
     ]);
 
     expect($updated->status)->toBe('draft')
-        ->and($updated->exchange_rate)->toBe('85.5000')
+        ->and($updated->exchange_rate)->toBe('85.50')
         ->and($updated->supplier_id)->toBe($purchase->supplier_id)
-        ->and($updated->freight_amount)->toBe('20.0000');
+        ->and($updated->freight_amount)->toBe('20.00');
 });
 
 it('rejects replacing the lines of a draft with a derived product [DEC-05]', function () {
@@ -103,5 +103,5 @@ it('keeps the original lines when the replacement is rejected [C11]', function (
     }
 
     expect($purchase->fresh()->lines)->toHaveCount(1)
-        ->and($purchase->fresh()->lines->first()->line_amount)->toBe('110.0000');
+        ->and($purchase->fresh()->lines->first()->line_amount)->toBe('110.00');
 });

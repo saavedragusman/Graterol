@@ -34,11 +34,11 @@ class PurchaseLine extends Model
     {
         return [
             'invoiced_weight_kg' => 'decimal:3',
-            'line_amount' => 'decimal:4',
+            'line_amount' => 'decimal:2',
             'received_weight_kg' => 'decimal:3',
             'weight_difference_kg' => 'decimal:3',
-            'allocated_freight' => 'decimal:4',
-            'allocated_other_costs' => 'decimal:4',
+            'allocated_freight' => 'decimal:2',
+            'allocated_other_costs' => 'decimal:2',
             'expires_on' => 'date',
         ];
     }

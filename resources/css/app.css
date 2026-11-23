@@ -4,6 +4,16 @@
 @source '../../storage/framework/views/*.php';
 
 /*
+ * docs/design.md §2.2 y BR-26 — fuentes locales (OFL) servidas desde public/fonts;
+ * nunca desde un CDN, porque la PWA vende sin conexión. La oficina usa los mismos archivos.
+ */
+@font-face { font-family: 'Figtree'; font-weight: 400; font-style: normal; font-display: swap; src: url('/fonts/figtree-latin-400.woff2') format('woff2'); }
+@font-face { font-family: 'Figtree'; font-weight: 600; font-style: normal; font-display: swap; src: url('/fonts/figtree-latin-600.woff2') format('woff2'); }
+@font-face { font-family: 'Figtree'; font-weight: 700; font-style: normal; font-display: swap; src: url('/fonts/figtree-latin-700.woff2') format('woff2'); }
+@font-face { font-family: 'Baloo 2'; font-weight: 700; font-style: normal; font-display: swap; src: url('/fonts/baloo-2-latin-700.woff2') format('woff2'); }
+@font-face { font-family: 'Baloo 2'; font-weight: 800; font-style: normal; font-display: swap; src: url('/fonts/baloo-2-latin-800.woff2') format('woff2'); }
+
+/*
  * docs/design.md §2.1 y §2.4 — tokens de color como variables CSS para que la
  * marca de settings (C6) los sobrescriba sin recompilar. Estos son los valores
  * por defecto del producto. --brand y --accent llegan desde el layout; los tonos
@@ -13,7 +23,7 @@
     --brand: #a51016;
     --accent: #f6b01a;
     --brand-strong: color-mix(in oklab, var(--brand) 66%, black);
-    --brand-night: color-mix(in oklab, var(--brand) 22%, #1f1a17);
+    --brand-night: #2a1215; /* design.md §2.1: fijo, no se deriva de la marca */
     --brand-soft: color-mix(in oklab, var(--brand) 9%, white);
     --on-accent: #2b1d00;
     --accent-soft: color-mix(in oklab, var(--accent) 22%, white);
@@ -35,8 +45,9 @@
 }
 
 @theme {
-    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
+    --font-sans: 'Figtree', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
         'Segoe UI Symbol', 'Noto Color Emoji';
+    --font-display: 'Baloo 2', ui-sans-serif, system-ui, sans-serif;
 }
 
 @theme inline {
@@ -62,4 +73,27 @@
     --color-info-soft: var(--info-soft);
     --color-chart-neutral: var(--chart-neutral);
     --color-chart-muted: var(--chart-muted);
+}
+
+/*
+ * Barra de scroll fina y en el color de marca (var(--brand), configurable por cliente, C6).
+ * Firefox usa scrollbar-*; Chrome, Edge y Safari usan ::-webkit-scrollbar.
+ */
+* {
+    scrollbar-width: thin;
+    scrollbar-color: var(--brand) transparent;
+}
+*::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+*::-webkit-scrollbar-track {
+    background: transparent;
+}
+*::-webkit-scrollbar-thumb {
+    background-color: var(--brand);
+    border-radius: 999px;
+}
+*::-webkit-scrollbar-thumb:hover {
+    background-color: var(--brand-strong);
 }

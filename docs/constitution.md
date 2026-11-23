@@ -16,7 +16,7 @@ Esta es la ley del repo: el agente la lee antes de trabajar y GGA la usa como re
 - **C8.** Una base de datos por cliente; sin `tenant_id`.
 
 ## Datos
-- **C9.** Peso `numeric(12,3)`, dinero `numeric(18,4)`. `float`/`double` prohibidos en columnas, casts y cálculos de peso o dinero; se usa `BcMath\Number`. Verifica: grep en migraciones y `app/Domain` → 0.
+- **C9.** Peso `numeric(12,3)`. Montos de dinero `numeric(18,2)`. Valores unitarios por kg (precio y costo) `numeric(18,4)`: no son montos; al multiplicarse por un peso crean un monto redondeado al centavo (BR-01). `float`/`double` prohibidos en columnas, casts y cálculos de peso o dinero; se usa `BcMath\Number`. **Sin fuga de dinero:** ningún cálculo pierde ni crea centavos. Cuando un monto se reparte o se consume por partes, la suma de las partes es exactamente el total, y el residuo del redondeo va a una sola parte que define la regla de dominio. Verifica: grep en migraciones y `app/Domain` → 0.
 - **C10.** Kardex de solo inserción: un trigger de PostgreSQL rechaza `UPDATE`/`DELETE` en `inventory_movements`. Cada movimiento guarda lote, cantidad, tipo, costo, usuario, referencia y motivo. Los errores se corrigen con un movimiento inverso.
 - **C11.** Toda operación que toca varias tablas va en una transacción; nada queda a medias.
 - **C12.** Lo cerrado no se edita (despiece cerrado, venta confirmada, cierre de caja, documento fiscal aceptado): se anula o se corrige con un documento inverso. Nada que tenga historial se borra físicamente.

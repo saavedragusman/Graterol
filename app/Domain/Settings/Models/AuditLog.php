@@ -11,6 +11,9 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 /**
  * C15: auditoría inmutable (quién, qué, cuándo, valores antes y después).
  * Tabla de solo inserción: no se actualiza ni se borra ninguna fila.
+ *
+ * @property array<string, mixed>|null $before
+ * @property array<string, mixed>|null $after
  */
 class AuditLog extends Model
 {

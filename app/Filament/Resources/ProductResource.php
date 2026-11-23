@@ -49,6 +49,9 @@ class ProductResource extends Resource
 
     protected static ?string $pluralModelLabel = 'productos';
 
+    // Filament capitaliza cada palabra del plural; la etiqueta del menú va en español normal.
+    protected static ?string $navigationLabel = 'Productos';
+
     protected static ?string $recordTitleAttribute = 'name';
 
     /** @var array<string, string> */

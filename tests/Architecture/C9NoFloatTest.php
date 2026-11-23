@@ -1,6 +1,6 @@
 <?php
 
-// C9: peso numeric(12,3), dinero numeric(18,4); float/double prohibidos en
+// C9: peso numeric(12,3), dinero numeric(18,2); float/double prohibidos en
 // columnas, casts y cálculos de peso o dinero en migraciones y app/Domain.
 
 function filesWithForbiddenFloatTokens(string $directory): array

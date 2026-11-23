@@ -32,6 +32,6 @@ trait MapsPurchaseLines
 
     protected function money(mixed $value): string
     {
-        return filled($value) ? (string) $value : '0.0000';
+        return filled($value) ? (string) $value : '0.00';
     }
 }

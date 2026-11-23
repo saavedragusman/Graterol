@@ -1,0 +1,179 @@
+/*
+ * Tema de la oficina (Filament 5) — docs/design.md §2.5.
+ * Solo se sobrescribe lo que lista el diseño: encabezado, menú lateral, tablas,
+ * badges, filtros/campos y tarjetas de estadísticas. Todo lo demás queda como Filament.
+ * Los colores salen únicamente de los tokens de app.css (C6): ningún hex de marca aquí.
+ */
+@import '../../../../vendor/filament/filament/resources/css/theme.css';
+/* Tokens (§2.4) y fuentes locales (§2.2) compartidos con la PWA. */
+@import '../../app.css';
+
+@source '../../../../app/Filament/**/*';
+@source '../../../../resources/views/filament/**/*';
+
+/* Los tokens de superficie solo existen en modo claro (S6): el oscuro queda en Filament. */
+:root {
+    --font-sans: 'Figtree', ui-sans-serif, system-ui, sans-serif;
+}
+
+/* Fuentes del diseño en todo el panel. */
+.fi-body {
+    font-family: var(--font-sans);
+}
+
+/* --- Fondo y tipografía (solo modo claro) --- */
+html:not(.dark) .fi-body {
+    background-color: var(--canvas);
+    color: var(--ink);
+}
+
+/* --- Encabezado de página: Baloo 2 800, brand-strong --- */
+.fi-header-heading {
+    font-family: 'Baloo 2', ui-sans-serif, system-ui, sans-serif;
+    font-weight: 800;
+    line-height: 1.1;
+}
+html:not(.dark) .fi-header-heading {
+    color: var(--brand-strong);
+}
+html:not(.dark) .fi-header-subheading {
+    color: var(--ink-muted);
+    font-size: 0.875rem;
+}
+
+/* --- Menú lateral: brand-night, ítem activo en brand --- */
+.fi-sidebar,
+.fi-sidebar-header,
+.fi-body-has-topbar .fi-sidebar-header {
+    background-color: var(--brand-night);
+    color: white;
+}
+.fi-sidebar-item-btn {
+    min-height: 2.75rem; /* 44 px */
+    border-radius: 0.75rem;
+}
+.fi-sidebar-item-label,
+.fi-sidebar-item-btn > .fi-icon {
+    color: color-mix(in oklab, white 85%, var(--brand-night));
+}
+.fi-sidebar-item.fi-sidebar-item-has-url > .fi-sidebar-item-btn:hover,
+.fi-sidebar-item.fi-sidebar-item-has-url > .fi-sidebar-item-btn:focus-visible {
+    background-color: color-mix(in oklab, white 8%, transparent);
+}
+.fi-sidebar-item.fi-active > .fi-sidebar-item-btn {
+    background-color: var(--brand);
+}
+.fi-sidebar-item.fi-active > .fi-sidebar-item-btn > .fi-sidebar-item-label,
+.fi-sidebar-item.fi-active > .fi-sidebar-item-btn > .fi-icon {
+    color: white;
+    font-weight: 600;
+}
+.fi-sidebar-group-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: color-mix(in oklab, white 70%, var(--brand-night));
+}
+.fi-sidebar-group-btn .fi-icon {
+    color: color-mix(in oklab, white 70%, var(--brand-night));
+}
+
+/* --- Tablas: filas de 44 px, divisores line-soft, cifras tabulares --- */
+.fi-ta-table {
+    font-variant-numeric: tabular-nums;
+}
+.fi-ta-cell {
+    height: 2.75rem; /* 44 px */
+}
+.fi-ta-header-cell {
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+html:not(.dark) .fi-ta-header-cell {
+    color: var(--ink-muted);
+}
+html:not(.dark) .fi-ta-table > tbody > tr,
+html:not(.dark) .fi-ta-table > tbody > tr > td {
+    border-color: var(--line-soft);
+}
+/* Columnas numéricas: Filament las alinea con ->alignEnd() / ->numeric(); aquí solo se refuerzan las cifras. */
+.fi-ta-cell.fi-align-end,
+.fi-ta-cell.fi-align-right {
+    text-align: end;
+}
+
+/* --- Badges: fondo *-soft con texto del tono (StatusBadge, §3) --- */
+html:not(.dark) .fi-badge.fi-color-success { background-color: var(--success-soft); color: var(--success); }
+html:not(.dark) .fi-badge.fi-color-warning { background-color: var(--warning-soft); color: var(--warning); }
+html:not(.dark) .fi-badge.fi-color-info { background-color: var(--info-soft); color: var(--info); }
+html:not(.dark) .fi-badge.fi-color-danger,
+html:not(.dark) .fi-badge.fi-color-primary { background-color: var(--brand-soft); color: var(--brand); }
+.fi-badge.fi-color {
+    --tw-ring-color: transparent;
+    border-radius: 999px;
+    font-weight: 700;
+}
+
+/* --- Filtros y campos: foco con anillo brand --- */
+html:not(.dark) .fi-input-wrp:focus-within {
+    --tw-ring-color: var(--brand);
+}
+
+/* --- Tarjetas de estadísticas (KpiCard, §3): rótulo 14/600 muted, valor display 26–36 --- */
+html:not(.dark) .fi-wi-stats-overview-stat {
+    background-color: var(--surface);
+    border-radius: 1.25rem;
+    box-shadow: none;
+}
+.fi-wi-stats-overview-stat-label {
+    font-size: 0.875rem;
+    font-weight: 600;
+}
+html:not(.dark) .fi-wi-stats-overview-stat-label {
+    color: var(--ink-muted);
+}
+.fi-wi-stats-overview-stat-value {
+    font-family: 'Baloo 2', ui-sans-serif, system-ui, sans-serif;
+    font-size: clamp(1.625rem, 2.2vw, 2.25rem);
+    font-weight: 700;
+    line-height: 1.1;
+}
+
+/* --- Tarjeta «Tasa BCV» al pie del menú (d-dashboard.html) --- */
+.erp-sidebar-rate {
+    margin: 12px;
+    padding: 14px;
+    border-radius: 16px;
+    background: rgb(255 255 255 / 0.06);
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    font-variant-numeric: tabular-nums;
+}
+.erp-sidebar-rate__label {
+    font-size: 12px;
+    color: color-mix(in oklab, white 80%, var(--brand-night));
+}
+.erp-sidebar-rate__value {
+    font-family: var(--font-display);
+    font-size: 22px;
+    color: var(--accent);
+}
+
+/* --- Subtítulo junto al logo --- */
+.erp-brand-subtitle {
+    margin-inline-start: 12px;
+    font-size: 13px;
+    color: var(--ink-muted);
+}
+
+/* --- Scroll del menú oscuro: el rojo de marca no se ve sobre brand-night, se aclara --- */
+.fi-sidebar-nav {
+    scrollbar-color: color-mix(in oklab, var(--brand) 60%, white) transparent;
+}
+.fi-sidebar-nav::-webkit-scrollbar-thumb {
+    background-color: color-mix(in oklab, var(--brand) 60%, white);
+}

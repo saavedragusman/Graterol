@@ -70,3 +70,55 @@ it('is idempotent and does not duplicate permissions or roles [BR-03]', function
     expect(Permission::count())->toBe(count(PermissionKey::cases()))
         ->and(Role::count())->toBe(3);
 });
+
+it('marks administrador as system role with every permission [S1]', function () {
+    (new RolePermissionSeeder)->run();
+
+    $admin = Role::where('name', 'administrador')->first();
+
+    expect($admin->is_system)->toBeTrue()
+        ->and($admin->permissions()->count())->toBe(count(PermissionKey::cases()))
+        ->and(Role::where('is_system', true)->count())->toBe(1)
+        ->and(Role::where('name', 'cajero')->first()->is_system)->toBeFalse();
+});
+
+it('keeps edits made to cajero permissions on a second run [S1]', function () {
+    (new RolePermissionSeeder)->run();
+
+    $cajero = Role::where('name', 'cajero')->first();
+    $cajero->permissions()->sync([Permission::where('name', 'catalog.manage')->first()->id]);
+
+    (new RolePermissionSeeder)->run();
+
+    expect($cajero->fresh()->permissions()->pluck('name')->all())->toBe(['catalog.manage']);
+});
+
+it('does not recreate a renamed or deleted initial role nor re-attach its permissions [S1]', function () {
+    (new RolePermissionSeeder)->run();
+
+    Role::where('name', 'administrador')->first()->update(['name' => 'dueño']);
+    Role::where('name', 'carnicero')->first()->delete();
+
+    (new RolePermissionSeeder)->run();
+
+    expect(Role::where('is_system', true)->count())->toBe(1)
+        ->and(Role::where('name', 'dueño')->exists())->toBeTrue()
+        ->and(Role::where('name', 'administrador')->exists())->toBeFalse();
+});
+
+it('gives administrador any newly added permission and never detaches [S1]', function () {
+    (new RolePermissionSeeder)->run();
+
+    $admin = Role::where('is_system', true)->first();
+    $admin->permissions()->detach(Permission::where('name', 'sales.void')->first()->id);
+    $extra = Permission::create(['name' => 'future.thing']);
+
+    (new RolePermissionSeeder)->run();
+
+    $names = $admin->fresh()->permissions()->pluck('name')->all();
+
+    expect($names)->toContain('sales.void')
+        ->and(Permission::where('name', 'future.thing')->exists())->toBeTrue()
+        ->and($names)->toContain('future.thing')
+        ->and($extra->exists)->toBeTrue();
+});

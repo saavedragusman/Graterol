@@ -43,15 +43,17 @@ class ReceivePurchaseAction
                 $weightsByLine[$line->id] = $receivedByLine[$line->id]['received_weight_kg'];
             }
 
-            $allocatedFreight = (new AllocateCostsAction)->execute((string) $locked->freight_amount, $weightsByLine);
-            $allocatedOtherCosts = (new AllocateCostsAction)->execute((string) $locked->other_costs_amount, $weightsByLine);
+            $allocatedFreight = (new AllocateCostsAction)->execute(Money::rounded((string) $locked->freight_amount)->toInternalString(), $weightsByLine);
+            $allocatedOtherCosts = (new AllocateCostsAction)->execute(Money::rounded((string) $locked->other_costs_amount)->toInternalString(), $weightsByLine);
 
             foreach ($lines as $line) {
                 $receivedWeight = $receivedByLine[$line->id]['received_weight_kg'];
                 $receivedPieces = $receivedByLine[$line->id]['received_pieces'] ?? null;
                 $expiresOn = $receivedByLine[$line->id]['expires_on'] ?? null;
 
-                $totalCost = Money::fromString((string) $line->line_amount)
+                // Las columnas ya son decimal(18,2) (S6); el redondeo explícito es inocuo y
+                // tolera valores que aún vengan con 4 decimales desde un cast del modelo.
+                $totalCost = Money::rounded((string) $line->line_amount)
                     ->add(Money::fromString($allocatedFreight[$line->id]))
                     ->add(Money::fromString($allocatedOtherCosts[$line->id]));
 

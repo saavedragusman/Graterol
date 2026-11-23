@@ -6,6 +6,8 @@ namespace App\Domain\Inventory\Actions;
 
 use App\Domain\Inventory\Models\Batch;
 use App\Domain\Inventory\Models\InventoryMovement;
+use App\Support\ValueObjects\Money;
+use App\Support\ValueObjects\UnitAmount;
 use BcMath\Number;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
@@ -32,7 +34,10 @@ class CreateLotFromButcheryOutputAction
             throw new InvalidArgumentException('Solo se crea un lote de salida para un corte con peso real mayor a cero (BR-12).');
         }
 
-        $unitCost = (string) (new Number($totalCost))->div(new Number($weightKg), 4);
+        // El total es un monto exacto de 2 decimales; el costo por kg es unitario (4 decimales).
+        $total = Money::fromString($totalCost);
+        $totalCost = $total->toInternalString();
+        $unitCost = UnitAmount::fromTotal($total, $weightKg)->toStorageString();
 
         return DB::transaction(function () use ($sourceId, $productId, $weightKg, $totalCost, $currency, $exchangeRate, $userId, $unitCost) {
             $batch = Batch::create([

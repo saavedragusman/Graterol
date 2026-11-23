@@ -28,8 +28,8 @@ class Batch extends Model
     {
         return [
             'unit_cost' => 'decimal:4',
-            'total_cost' => 'decimal:4',
-            'exchange_rate' => 'decimal:4',
+            'total_cost' => 'decimal:2',
+            'exchange_rate' => 'decimal:2',
             'received_at' => 'datetime',
             'expires_at' => 'datetime',
         ];
