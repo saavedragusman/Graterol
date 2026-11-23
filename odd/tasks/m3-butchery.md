@@ -2,7 +2,7 @@
 
 > Documento ODD del hito M3. Rama: `feat/m3-butchery` (se crea al aprobar este documento).
 > Copia en Engram: `odd/m3-butchery/tasks`.
-> **Estado: implementación completa (2026-11-17). Verificador independiente aprobó con observaciones no bloqueantes. Pendiente solo la confirmación de cierre del humano** (AGENTS §4.3 puerta 2).
+> **Estado: CERRADO el 2026-11-23 por confirmación del humano (AGENTS §4.3 puerta 2).** Implementación completa (2026-11-17); el verificador independiente aprobó con observaciones no bloqueantes, ya atendidas. La revisión 4R (tarea 5.3) se da por cubierta con ese verificador por decisión del humano; la evaluación nativa de riesgo sobre el rango del hito dio `medium` y revisión no debida.
 
 ## 1. Fuente
 
@@ -265,24 +265,24 @@ Policies: `ButcheryTemplatePolicy`, `ButcheryOrderPolicy`. Sin `hasRole()` ni `a
 
 ## 5. Tareas
 
-- [ ] **1.1** Revisar el esquema real de M0/M1/M2 contra los supuestos de §4 (en particular: confirmar que no existe tabla `settings`, confirmar `PermissionKey` y el seeder de permisos, confirmar columnas de `batches`/`products`). — sin dependencias
-- [ ] **2.1** Migración `settings` + fila sembrada del umbral (DEC-06). — depende de 1.1
-- [ ] **2.2** Migraciones `butchery_templates`, `butchery_template_lines`, `butchery_orders`, `butchery_order_lines`. — depende de 1.1 y DEC-02, DEC-03, DEC-07
-- [ ] **2.3** Modelos, casts decimales y factories con datos ficticios. — depende de 2.1, 2.2
-- [ ] **2.4** Permisos `butchery.manage-templates` y `butchery.void`; Policies; test de arquitectura C14 en verde. — depende de 2.3
-- [ ] **3.1** `AllocateButcheryCosts` con tests (reparto proporcional a kg·p, residuo, merma sin costo, caso dorado de DEC-00). — BR-12 · depende de DEC-00, DEC-01
-- [ ] **3.2** `CreateButcheryTemplate` / `UpdateButcheryTemplate` con validación de suma 100 %. — BR-08 · depende de 2.4, DEC-02, DEC-03
-- [ ] **3.3** `OpenButcheryOrder`: congela plantilla, valida saldo del lote, registra `butchery_in`. — BR-09 · depende de 3.2, DEC-04, DEC-07
-- [ ] **3.4** `RegisterButcheryOutputWeight`. — BR-09 · depende de 3.3
-- [ ] **3.5** `CreateLotFromButcheryOutput` en Inventory con movimiento `butchery_out`. — BR-12, C10 · depende de 2.3
-- [ ] **3.6** `CloseButcheryOrder` en una transacción (valida BR-10, costea BR-12, calcula desviación BR-11). — BR-10, BR-11, BR-12 · depende de 3.1, 3.4, 3.5
-- [ ] **3.7** `VoidButcheryOrder` con reversión y auditoría. — C10, C12, C15 · depende de 3.6
-- [ ] **4.1** Filament: `ButcheryTemplateResource` y `ButcheryOrderResource` (solo lectura + anular). — depende de 3.2, 3.7
-- [ ] **4.2** PWA: `ButcheryOrdersIndex` y `ButcheryOrderShow` siguiendo `m-despiece.html`, rutas y FormRequest. — depende de 3.6
-- [ ] **5.1** Test de aceptación del caso dorado (BR-13) end-to-end: abrir orden de 20 kg, registrar las 6 salidas de la tabla de DEC-00, cerrar y verificar costos según la resolución de DEC-00. — depende de 3.6, DEC-00
-- [ ] **5.2** Verificador independiente (C18 — roadmap marca M3 "feature + verificador"). Revisa en particular el costeo (3.1, 3.6) y la concurrencia de DEC-04. — depende de 5.1
-- [ ] **5.3** Revisión 4R (roadmap "+4R") antes de cerrar el hito. — depende de 5.2
-- [ ] **5.4** Evidencia: comandos de AGENTS §2, GGA, hashes y cierre. — depende de todo lo anterior
+- [x] **1.1** Revisar el esquema real de M0/M1/M2 contra los supuestos de §4 (en particular: confirmar que no existe tabla `settings`, confirmar `PermissionKey` y el seeder de permisos, confirmar columnas de `batches`/`products`). — sin dependencias
+- [x] **2.1** Migración `settings` + fila sembrada del umbral (DEC-06). — depende de 1.1
+- [x] **2.2** Migraciones `butchery_templates`, `butchery_template_lines`, `butchery_orders`, `butchery_order_lines`. — depende de 1.1 y DEC-02, DEC-03, DEC-07
+- [x] **2.3** Modelos, casts decimales y factories con datos ficticios. — depende de 2.1, 2.2
+- [x] **2.4** Permisos `butchery.manage-templates` y `butchery.void`; Policies; test de arquitectura C14 en verde. — depende de 2.3
+- [x] **3.1** `AllocateButcheryCosts` con tests (reparto proporcional a kg·p, residuo, merma sin costo, caso dorado de DEC-00). — BR-12 · depende de DEC-00, DEC-01
+- [x] **3.2** `CreateButcheryTemplate` / `UpdateButcheryTemplate` con validación de suma 100 %. — BR-08 · depende de 2.4, DEC-02, DEC-03
+- [x] **3.3** `OpenButcheryOrder`: congela plantilla, valida saldo del lote, registra `butchery_in`. — BR-09 · depende de 3.2, DEC-04, DEC-07
+- [x] **3.4** `RegisterButcheryOutputWeight`. — BR-09 · depende de 3.3
+- [x] **3.5** `CreateLotFromButcheryOutput` en Inventory con movimiento `butchery_out`. — BR-12, C10 · depende de 2.3
+- [x] **3.6** `CloseButcheryOrder` en una transacción (valida BR-10, costea BR-12, calcula desviación BR-11). — BR-10, BR-11, BR-12 · depende de 3.1, 3.4, 3.5
+- [x] **3.7** `VoidButcheryOrder` con reversión y auditoría. — C10, C12, C15 · depende de 3.6
+- [x] **4.1** Filament: `ButcheryTemplateResource` y `ButcheryOrderResource` (solo lectura + anular). — depende de 3.2, 3.7
+- [x] **4.2** PWA: `ButcheryOrdersIndex` y `ButcheryOrderShow` siguiendo `m-despiece.html`, rutas y FormRequest. — depende de 3.6
+- [x] **5.1** Test de aceptación del caso dorado (BR-13) end-to-end: abrir orden de 20 kg, registrar las 6 salidas de la tabla de DEC-00, cerrar y verificar costos según la resolución de DEC-00. — depende de 3.6, DEC-00
+- [x] **5.2** Verificador independiente (C18 — roadmap marca M3 "feature + verificador"). Revisa en particular el costeo (3.1, 3.6) y la concurrencia de DEC-04. — depende de 5.1
+- [x] **5.3** (cubierta por el verificador, decisión del humano 2026-11-23) Revisión 4R (roadmap "+4R") antes de cerrar el hito. — depende de 5.2
+- [x] **5.4** Evidencia: comandos de AGENTS §2, GGA, hashes y cierre. — depende de todo lo anterior
 
 ## 6. Evidencia
 
