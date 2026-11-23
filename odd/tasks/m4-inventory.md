@@ -120,7 +120,7 @@ Opciones (2):
 Recomendación técnica: (1) A; (2) A (lo más conservador y reversible, AGENTS §9). Si la persona que pesa no es quien teclea, (1) B se agrega luego con una migración nueva.
 ```
 
-Resuelta: (1) B; (2) A, 2026-11-23 ((1) cambia la recomendación original). El responsable es una persona elegible, distinta de quien registra: por ejemplo, el administrador registra y el carnicero pesa. `user_id` del movimiento sigue siendo quien registra y se agrega `responsible_user_id` (quien pesó o responde por la merma). Se elige entre los usuarios activos, con el usuario conectado preseleccionado; es obligatorio (BR-15). (2) Los permisos `inventory.*` son solo del administrador, que asigna al carnicero lo que quiera desde la gestión de roles.
+Resuelta: (1) B; (2) A, 2026-11-23 ((1) cambia la recomendación original). El responsable es una persona elegible, distinta de quien registra: por ejemplo, el administrador registra y el carnicero pesa. `user_id` del movimiento sigue siendo quien registra y se agrega `responsible_user_id` (quien pesó o responde por la merma). Se elige entre los usuarios activos, con el usuario conectado preseleccionado; es obligatorio (BR-15). El responsable aplica también al conteo (BR-16, decisión del humano 2026-11-23): cada línea pesada lleva su responsable. (2) Los permisos `inventory.*` son solo del administrador, que asigna al carnicero lo que quiera desde la gestión de roles.
 
 ```text
 [DEC-PENDIENTE] M4/BR-15, BR-16 — DEC-06 ¿Dónde se registran las mermas y los conteos?
@@ -245,7 +245,8 @@ Se agrega una columna nullable a `inventory_movements` (DEC-05 1 B); `batches` n
 | counted_weight_kg | numeric(12,3), nullable | Peso contado; puede ser 0 |
 | difference_kg | numeric(12,3), nullable | `counted − system`, calculado al pesar |
 | adjustment_movement_id | FK `inventory_movements`, nullable | Se llena al confirmar si la diferencia ≠ 0 |
-| counted_by, counted_at | FK users, timestamptz | |
+| counted_by, counted_at | FK users, timestamptz | `counted_by` es quien teclea el peso |
+| responsible_user_id | FK users, nullable | Quien pesó (puede ser otra persona que `counted_by`); obligatorio al registrar el peso (DEC-05 1 B) |
 | timestamps | | |
 
 4. **Migración de datos (solo si DEC-10 = B):** código `L-####` para lotes existentes. Riesgo alto (C18).
@@ -268,8 +269,8 @@ Signos: entradas positivas, salidas y mermas negativas; `count_adjustment` con e
 | `ConsumeStockFefoAction` | Recibe producto, kg, tipo de movimiento, referencia y usuario. En una transacción: bloquea los lotes del producto con saldo > 0 y no vencidos (DEC-03 a B: los vencidos se saltan) y los ordena por vencimiento, luego `received_at`, luego id (DEC-02); descuenta lote por lote costeando cada salida con la regla de costo y valor del lote (§3: la salida que lo deja en 0 toma el residuo); devuelve las asignaciones (lote, kg, costo) y el costo total. Si falta stock, aplica `inventory.allow_sale_without_stock` y DEC-03: bloquear → rechaza sin escribir nada; permitir → el faltante va según DEC-03. | BR-14, BR-17 |
 | `RegisterShrinkageAction` | Merma tipificada sobre un lote: tipo, kg > 0, motivo obligatorio, responsable obligatorio (usuario activo, puede ser distinto de quien registra; se guarda en `responsible_user_id`); rechaza si supera el saldo; escribe el movimiento y la auditoría. Permiso `inventory.register-shrinkage`. | BR-15, C15 |
 | `OpenInventoryCountAction` | Crea la sesión `draft` con los lotes elegidos. | BR-16 |
-| `RegisterCountedWeightAction` | Guarda el peso contado de una línea y el saldo del sistema en ese momento (bloqueo del lote). Solo en `draft`. | BR-16 |
-| `ConfirmInventoryCountAction` | Transacción: exige todas las líneas pesadas; por cada diferencia ≠ 0 escribe un `count_adjustment` al costo del lote y una fila de `audit_logs`; pasa a `confirmed`. Rechaza una sesión no `draft`. | BR-15, BR-16, C15 |
+| `RegisterCountedWeightAction` | Guarda el peso contado de una línea, su responsable (obligatorio, usuario activo) y el saldo del sistema en ese momento (bloqueo del lote). Solo en `draft`. | BR-16 |
+| `ConfirmInventoryCountAction` | Transacción: exige todas las líneas pesadas; por cada diferencia ≠ 0 escribe un `count_adjustment` con el `responsible_user_id` de la línea (`user_id` = quien confirma) y una fila de `audit_logs`; el negativo se costea con la regla de costo y valor del lote (§3) y el positivo entra a costo 0,00 (DEC-11 B); pasa a `confirmed`. Rechaza una sesión no `draft`. | BR-15, BR-16, C15 |
 | `CancelInventoryCountAction` | `draft` → `cancelled`, sin movimientos. | C12 |
 
 `CreateLotFromPurchaseLineAction` y `CreateLotFromButcheryOutputAction` no cambian salvo DEC-10 (código de lote) y el uso del enum de tipos.
@@ -359,7 +360,7 @@ Cada tarea cita sus BR y dependencias. Las pruebas se escriben primero (rojo) y 
 - [ ] **3.2** `ConsumeStockFefoAction`: orden FEFO, costo por lote, reparto entre lotes, lotes sin fecha y vencidos, configuración de BR-17 y faltante, concurrencia. — BR-14, BR-17 · depende de 3.1, DEC-02, DEC-03
 - [ ] **3.3** `RegisterShrinkageAction` con tipos, motivo obligatorio, saldo no negativo y auditoría. — BR-15, C15 · depende de 2.4, 3.1, DEC-04, DEC-05
 - [ ] **3.4** `OpenInventoryCountAction`, `RegisterCountedWeightAction`, `CancelInventoryCountAction`. — BR-16 · depende de 2.4, 3.1, DEC-07
-- [ ] **3.5** `ConfirmInventoryCountAction`: un ajuste por diferencia ≠ 0 al costo del lote, auditoría, sesión confirmada inmutable. — BR-15, BR-16, C15 · depende de 3.3, 3.4
+- [ ] **3.5** `ConfirmInventoryCountAction`: un ajuste por diferencia ≠ 0 (negativo con la regla de costo del lote, positivo a 0,00 por DEC-11 B) con el responsable de cada línea, auditoría, sesión confirmada inmutable. — BR-15, BR-16, C15 · depende de 3.3, 3.4
 - [ ] **3.6** Ajustar el mensaje de `VoidButcheryOrderAction` (DEC-09 A) con un test que fije el texto. — C10 · depende de 3.3, 3.5, DEC-09
 - [ ] **3.7** Si DEC-10 = B: código de lote legible en ambas Actions y migración de datos con prueba de integridad (cada movimiento y orden conserva su lote). — BR-14 · depende de 1.1, DEC-10
 - [ ] **4.1** Estructura de la pantalla de inventario: tabla de lotes, filtros, KPI (DEC-08), alertas de vencimiento (DEC-09) y ajuste pendiente (BR-17) siguiendo §4.5.1. — BR-14, BR-17, C10 · depende de 3.1, 3.2, DEC-01, DEC-08, DEC-09
@@ -381,7 +382,7 @@ Cada tarea cita sus BR y dependencias. Las pruebas se escriben primero (rojo) y 
 |---|---|---|
 | BR-14 | `tests/Feature/Inventory/…` (saldo = Σ movimientos; FEFO consume el que vence antes y toma su costo; sin fecha; empate; vencido) | |
 | BR-15 | `tests/Feature/Inventory/…` (cada tipo; motivo obligatorio; no supera el saldo; auditoría; responsable distinto de quien registra queda guardado en `responsible_user_id` y `user_id` conserva a quien registró; responsable inexistente o inactivo se rechaza) | |
-| BR-16 | `tests/Feature/Inventory/…` (diferencia positiva y negativa; sesión confirmada no se edita; sin diferencia = sin movimiento) | |
+| BR-16 | `tests/Feature/Inventory/…` (diferencia positiva y negativa; sesión confirmada no se edita; sin diferencia = sin movimiento; el responsable de cada línea queda en el movimiento y `user_id` es quien confirma; sin responsable no se puede registrar el peso) | |
 | BR-17 | `tests/Feature/Inventory/…` (permitir con alerta de ajuste pendiente; bloquear sin escribir nada) | |
 | C9 | `tests/Feature/Inventory/…` (Σ costo de las salidas = `total_cost`; el lote vaciado vale 0,00; sin float) | |
 | C10 | `InventoryMovementsImmutableTest` (heredado) más corrección por movimiento inverso | |
