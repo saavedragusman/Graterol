@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { Link } from '@inertiajs/vue3';
+import AppHeader from '../../components/AppHeader.vue';
+import ListRow from '../../components/ListRow.vue';
 
 interface Supplier {
     name: string;
@@ -16,29 +17,25 @@ defineProps<{ purchases: Purchase[] }>();
 </script>
 
 <template>
-    <div class="min-h-screen bg-canvas p-4">
-        <header class="mb-4">
-            <h1 class="text-lg font-bold text-ink">Recepciones pendientes</h1>
-            <p class="text-sm text-ink-muted">Compras listas para pesar y recibir.</p>
-        </header>
+    <div class="flex min-h-screen flex-col bg-canvas text-ink">
+        <AppHeader title="Recepciones pendientes" subtitle="Compras listas para pesar y recibir." />
 
-        <p v-if="purchases.length === 0" class="rounded-md bg-surface p-6 text-center text-sm text-ink-muted">
-            No hay compras pendientes de recepción.
-        </p>
+        <main class="mx-auto w-full max-w-xl flex-1 px-4 pb-8 pt-3.5">
+            <p v-if="purchases.length === 0" class="rounded-[20px] bg-surface p-6 text-center text-[14px] text-ink-muted">
+                No hay compras pendientes de recepción.
+            </p>
 
-        <ul v-else class="space-y-2">
-            <li v-for="purchase in purchases" :key="purchase.id">
-                <Link
-                    :href="`/purchasing/receipts/${purchase.id}`"
-                    class="flex min-h-[56px] items-center justify-between rounded-md border border-line bg-surface px-4 py-3"
-                >
-                    <span>
-                        <span class="block text-[15px] font-bold text-ink">{{ purchase.supplier.name }}</span>
-                        <span class="block text-[13px] text-ink-muted">Factura {{ purchase.supplier_invoice_number }} · {{ purchase.lines_count }} línea(s)</span>
-                    </span>
-                    <span class="text-ink-muted">›</span>
-                </Link>
-            </li>
-        </ul>
+            <ul v-else class="rounded-[20px] bg-surface py-1">
+                <li v-for="purchase in purchases" :key="purchase.id" class="border-b border-line-soft last:border-b-0">
+                    <ListRow
+                        :href="`/purchasing/receipts/${purchase.id}`"
+                        icon="truck"
+                        tone="info"
+                        :title="purchase.supplier.name"
+                        :subtitle="`Factura ${purchase.supplier_invoice_number} · ${purchase.lines_count} línea(s)`"
+                    />
+                </li>
+            </ul>
+        </main>
     </div>
 </template>

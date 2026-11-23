@@ -132,9 +132,11 @@ class PurchaseResource extends Resource
                 TextEntry::make('currency')->label('Moneda'),
                 TextEntry::make('exchange_rate')->label('Tasa BCV'),
                 TextEntry::make('freight_amount')->label('Flete')
-                    ->formatStateUsing(fn (?string $state, Purchase $record): string => Money::display($state, $record->currency)),
+                    ->formatStateUsing(fn (?string $state, Purchase $record): string => self::dual($state, $record)['main'] ?? '—')
+                    ->helperText(fn (?string $state, Purchase $record): ?string => self::dual($state, $record)['secondary']),
                 TextEntry::make('other_costs_amount')->label('Otros costos')
-                    ->formatStateUsing(fn (?string $state, Purchase $record): string => Money::display($state, $record->currency)),
+                    ->formatStateUsing(fn (?string $state, Purchase $record): string => self::dual($state, $record)['main'] ?? '—')
+                    ->helperText(fn (?string $state, Purchase $record): ?string => self::dual($state, $record)['secondary']),
                 TextEntry::make('other_costs_note')->label('Nota de otros costos')->placeholder('—'),
                 TextEntry::make('void_reason')->label('Motivo de anulación')
                     ->visible(fn (Purchase $record): bool => $record->status === 'voided'),
@@ -152,17 +154,43 @@ class PurchaseResource extends Resource
                             : (string) $state)
                         ->color(fn (?string $state): ?string => $state !== null && bccomp($state, '0', 3) !== 0 ? 'warning' : null),
                     TextEntry::make('line_amount')->label('Monto de la línea')
-                        ->formatStateUsing(fn (?string $state, PurchaseLine $record): string => Money::display($state, $record->purchase->currency)),
+                        ->formatStateUsing(fn (?string $state, PurchaseLine $record): string => self::dual($state, $record->purchase)['main'] ?? '—')
+                        ->helperText(fn (?string $state, PurchaseLine $record): ?string => self::dual($state, $record->purchase)['secondary']),
                     // BR-07: asignaciones y costo del lote, calculados en el servidor.
                     TextEntry::make('allocated_freight')->label('Flete asignado')->placeholder('—')
-                        ->formatStateUsing(fn (?string $state, PurchaseLine $record): string => Money::display($state, $record->purchase->currency)),
+                        ->formatStateUsing(fn (?string $state, PurchaseLine $record): string => self::dual($state, $record->purchase)['main'] ?? '—')
+                        ->helperText(fn (?string $state, PurchaseLine $record): ?string => self::dual($state, $record->purchase)['secondary']),
                     TextEntry::make('allocated_other_costs')->label('Otros costos asignados')->placeholder('—')
-                        ->formatStateUsing(fn (?string $state, PurchaseLine $record): string => Money::display($state, $record->purchase->currency)),
+                        ->formatStateUsing(fn (?string $state, PurchaseLine $record): string => self::dual($state, $record->purchase)['main'] ?? '—')
+                        ->helperText(fn (?string $state, PurchaseLine $record): ?string => self::dual($state, $record->purchase)['secondary']),
                     TextEntry::make('batch.unit_cost')->label('Costo por kg del lote')->placeholder('—')
-                        ->formatStateUsing(fn (?string $state, PurchaseLine $record): string => Money::display($state, (string) $record->batch?->currency)),
+                        ->formatStateUsing(fn (?string $state, PurchaseLine $record): string => self::batchDual($state, $record)['main'] ?? '—')
+                        ->helperText(fn (?string $state, PurchaseLine $record): ?string => self::batchDual($state, $record)['secondary']),
                 ]),
             ]),
         ]);
+    }
+
+    /**
+     * Doble monto con la tasa CONGELADA de la compra (C13, BR-02): $ arriba, Bs debajo.
+     *
+     * @return array{main: ?string, secondary: ?string}
+     */
+    private static function dual(?string $amount, Purchase $purchase): array
+    {
+        return Money::dualLines($amount, $purchase->currency, (string) $purchase->exchange_rate);
+    }
+
+    /**
+     * Costo por kg del lote: usa la tasa congelada en el propio lote.
+     *
+     * @return array{main: ?string, secondary: ?string}
+     */
+    private static function batchDual(?string $amount, PurchaseLine $line): array
+    {
+        $batch = $line->batch;
+
+        return Money::dualLines($amount, (string) $batch?->currency, $batch?->exchange_rate === null ? null : (string) $batch->exchange_rate);
     }
 
     public static function table(Table $table): Table

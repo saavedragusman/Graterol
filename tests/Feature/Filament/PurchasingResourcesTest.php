@@ -198,6 +198,16 @@ it('shows invoiced, received weight, difference and batch cost on a received pur
         ->assertSee('Costo por kg del lote');
 });
 
+it('shows purchase amounts in USD with the Bs line using the purchase frozen rate [C13][BR-02]', function () {
+    fpUser('administrador');
+    $purchase = fpReceived();
+
+    // Factura en Bs (por defecto) con tasa congelada 85,50: línea de Bs 110,00 = $ 1,29.
+    Livewire::test(ViewPurchase::class, ['record' => $purchase->getKey()])
+        ->assertSee('$ 1,29')
+        ->assertSee('Bs 110,00');
+});
+
 it('voids a received purchase only with a reason [BR-03, C12]', function () {
     $admin = fpUser('administrador');
     $purchase = fpReceived();

@@ -6,6 +6,7 @@ namespace App\Domain\Butchery\Models;
 
 use App\Domain\Inventory\Models\Batch;
 use App\Models\User;
+use App\Support\ValueObjects\Money;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -80,5 +81,15 @@ class ButcheryOrder extends Model
     public function lines(): HasMany
     {
         return $this->hasMany(ButcheryOrderLine::class, 'order_id');
+    }
+
+    /**
+     * Costo de la entrada de ESTA orden: costo unitario del lote × kg que toma
+     * la orden (DEC-07). Una orden puede tomar solo parte del lote, así que no
+     * es el costo total del lote. Lo usan el cierre (BR-12) y la pantalla.
+     */
+    public function inputCost(): Money
+    {
+        return Money::fromString((string) $this->batch->unit_cost)->mul((string) $this->input_weight_kg);
     }
 }

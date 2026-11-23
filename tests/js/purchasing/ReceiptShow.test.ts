@@ -7,6 +7,7 @@ const post = vi.fn();
 
 vi.mock('@inertiajs/vue3', () => ({
     router: { post: (...args: unknown[]) => post(...args) },
+    usePage: () => ({ props: { errors: {} } }),
     Link: defineComponent({
         props: { href: { type: String, required: true } },
         setup: (props, { slots }) => () => h('a', { href: props.href }, slots.default?.()),
@@ -67,6 +68,20 @@ describe('ReceiptShow [BR-06]', () => {
 
         expect(post).toHaveBeenCalledTimes(1);
         expect(post.mock.calls[0][0]).toBe('/purchasing/receipts/7/confirm');
+        expect(post.mock.calls[0][1]).toEqual({
+            lines: [{ id: 11, received_weight_kg: '98.450', received_pieces: 2 }],
+        });
+    });
+});
+
+describe('ReceiptShow: coma decimal', () => {
+    it('normaliza "98,450" a "98.450" antes de enviar', async () => {
+        post.mockClear();
+        const { wrapper } = mountScreen();
+
+        await wrapper.get('input[inputmode="decimal"]').setValue('98,450');
+        await wrapper.get('button').trigger('click');
+
         expect(post.mock.calls[0][1]).toEqual({
             lines: [{ id: 11, received_weight_kg: '98.450', received_pieces: 2 }],
         });

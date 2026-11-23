@@ -1,6 +1,12 @@
 <script setup lang="ts">
-import { reactive } from 'vue';
-import { router, Link } from '@inertiajs/vue3';
+import { computed, reactive, ref } from 'vue';
+import { router, usePage } from '@inertiajs/vue3';
+import AppButton from '../../components/AppButton.vue';
+import AppHeader from '../../components/AppHeader.vue';
+import AppInput from '../../components/AppInput.vue';
+import ListRow from '../../components/ListRow.vue';
+import StatusBadge from '../../components/StatusBadge.vue';
+import { formatKg, normalizeDecimal } from '../../lib/format';
 
 interface Product {
     name: string;
@@ -33,8 +39,12 @@ interface AvailableBatch {
 
 defineProps<{ openOrders: OpenOrder[]; availableBatches: AvailableBatch[] }>();
 
+const page = usePage<{ errors?: Record<string, string> }>();
+const errors = computed(() => page.props.errors ?? {});
+
 const inputWeight = reactive<Record<number, string>>({});
 const submitting = reactive<Record<number, boolean>>({});
+const lastAttemptedBatch = ref<number | null>(null);
 
 function openOrder(batchId: number): void {
     const weight = inputWeight[batchId];
@@ -43,79 +53,73 @@ function openOrder(batchId: number): void {
     }
 
     submitting[batchId] = true;
+    lastAttemptedBatch.value = batchId;
 
     router.post(
         '/butchery/orders',
-        { batch_id: batchId, input_weight_kg: weight },
+        { batch_id: batchId, input_weight_kg: normalizeDecimal(weight) },
         { onFinish: () => { submitting[batchId] = false; } },
     );
+}
+
+function batchError(batchId: number): string | undefined {
+    return lastAttemptedBatch.value === batchId ? errors.value.batch_id : undefined;
 }
 </script>
 
 <template>
-    <div class="flex min-h-screen flex-col bg-canvas">
-        <header class="border-b border-line bg-surface px-4 py-4">
-            <h1 class="text-[22px] font-bold text-ink">Despiece</h1>
-        </header>
+    <div class="flex min-h-screen flex-col bg-canvas text-ink">
+        <AppHeader variant="floor" title="Despiece" subtitle="Órdenes y lotes disponibles" />
 
-        <main class="flex-1 space-y-4 overflow-y-auto p-4 pb-8">
-            <section v-if="openOrders.length > 0">
-                <h2 class="mb-2 text-[15px] font-bold text-ink">Órdenes en proceso</h2>
-                <ul class="space-y-2">
-                    <li
-                        v-for="order in openOrders"
-                        :key="order.id"
-                        class="rounded-md border border-line bg-surface p-4"
-                    >
-                        <Link :href="`/butchery/orders/${order.id}`" class="flex items-center justify-between">
-                            <span>
-                                <span class="block text-[15px] font-bold text-ink">{{ order.code }}</span>
-                                <span class="block text-[13px] text-ink-muted">
-                                    Lote {{ order.batch.code }} · {{ order.batch.product.name }}
-                                </span>
-                            </span>
-                            <span class="rounded-full bg-accent-soft px-3 py-1 text-[12px] font-bold text-on-accent-soft">
-                                En proceso
-                            </span>
-                        </Link>
+        <main class="mx-auto flex w-full max-w-xl flex-1 flex-col gap-4 px-4 pb-8 pt-3.5">
+            <section v-if="openOrders.length > 0" class="flex flex-col gap-2">
+                <h2 class="mx-0.5 text-[20px] font-bold">Órdenes en proceso</h2>
+                <ul class="rounded-[20px] bg-surface py-1">
+                    <li v-for="order in openOrders" :key="order.id" class="border-b border-line-soft last:border-b-0">
+                        <ListRow
+                            :href="`/butchery/orders/${order.id}`"
+                            icon="scale"
+                            tone="accent"
+                            :title="order.code"
+                            :subtitle="`Lote ${order.batch.code} · ${order.batch.product.name}`"
+                        >
+                            <StatusBadge tone="accent">En proceso</StatusBadge>
+                        </ListRow>
                     </li>
                 </ul>
             </section>
 
-            <section>
-                <h2 class="mb-2 text-[15px] font-bold text-ink">Lotes disponibles</h2>
-                <p v-if="availableBatches.length === 0" class="text-[13px] text-ink-muted">
+            <section class="flex flex-col gap-2">
+                <h2 class="mx-0.5 text-[20px] font-bold">Lotes disponibles</h2>
+                <p v-if="availableBatches.length === 0" class="rounded-[20px] bg-surface p-5 text-center text-[14px] text-ink-muted">
                     No hay lotes de materia prima con saldo disponible.
                 </p>
-                <ul class="space-y-2">
-                    <li
-                        v-for="batch in availableBatches"
-                        :key="batch.id"
-                        class="rounded-md border border-line bg-surface p-4"
-                    >
-                        <div class="mb-2 flex items-center justify-between">
-                            <span class="text-[15px] font-bold text-ink">{{ batch.product_name }}</span>
-                            <span class="text-[13px] text-ink-muted">Lote {{ batch.code }}</span>
-                        </div>
-                        <p class="mb-2 text-[13px] text-ink-muted">
-                            Disponible: {{ batch.available_weight_kg }} kg
-                        </p>
-                        <div class="flex gap-3">
-                            <input
+                <ul class="flex flex-col gap-3">
+                    <li v-for="batch in availableBatches" :key="batch.id" class="rounded-[20px] bg-surface py-2">
+                        <ListRow
+                            icon="package"
+                            tone="brand"
+                            :title="batch.product_name"
+                            :subtitle="`Lote ${batch.code} · Disponible ${formatKg(batch.available_weight_kg)} kg`"
+                        />
+                        <div class="flex items-end gap-3 px-4 pb-2 pt-1">
+                            <AppInput
                                 v-model="inputWeight[batch.id]"
-                                type="text"
+                                class="flex-1"
+                                label="Kg de entrada"
+                                numeric
                                 inputmode="decimal"
-                                placeholder="Kg de entrada"
-                                class="flex-1 rounded-md border border-line px-3 py-2 text-[16px] text-ink focus:border-2 focus:border-brand focus:outline-none"
-                            >
-                            <button
-                                type="button"
+                                placeholder="0,000"
+                                :error="batchError(batch.id)"
+                            />
+                            <AppButton
+                                variant="primary"
                                 :disabled="!inputWeight[batch.id] || submitting[batch.id]"
-                                class="rounded-md bg-accent px-4 font-bold text-on-accent disabled:bg-canvas disabled:text-ink-muted"
+                                class="mb-px"
                                 @click="openOrder(batch.id)"
                             >
                                 Abrir orden
-                            </button>
+                            </AppButton>
                         </div>
                     </li>
                 </ul>

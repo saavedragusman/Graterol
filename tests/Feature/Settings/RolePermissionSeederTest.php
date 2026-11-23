@@ -28,7 +28,8 @@ it('creates administrador with every permission [BR-03]', function () {
         ->and($user->hasPermission('purchasing.manage-suppliers'))->toBeTrue()
         ->and($user->hasPermission('butchery.process'))->toBeTrue()
         ->and($user->hasPermission('butchery.manage-templates'))->toBeTrue()
-        ->and($user->hasPermission('butchery.void'))->toBeTrue();
+        ->and($user->hasPermission('butchery.void'))->toBeTrue()
+        ->and($user->hasPermission('catalog.manage'))->toBeTrue();
 });
 
 it('restricts cajero to pos and its own close, never void or receiving [BR-03]', function () {
@@ -65,6 +66,6 @@ it('is idempotent and does not duplicate permissions or roles [BR-03]', function
     (new RolePermissionSeeder)->run();
     (new RolePermissionSeeder)->run();
 
-    expect(Permission::count())->toBe(12)
+    expect(Permission::count())->toBe(13)
         ->and(Role::count())->toBe(3);
 });
