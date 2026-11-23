@@ -7,6 +7,7 @@ namespace App\Domain\Butchery\Models;
 use App\Domain\Inventory\Models\Batch;
 use App\Models\User;
 use App\Support\ValueObjects\Money;
+use App\Support\ValueObjects\UnitAmount;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -90,6 +91,7 @@ class ButcheryOrder extends Model
      */
     public function inputCost(): Money
     {
-        return Money::fromString((string) $this->batch->unit_cost)->mul((string) $this->input_weight_kg);
+        // Costo por kg (4 decimales) × kg de entrada: el monto se crea aquí, redondeado una sola vez al centavo.
+        return UnitAmount::fromString((string) $this->batch->unit_cost)->times((string) $this->input_weight_kg);
     }
 }

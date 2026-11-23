@@ -12,6 +12,7 @@ use App\Domain\Settings\CompanySettings;
 use App\Domain\Settings\Models\Role;
 use App\Models\User;
 use App\Support\ValueObjects\Money;
+use App\Support\ValueObjects\UnitAmount;
 use Database\Seeders\RolePermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
@@ -198,7 +199,7 @@ it('shows the cost of the order input, not the whole lot cost, on a partial orde
 
     // Misma cuenta que CloseButcheryOrderAction: unit_cost × kg de la orden.
     expect($expected)->toBe(
-        Money::fromString((string) $batch->fresh()->unit_cost)->mul('20.000')->toInternalString()
+        UnitAmount::fromString((string) $batch->fresh()->unit_cost)->times('20.000')->toInternalString()
     )->and(Money::fromString($expected)->toDisplayString())->toBe('25,51');
 
     $this->actingAs($user)

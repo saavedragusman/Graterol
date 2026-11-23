@@ -92,12 +92,12 @@ it('creates a purchase with its lines through CreatePurchaseAction [DEC-01]', fu
 
     $purchase = Purchase::where('supplier_invoice_number', 'F-777')->firstOrFail();
     expect($purchase->status)->toBe('draft')
-        ->and($purchase->exchange_rate)->toBe('85.5000')
-        ->and($purchase->freight_amount)->toBe('20.0000')
+        ->and($purchase->exchange_rate)->toBe('85.50')
+        ->and($purchase->freight_amount)->toBe('20.00')
         ->and($purchase->created_by)->not->toBeNull()
         ->and($purchase->lines)->toHaveCount(1)
         ->and($purchase->lines->first()->invoiced_weight_kg)->toBe('50.500')
-        ->and($purchase->lines->first()->line_amount)->toBe('300.2500')
+        ->and($purchase->lines->first()->line_amount)->toBe('300.25')
         ->and($purchase->lines->first()->invoiced_pieces)->toBe(4);
 });
 
@@ -121,7 +121,7 @@ it('guarda la moneda elegida y la tasa BCV vigente; por defecto USD [C13]', func
 
     expect(Purchase::where('supplier_invoice_number', 'F-USD')->firstOrFail()->currency)->toBe('USD')
         ->and(Purchase::where('supplier_invoice_number', 'F-VES')->firstOrFail()->currency)->toBe('VES')
-        ->and(Purchase::where('supplier_invoice_number', 'F-VES')->firstOrFail()->exchange_rate)->toBe('85.5000');
+        ->and(Purchase::where('supplier_invoice_number', 'F-VES')->firstOrFail()->exchange_rate)->toBe('85.50');
 });
 
 it('does not offer derived products and rejects them on submit [DEC-05]', function () {

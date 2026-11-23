@@ -6,7 +6,8 @@ namespace App\Domain\Inventory\Actions;
 
 use App\Domain\Inventory\Models\Batch;
 use App\Domain\Inventory\Models\InventoryMovement;
-use BcMath\Number;
+use App\Support\ValueObjects\Money;
+use App\Support\ValueObjects\UnitAmount;
 use Carbon\CarbonInterface;
 use Illuminate\Support\Facades\DB;
 
@@ -30,7 +31,10 @@ class CreateLotFromPurchaseLineAction
         int $userId,
         ?CarbonInterface $expiresOn = null,
     ): Batch {
-        $unitCost = (string) (new Number($totalCost))->div(new Number($receivedWeightKg), 4);
+        // El total es un monto exacto de 2 decimales; el costo por kg es unitario (4 decimales).
+        $total = Money::fromString($totalCost);
+        $totalCost = $total->toInternalString();
+        $unitCost = UnitAmount::fromTotal($total, $receivedWeightKg)->toStorageString();
 
         return DB::transaction(function () use ($sourceType, $sourceId, $productId, $pieces, $receivedWeightKg, $totalCost, $currency, $exchangeRate, $userId, $expiresOn, $unitCost) {
             $batch = Batch::create([

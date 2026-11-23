@@ -72,7 +72,7 @@ it('registers a rate from the modal and audits it [S4][S5]', function () {
         ->assertNotified();
 
     $rate = ExchangeRate::firstOrFail();
-    expect($rate->rate)->toBe('918.7700')
+    expect($rate->rate)->toBe('918.77')
         ->and($rate->source)->toBe('manual')
         ->and($rate->registered_by)->toBe($admin->id)
         ->and(AuditLog::where('action', 'exchange_rate.registered')->count())->toBe(1);

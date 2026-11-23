@@ -121,19 +121,19 @@ it('reproduces the golden case exactly: 20 kg of chicken at US$ 56,00 [BR-13]', 
 
     expect($closed->status)->toBe('closed')
         ->and($closed->actual_shrinkage_kg)->toBe('0.600')
-        ->and($byName('Filete de pechuga')->allocated_cost)->toBe('24.5738')
-        ->and($byName('Muslo')->allocated_cost)->toBe('19.1550')
-        ->and($byName('Alas')->allocated_cost)->toBe('5.5134')
-        ->and($byName('Carapacho')->allocated_cost)->toBe('4.1586')
-        ->and($byName('Hígado y molleja')->allocated_cost)->toBe('2.3629')
-        ->and($byName('Piel y grasa')->allocated_cost)->toBe('0.2363');
+        ->and($byName('Filete de pechuga')->allocated_cost)->toBe('24.57')
+        ->and($byName('Muslo')->allocated_cost)->toBe('19.16')
+        ->and($byName('Alas')->allocated_cost)->toBe('5.51')
+        ->and($byName('Carapacho')->allocated_cost)->toBe('4.16')
+        ->and($byName('Hígado y molleja')->allocated_cost)->toBe('2.36')
+        ->and($byName('Piel y grasa')->allocated_cost)->toBe('0.24');
 
     $sum = array_reduce(
         $closed->lines->all(),
-        fn (string $carry, $line) => bcadd($carry, (string) $line->allocated_cost, 4),
-        '0.0000',
+        fn (string $carry, $line) => bcadd($carry, (string) $line->allocated_cost, 2),
+        '0.00',
     );
-    expect($sum)->toBe('56.0000');
+    expect($sum)->toBe('56.00');
 });
 
 it('displays the golden case costs exactly as BR-13 states them, in two decimals [BR-13]', function () {
@@ -282,7 +282,7 @@ it('allocates cost proportional to the input weight of this order, not the whole
     $closed = (new CloseButcheryOrderAction)->execute($order->id, $user->id);
 
     // unit_cost del lote = 56/20 = 2.8000; costo de esta orden = 2.80 * 10 = 28.0000, no 56.0000.
-    expect($closed->lines->first()->allocated_cost)->toBe('28.0000');
+    expect($closed->lines->first()->allocated_cost)->toBe('28.00');
 });
 
 it('rejects closing an order that is not open [C12]', function () {

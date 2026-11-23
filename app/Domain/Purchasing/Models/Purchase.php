@@ -37,9 +37,9 @@ class Purchase extends Model
     {
         return [
             'supplier_invoice_date' => 'date',
-            'exchange_rate' => 'decimal:4',
-            'freight_amount' => 'decimal:4',
-            'other_costs_amount' => 'decimal:4',
+            'exchange_rate' => 'decimal:2',
+            'freight_amount' => 'decimal:2',
+            'other_costs_amount' => 'decimal:2',
             'received_at' => 'datetime',
             'voided_at' => 'datetime',
         ];
