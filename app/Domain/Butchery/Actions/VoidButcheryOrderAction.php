@@ -33,7 +33,7 @@ class VoidButcheryOrderAction
                 $outputBatch = $line->outputBatch;
 
                 if ($outputBatch !== null && $outputBatch->movements->count() > 1) {
-                    throw new RuntimeException("El lote {$outputBatch->code} ya tiene movimientos; la corrección va por un ajuste de inventario (M4), no por anular la orden.");
+                    throw new RuntimeException("El lote {$outputBatch->code} ya tiene movimientos; registre una merma o un conteo del lote para corregirlo, no anule la orden.");
                 }
             }
 

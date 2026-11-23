@@ -139,3 +139,36 @@ it('rejects voiding an order that is already voided', function () {
 
     expect($void)->toThrow(RuntimeException::class);
 });
+
+// BR-14/DEC-09 A: el rechazo por lote de salida movido indica merma o conteo
+// y no deja ningún efecto (ni movimientos, ni cambio de estado, ni auditoría).
+it('rejects with the merma-or-conteo message and changes nothing when an output lot has more movements [BR-14][C10]', function () {
+    $ctx = openSimpleChickenOrder();
+    $line = $ctx['order']->lines->first();
+    (new RegisterButcheryOutputWeightAction)->execute($line->id, '9.000');
+    $closed = (new CloseButcheryOrderAction)->execute($ctx['order']->id, $ctx['user']->id);
+    $outputBatch = $closed->lines->first()->outputBatch;
+
+    InventoryMovement::create([
+        'batch_id' => $outputBatch->id,
+        'type' => 'sale_out',
+        'quantity' => '-1.000',
+        'unit_cost' => '1.0000',
+        'user_id' => $ctx['user']->id,
+        'occurred_at' => now(),
+    ]);
+
+    $movementsBefore = InventoryMovement::count();
+    $auditBefore = AuditLog::count();
+
+    $void = fn () => (new VoidButcheryOrderAction)->execute($closed->id, 'Intento tardío', $ctx['user']->id);
+
+    expect($void)->toThrow(
+        RuntimeException::class,
+        "El lote {$outputBatch->code} ya tiene movimientos; registre una merma o un conteo del lote para corregirlo, no anule la orden.",
+    );
+    expect(InventoryMovement::count())->toBe($movementsBefore)
+        ->and(AuditLog::count())->toBe($auditBefore)
+        ->and(AuditLog::where('action', 'butchery_order.void')->count())->toBe(0)
+        ->and($closed->fresh()->status)->toBe('closed');
+});
