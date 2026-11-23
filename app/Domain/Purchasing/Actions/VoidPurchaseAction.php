@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Domain\Purchasing\Actions;
 
 use App\Domain\Inventory\Models\InventoryMovement;
+use App\Domain\Inventory\MovementType;
 use App\Domain\Purchasing\Models\Purchase;
 use App\Domain\Settings\Models\AuditLog;
 use Illuminate\Support\Facades\DB;
@@ -40,7 +41,7 @@ class VoidPurchaseAction
 
                 InventoryMovement::create([
                     'batch_id' => $line->batch_id,
-                    'type' => 'purchase_void',
+                    'type' => MovementType::PurchaseVoid->value,
                     'quantity' => bcmul((string) $entryMovement->quantity, '-1', 3),
                     'unit_cost' => $entryMovement->unit_cost,
                     'user_id' => $voidedByUserId,
