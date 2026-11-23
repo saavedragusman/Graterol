@@ -12,7 +12,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
  * BR-16/DEC-07: línea de conteo, una por lote dentro de la sesión.
- * Pesos con 3 decimales (C9): nunca float.
+ * Pesos con 3 decimales exactos (C9).
  */
 class InventoryCountLine extends Model
 {
