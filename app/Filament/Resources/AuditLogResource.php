@@ -42,6 +42,7 @@ class AuditLogResource extends Resource
         'butchery_order' => 'Orden de despiece', // VoidButcheryOrderAction.php:92
         'setting' => 'Configuración', // UpdateSettingsAction.php:45
         'role' => 'Rol', // CreateRoleAction / UpdateRoleAction / DeleteRoleAction
+        'exchange_rate' => 'Tasa BCV', // RegisterManualExchangeRateAction
         'user' => 'Usuario', // Create/UpdateUserAction y demás Actions de usuarios
     ];
 
@@ -53,6 +54,7 @@ class AuditLogResource extends Resource
         'role.created' => 'Creación', // CreateRoleAction
         'role.updated' => 'Cambio', // UpdateRoleAction
         'role.deleted' => 'Borrado', // DeleteRoleAction
+        'exchange_rate.registered' => 'Registro manual', // RegisterManualExchangeRateAction
         'user.created' => 'Creación', // CreateUserAction
         'user.roles_updated' => 'Cambio de roles', // UpdateUserAction
         'user.deactivated' => 'Desactivación', // DeactivateUserAction

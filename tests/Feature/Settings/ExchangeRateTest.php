@@ -41,3 +41,17 @@ it('queues the automatic BCV fetch job instead of calling the API inline [BR-02]
 
     Queue::assertPushed(FetchBcvRateJob::class);
 });
+
+it('stores the rate with 2 decimals, rounding half-up, for any source [BR-02]', function (string $input, string $expected) {
+    expect((new RegisterExchangeRateAction)->execute($input, 'automatic')->rate)->toBe($expected);
+})->with([
+    ['918.7662', '918.7700'],
+    ['918.764', '918.7600'],
+    ['918.765', '918.7700'],
+    ['85', '85.0000'],
+]);
+
+it('rejects a rate that rounds to zero and stores nothing [BR-02]', function () {
+    expect(fn () => (new RegisterExchangeRateAction)->execute('0.004', 'automatic'))->toThrow(InvalidArgumentException::class);
+    expect(ExchangeRate::count())->toBe(0);
+});

@@ -27,6 +27,7 @@ enum PermissionKey: string
     case AuditView = 'audit.view';
     case RolesManage = 'roles.manage';
     case UsersManage = 'users.manage';
+    case RatesManage = 'rates.manage';
 
     /** Nombre en español para la pantalla de roles; todo caso nuevo debe tener el suyo. */
     public function label(): string
@@ -49,6 +50,7 @@ enum PermissionKey: string
             self::AuditView => 'Ver la auditoría',
             self::RolesManage => 'Gestionar roles y permisos',
             self::UsersManage => 'Gestionar usuarios',
+            self::RatesManage => 'Registrar tasa BCV',
         };
     }
 
@@ -72,7 +74,8 @@ enum PermissionKey: string
             self::SettingsManage,
             self::AuditView,
             self::RolesManage,
-            self::UsersManage => 'Configuración',
+            self::UsersManage,
+            self::RatesManage => 'Configuración',
         };
     }
 }

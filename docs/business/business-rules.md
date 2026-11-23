@@ -4,7 +4,7 @@ Cada regla se verifica con un test Pest que lleva su ID (C16). `[abierto]` = pen
 
 ## General
 - **BR-01** Peso en kg con 3 decimales; montos con 4 decimales internos y 2 en pantalla e impresión.
-- **BR-02** La tasa BCV es diaria: carga automática con respaldo manual. Cada operación guarda la tasa que usó.
+- **BR-02** La tasa BCV es diaria: carga automática con respaldo manual. Cada operación guarda la tasa que usó. La tasa se guarda y se usa con 2 decimales (redondeo half-up al cargarla), no con los 4 de la fuente; decisión del humano, 2026-11-20.
 - **BR-03** Roles iniciales como conjuntos de permisos `module.action` (C14): administrador (todos los permisos asignados), cajero (POS y su propio cierre) y carnicero (recepción y despiece). Anular o devolver requiere un permiso propio, que de inicio solo tiene el administrador.
 
 ## Catálogo
