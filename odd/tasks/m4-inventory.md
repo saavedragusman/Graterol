@@ -146,7 +146,7 @@ Detalle técnico (no requiere decisión): el saldo del sistema se toma al regist
 Recomendación técnica: A. Una sesión agrupa lo que se contó en un mismo momento, deja evidencia y cabe en una pantalla; C duplica el control sin BR que lo pida.
 ```
 
-Resuelta: A, 2026-11-23 (el humano aceptó la recomendación técnica).
+Resuelta: A, 2026-11-23 (el humano aceptó la recomendación técnica). Regla técnica decidida el 2026-11-23 (el documento no la definía): al confirmar se aplica la `difference_kg` guardada al pesar, porque las ventas posteriores bajan el stock físico igual que el del sistema y por eso el resultado sigue reflejando lo contado; el saldo final puede no ser igual al peso contado. Antes de escribir se relee el saldo bajo bloqueo: si un ajuste negativo lo dejaría por debajo de cero, se rechaza toda la confirmación sin escribir nada y se corrige con una sesión nueva.
 
 ```text
 [DEC-PENDIENTE] M4/BR-14, C10 — DEC-08 Definición de los KPI de la pantalla de inventario
@@ -383,8 +383,8 @@ Cada tarea cita sus BR y dependencias. Las pruebas se escriben primero (rojo) y 
 - [x] **3.1** `StockBalance` y migración de `OpenButcheryOrderAction` y `ListAvailableRawMaterialBatchesAction` a ese servicio. — BR-14 · depende de 2.2
 - [x] **3.2** `ConsumeStockFefoAction`: orden FEFO, costo por lote, reparto entre lotes, lotes sin fecha y vencidos, configuración de BR-17 y faltante, concurrencia. — BR-14, BR-17 · depende de 3.1, DEC-02, DEC-03
 - [x] **3.3** `RegisterShrinkageAction` con tipos, motivo obligatorio, saldo no negativo y auditoría. — BR-15, C15 · depende de 2.4, 3.1, DEC-04, DEC-05
-- [ ] **3.4** `OpenInventoryCountAction`, `RegisterCountedWeightAction`, `CancelInventoryCountAction`. — BR-16 · depende de 2.4, 3.1, DEC-07
-- [ ] **3.5** `ConfirmInventoryCountAction`: un ajuste por diferencia ≠ 0 (negativo con la regla de costo del lote, positivo a 0,00 por DEC-11 B) con el responsable de cada línea, auditoría, sesión confirmada inmutable. — BR-15, BR-16, C15 · depende de 3.3, 3.4
+- [x] **3.4** `OpenInventoryCountAction`, `RegisterCountedWeightAction`, `CancelInventoryCountAction`. — BR-16 · depende de 2.4, 3.1, DEC-07
+- [x] **3.5** `ConfirmInventoryCountAction`: un ajuste por diferencia ≠ 0 (negativo con la regla de costo del lote, positivo a 0,00 por DEC-11 B) con el responsable de cada línea, auditoría, sesión confirmada inmutable. — BR-15, BR-16, C15 · depende de 3.3, 3.4
 - [ ] **3.6** Ajustar el mensaje de `VoidButcheryOrderAction` (DEC-09 A) con un test que fije el texto. — C10 · depende de 3.3, 3.5, DEC-09
 - [ ] **3.7** Si DEC-10 = B: código de lote legible en ambas Actions y migración de datos con prueba de integridad (cada movimiento y orden conserva su lote). — BR-14 · depende de 1.1, DEC-10
 - [ ] **4.1** Estructura de la pantalla de inventario: tabla de lotes, filtros, KPI (DEC-08), alertas de vencimiento (DEC-09) y ajuste pendiente (BR-17) siguiendo §4.5.1. — BR-14, BR-17, C10 · depende de 3.1, 3.2, DEC-01, DEC-08, DEC-09
