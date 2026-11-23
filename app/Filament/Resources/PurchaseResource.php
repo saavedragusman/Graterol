@@ -51,6 +51,9 @@ class PurchaseResource extends Resource
 
     protected static ?string $pluralModelLabel = 'compras';
 
+    // Filament capitaliza cada palabra del plural; la etiqueta del menú va en español normal.
+    protected static ?string $navigationLabel = 'Compras';
+
     /** @var array<string, string> */
     public const STATUS_LABELS = [
         'draft' => 'Borrador',

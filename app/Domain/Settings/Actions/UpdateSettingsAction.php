@@ -59,6 +59,7 @@ class UpdateSettingsAction
     {
         return match ($key) {
             CompanySettings::NAME => $this->name($value),
+            CompanySettings::SUBTITLE => $this->subtitle($value),
             CompanySettings::BRAND_COLOR, CompanySettings::ACCENT_COLOR => $this->color($key, $value),
             CompanySettings::LOGO_PATH, CompanySettings::FAVICON_PATH => $this->path($value),
             CompanySettings::CHARCUTERIA_VAT_RATE, CompanySettings::DEVIATION_THRESHOLD_PERCENT => $this->percent($value),
@@ -76,6 +77,17 @@ class UpdateSettingsAction
         }
 
         return $name;
+    }
+
+    private function subtitle(?string $value): ?string
+    {
+        $subtitle = trim((string) $value);
+
+        if (mb_strlen($subtitle) > 100) {
+            throw new InvalidArgumentException('El subtítulo tiene como máximo 100 caracteres.');
+        }
+
+        return $subtitle === '' ? null : $subtitle;
     }
 
     private function color(string $key, ?string $value): string

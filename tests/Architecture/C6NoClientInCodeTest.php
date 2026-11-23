@@ -27,3 +27,12 @@ it('keeps the pilot client out of app/ and migrations [C6]', function () {
 
     expect($offenders)->toBe([]);
 });
+
+it('keeps the pilot client out of css and views [C6]', function () {
+    $offenders = [
+        ...filesMentioningClient(base_path('resources/css')),
+        ...filesMentioningClient(base_path('resources/views')),
+    ];
+
+    expect($offenders)->toBe([]);
+});

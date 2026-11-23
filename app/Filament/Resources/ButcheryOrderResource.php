@@ -41,6 +41,9 @@ class ButcheryOrderResource extends Resource
 
     protected static ?string $pluralModelLabel = 'órdenes de despiece';
 
+    // Filament capitaliza cada palabra del plural; la etiqueta del menú va en español normal.
+    protected static ?string $navigationLabel = 'Órdenes de despiece';
+
     /** @var array<string, string> */
     public const STATUS_LABELS = [
         'open' => 'Abierta',

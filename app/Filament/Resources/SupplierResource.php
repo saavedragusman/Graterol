@@ -38,6 +38,9 @@ class SupplierResource extends Resource
 
     protected static ?string $pluralModelLabel = 'proveedores';
 
+    // Filament capitaliza cada palabra del plural; la etiqueta del menú va en español normal.
+    protected static ?string $navigationLabel = 'Proveedores';
+
     protected static ?string $recordTitleAttribute = 'name';
 
     public static function form(Schema $schema): Schema
